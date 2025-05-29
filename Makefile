@@ -4,3 +4,10 @@ base4.o: base4.c define.h
 	gcc -c -pedantic -ansi -Wall base4.c
 main.o: main.c define.h
 	gcc -c -pedantic -ansi -Wall main.c
+
+clear:
+	rm -rf *.o *.am *.ob *.ent *.ext 
+clearO:
+	rm -rf *.o
+all:
+	rm -rf *.o *.am *.ob *.ent *.ext *.exe run
