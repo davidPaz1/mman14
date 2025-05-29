@@ -1,0 +1,6 @@
+void afterHashtag(FILE* inputFile) {
+    int num; /*the number read from the input file*/
+    if (fscanf(inputFile, "%d", &num) != 1) { /*while reading an integer from the input file is successful*/
+        /*does somthing*/
+    }
+}
