@@ -11,4 +11,4 @@
 #define d 3
 
 /*functions*/
-void base4(int *word, char **base4_output);
+char* base4(int *word);
