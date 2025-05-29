@@ -16,8 +16,11 @@
 #define EOF_REACHED 3
 #define MALLOC_ERROR 4
 #define FILE_READ_ERROR 5
+#define FILE_WRITE_ERROR 6
 
 
 /* functions */
 char* base4(int *word);
+char* readLine(FILE *fp, int *errorCode);
+FILE* openFile(char* filename, char* ending , char* mode, int* errorCode);
 #endif
