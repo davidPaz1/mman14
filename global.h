@@ -16,6 +16,12 @@
 
 #define NULL_INITIAL 2 /* used to "forget" previous errorCode */
 
+/*enums*/
+typedef enum bool {
+    FALSE = 0,
+    TRUE = 1
+} bool;
+
 /* error codes */
 typedef enum ErrorCode {
     EOF_REACHED = 3,
@@ -24,6 +30,7 @@ typedef enum ErrorCode {
     FILE_WRITE_ERROR = 6
 } ErrorCode;
 
+/* opcodes */
 typedef enum opCode {
     mov = 0,
     cmp,
@@ -44,12 +51,34 @@ typedef enum opCode {
     invalid = -1
 } opCode;
 
-/*enums*/
-typedef enum boolean {
-    FALSE = 0,
-    TRUE = 1
-} Bool;
+/* registers */
+typedef enum registers{
+    r0 = 0, 
+    r1,
+    r2,
+    r3,
+    r4,
+    r5,
+    r6,
+    r7,
+    NOT_REG = -1
+} registers; 
 
+
+/* struct */
+
+/* Defines a first word in an instruction */
+typedef struct word { /* bitfield struct */
+    unsigned int ARE: 2;
+    unsigned int dest_op_addr: 2;
+    unsigned int src_op_addr: 2;
+    unsigned int op_code: 4;
+} word;
+
+typedef struct word{
+    name;
+    int age;
+} Person;
 
 /* functions */
 char* base4(int *word);
