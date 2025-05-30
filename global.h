@@ -75,11 +75,6 @@ typedef struct word { /* bitfield struct */
     unsigned int op_code: 4;
 } word;
 
-typedef struct word{
-    name;
-    int age;
-} Person;
-
 /* functions */
 char* base4(int *word);
 char* readLine(FILE *fp, int *errorCode);
