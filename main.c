@@ -1,31 +1,66 @@
 #include "global.h"
+#include "macroTable.h"
 #include <string.h>
 
 /* test main function for macroTable */
-int main(int argc, char *argv[]){
-
-    macroTable* t1 = malloc(sizeof(macroTable)) , *test;
-    t1->macroName = strdup("m1");
-    t1->body.line = strdup("example line");
+int main(int argc, char const *argv[])
+{
+    macroTable* test = NULL;
+    macroTable* t1 = malloc(sizeof(macroTable));
+    MacroBody* line1 = NULL , *line2 = NULL;
+    t1->macroName = strDup("m1");
+    if (t1->macroName == NULL) {
+        fprintf(stderr, "Memory allocation failed for macro name\n");
+        free(t1);
+        return 1; /* Exit if memory allocation fails */
+    }
     t1->nextMacro = NULL;
-    t1->body.nextLine->line = strdup("example line 2");
-    t1->body.nextLine->nextLine = NULL;
+
+    line1 = malloc(sizeof(MacroBody));
+    line1->line = strDup("example line");
+    if (line1->line == NULL) {
+        fprintf(stderr, "Memory allocation failed for macro line\n");
+        free(t1->macroName);
+        free(t1);
+        return 1; /* Exit if memory allocation fails */
+    }
+    line1->nextLine = NULL;
+
+    line2 = malloc(sizeof(MacroBody));
+    line2->line = strDup("example line 2");
+    if (line2->line == NULL) {
+        fprintf(stderr, "Memory allocation failed for macro line\n");
+        free(t1->macroName);
+        free(t1);
+        return 1; /* Exit if memory allocation fails */
+    }
+    line2->nextLine = NULL;
+
+    line1->nextLine = line2;
+
+    t1->body = line1;
 
     test = t1;
     while (test != NULL) {
-        printf("Macro Name: %s\n", test->macroName);
-        while (test->body.nextLine != NULL)
-        {
-            printf("\t Line: %s\n", test->body.line);
-            test = test->body.nextLine;
+        MacroBody* b = test->body;
+        printf("macro Name: %s\n", test->macroName);
+        while (b != NULL) {
+            printf("\tLine: %s\n", b->line);
+            b = b->nextLine;
         }
 
         test = test->nextMacro;
-    } 
-
+    }
+    free(line2->line);
+    free(line2);
+    free(line1->line);
+    free(line1);
+    free(t1->macroName);
+    free(t1);
     return 0;
 }
-/**/
+
+/**/ 
 
 /* test main function for base4 conversion
 int main(int argc, char *argv[]){
