@@ -17,3 +17,5 @@ c:
 	rm -rf *.o *.am *.ob *.ent *.ext
 o:
 	rm -rf *.o
+am:
+	rm -rf *.am
