@@ -1,9 +1,9 @@
 #ifndef DEFINE_H
 #define DEFINE_H
-
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
+#include "util.h"
 /* defines */
 #define NULL_TERMINATOR 1
 
@@ -80,8 +80,4 @@ char* base4(int *word);
 char* readLine(FILE *fp, int *errorCode);
 FILE* openFile(char* filename, char* ending , char* mode, int* errorCode);
 int executePreprocessor(char *inputFileName);
-
-/* string duplication */
-char* strDup(const char* src);
-
 #endif

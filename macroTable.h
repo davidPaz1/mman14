@@ -13,4 +13,5 @@ typedef struct macroTable { /* linked list of all the macros */
     MacroBody* body; /* body of the macro */
     struct macroTable* nextMacro; /* pointer to the next macro in the list */
 } macroTable;
+
 #endif
