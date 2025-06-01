@@ -17,10 +17,10 @@
 #define NULL_INITIAL 2 /* used to "forget" previous errorCode */
 
 /*enums*/
-typedef enum bool {
+typedef enum boolean {
     FALSE = 0,
     TRUE = 1
-} bool;
+} Bool;
 
 /* error codes */
 typedef enum ErrorCode {
@@ -62,7 +62,7 @@ typedef enum registers{
     r6,
     r7,
     NOT_REG = -1
-} registers; 
+} registers;
 
 
 /* struct */
@@ -75,8 +75,20 @@ typedef struct word { /* bitfield struct */
     unsigned int op_code: 4;
 } word;
 
+
+typedef struct macroTable { 
+    char* macroName; /* macro name */
+    struct body{ 
+        char* line; /* 1 line from the macro */
+        struct body* nextLine; /* pointer to the next line in the body of the macro */
+    } body;
+    struct macroTable* nextMacro; /* pointer to the next macro in the list */
+} macroTable;
+
+
 /* functions */
 char* base4(int *word);
 char* readLine(FILE *fp, int *errorCode);
 FILE* openFile(char* filename, char* ending , char* mode, int* errorCode);
+int executePreprocessor(char *inputFileName);
 #endif

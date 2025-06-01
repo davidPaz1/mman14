@@ -46,7 +46,7 @@ FILE *openFile(char *filename, char *ending, char *mode, int *errorCode)
         } else {
             fprintf(stderr, "david you are a fucking idiot, you should never reach this point\n");
             fprintf(stderr, "Error opening file: %s with mode: %s\n", fullFileName, mode);
-            *errorCode = FILE_READ_ERROR; /* Default error code for unknown mode */
+            *errorCode = NULL_INITIAL; /* Default error code for unknown mode */
         }
     }
     return fp;
