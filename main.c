@@ -1,6 +1,5 @@
 #include "global.h"
 #include "macroTable.h"
-#include <string.h>
 
 /* test main function for macroTable */
 int main(int argc, char const *argv[])
