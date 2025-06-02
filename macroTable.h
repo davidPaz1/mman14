@@ -26,7 +26,7 @@ typedef enum MacroErrorCode {
     MACRO_SUCCESS, /* macro operation was successful */
     MACRO_NAME_EXISTS, /* macro name already exists */
     MACRO_NOT_FOUND, /* macro not found */
-    MACRO_MALLOC_ERROR, /* memory allocation error */
+    MACRO_MALLOC_ERROR /* memory allocation error */
 } MacroErrorCode;
 
 /* function prototypes */

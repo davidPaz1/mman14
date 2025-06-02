@@ -4,58 +4,30 @@
 /* test main function for macroTable */
 int main(int argc, char const *argv[])
 {
-    macroTable* test = NULL;
-    macroTable* t1 = malloc(sizeof(macroTable));
-    MacroBody* line1 = NULL , *line2 = NULL;
-    t1->macroName = strDup("m1");
-    if (t1->macroName == NULL) {
-        fprintf(stderr, "Memory allocation failed for macro name\n");
-        free(t1);
-        return 1; /* Exit if memory allocation fails */
+    char* macroName = malloc(32 * sizeof(char));
+    char* line = malloc(64 * sizeof(char));
+    if (macroName == NULL || line == NULL) {
+        fprintf(stderr, "Memory allocation failed for macro name or line\n");
+        return 1;
     }
-    t1->nextMacro = NULL;
+    strcpy(macroName, "testMacro");
+    strcpy(line, "This is a test line for the macro body.");
 
-    line1 = malloc(sizeof(MacroBody));
-    line1->line = strDup("example line");
-    if (line1->line == NULL) {
-        fprintf(stderr, "Memory allocation failed for macro line\n");
-        free(t1->macroName);
-        free(t1);
-        return 1; /* Exit if memory allocation fails */
+
+    macroTable* table = createMacroTable(macroName, line);
+    if (table == NULL) {
+        fprintf(stderr, "Failed to create macro table\n");
+        return 1;
     }
-    line1->nextLine = NULL;
 
-    line2 = malloc(sizeof(MacroBody));
-    line2->line = strDup("example line 2");
-    if (line2->line == NULL) {
-        fprintf(stderr, "Memory allocation failed for macro line\n");
-        free(t1->macroName);
-        free(t1);
-        return 1; /* Exit if memory allocation fails */
-    }
-    line2->nextLine = NULL;
+    printf("Macro Table created with name: %s\n", table->head->macroName);
+    printf("First line in macro body: %s\n", table->head->bodyHead->line);
 
-    line1->nextLine = line2;
-
-    t1->body = line1;
-
-    test = t1;
-    while (test != NULL) {
-        MacroBody* b = test->body;
-        printf("macro Name: %s\n", test->macroName);
-        while (b != NULL) {
-            printf("\tLine: %s\n", b->line);
-            b = b->nextLine;
-        }
-
-        test = test->nextMacro;
-    }
-    free(line2->line);
-    free(line2);
-    free(line1->line);
-    free(line1);
-    free(t1->macroName);
-    free(t1);
+    freeMacroTable(table);   /* Free the allocated memory for the macro table */
+    printf("Macro Table freed successfully\n");
+    free(macroName);        /* Free the allocated memory for macro name */
+    free(line);            /* Free the allocated memory for line */
+    
     return 0;
 }
 

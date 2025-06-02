@@ -27,7 +27,7 @@ Bool isOperationName(char* str) {
         strcmp(str, "prn") == 0 ||
         strcmp(str, "rts") == 0 ||
         strcmp(str, "stop") == 0)
-        return "TRUE";
+        return TRUE;
     else 
-        return "FALSE";
+        return FALSE;
 }
