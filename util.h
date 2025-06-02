@@ -3,6 +3,6 @@
 #include "global.h"
 
 /* string duplication */
-char* strDup(const char* src);
-
+char* strDup(char* src);
+Bool isOperationName(char* str);
 #endif
