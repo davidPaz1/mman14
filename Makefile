@@ -25,3 +25,10 @@ o:
 	rm -rf *.o
 am:
 	rm -rf *.am
+
+cls:
+	clear
+r:
+	./run
+rv:
+	valgrind ./run

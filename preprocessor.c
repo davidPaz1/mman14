@@ -6,8 +6,12 @@
 /*page 15 or 31 for algorithm for preprocessing */
 
 int executePreprocessor(char *inputFileName) {
-    FILE *asFile, *amFile;
+    FILE* asFile, *amFile;
+    char* line;
     int errorCode;
+    macroTable* table = NULL;
+    MacroBody* body = NULL;
+
     /*
     macroTable *macroTable = NULL;
     MacroBody *macroBody = NULL;
@@ -26,8 +30,20 @@ int executePreprocessor(char *inputFileName) {
         return FILE_WRITE_ERROR;
     }
 
+    /* Initialize the macro table */
+    table = createMacroTable();
+    line = readLine(asFile, &errorCode);
+    printf("errorCode: %d\n", errorCode);
+    printf("Reading lines from .as file...\n");
+    printf("Line: %s\n", line);
+
     /* need to add preprocessing algorithm */
 
+    free(line); /* free the line after reading */
+    freeMacroTable(table); /* free the macro table */
+    if (body != NULL) {
+        freeMacroBody(body); /* free the macro body if it was created */
+    }
     fclose(asFile);
     fclose(amFile);
     return 0;

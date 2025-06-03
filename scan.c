@@ -10,7 +10,7 @@ char* readLine(FILE *fp, int *errorCode) {
         return NULL; /* malloc failed */
     }
     
-    if (fgets(line, MAX_INFILE_LENGTH, fp) == NULL) {
+    if (fgets(line, MAX_INFILE_LENGTH + NULL_TERMINATOR, fp) == NULL) {
         free(line);
         if (feof(fp))
             *errorCode = EOF_REACHED;
@@ -18,26 +18,34 @@ char* readLine(FILE *fp, int *errorCode) {
             *errorCode = FILE_READ_ERROR;
         return NULL; /* end of file or error */
     }
+    *errorCode = SUCCESS; /* set error code to success */
 
-    len = strlen(line);
-    if (len > 0 && line[len - 1] == '\n') {
-        line[len - 1] = '\0'; /* remove newline character */
-    }
+    len = strlen(line); /* get the length of the line read */
+    printf ("len %d\n", len); /* debug print to check the length of the line */
+    printf ("char: %c is l-1 %c\n", line[len], line[len-1]); /* debug print to check the line read */
 
+    if (strchr(line, '\n') != NULL) /* check if the line is longer than MAX_INFILE_LENGTH */
+        printf("line is okkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkk\n");
     return line;
 }
 
 FILE *openFile(char *filename, char *ending, char *mode, int *errorCode)
 {
     FILE *fp;
+    int len = strlen(filename) + strlen(ending) + NULL_TERMINATOR; /* length of the full file name */
+    char* fullFileName = malloc(len); /* full file name including the ending */
     *errorCode = NULL_INITIAL; /* reset error code to initial state */
-    int len = strlen(filename) + strlen(ending) + NULL_TERMINATOR; /* calculate length of full file name */
-    char fullFileName[len];
+
+    if (fullFileName == NULL) {
+        fprintf(stderr, "Memory allocation failed\n");
+        *errorCode = MALLOC_ERROR;
+        return NULL;
+    }
 
     strcpy(fullFileName, filename); /* copy filename to fullFileName */
     strcat(fullFileName, ending); /* add file ending */
 
-    fp = fopen(fullFileName, mode);
+    fp = fopen(fullFileName, mode); /* open the file with the given mode */
     if (fp == NULL) {
         if (strcmp(mode, "r") == 0) {
             fprintf(stderr, "Error opening file for reading: %s\n", fullFileName);
@@ -46,10 +54,11 @@ FILE *openFile(char *filename, char *ending, char *mode, int *errorCode)
             fprintf(stderr, "Error opening file for writing: %s\n", fullFileName);
             *errorCode = FILE_WRITE_ERROR;
         } else {
-            fprintf(stderr, "david you are a fucking idiot, you should never reach this point\n");
+            fprintf(stderr, "david you are a fucking idiot, you should never reach this point\n"); /*test123*/
             fprintf(stderr, "Error opening file: %s with mode: %s\n", fullFileName, mode);
             *errorCode = NULL_INITIAL; /* default error code for unknown mode */
         }
     }
+    free(fullFileName); /* free the allocated memory for fullFileName */
     return fp;
 }

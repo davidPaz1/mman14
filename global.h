@@ -7,7 +7,7 @@
 /* defines */
 #define NULL_TERMINATOR 1
 
-#define MAX_INFILE_LENGTH 81 /* +1 for null terminator */
+#define MAX_INFILE_LENGTH 5 /*81 +1 for null terminator */
 #define MAX_LABEL_SIZE 30 
 
 #define BASE2_INSTRUCTION_LENGTH 10
@@ -25,11 +25,12 @@ typedef enum boolean {
 
 /* error codes */
 typedef enum ErrorCode {
-    EOF_REACHED = 3,
-    MALLOC_ERROR = 4,
-    FILE_READ_ERROR = 5,
-    FILE_WRITE_ERROR = 6,
-    LINE_LONGER_THEN_MAX = 7
+    SUCCESS = 3, 
+    EOF_REACHED = 4,
+    MALLOC_ERROR = 5,
+    FILE_READ_ERROR = 6,
+    FILE_WRITE_ERROR = 7,
+    LINE_LONGER_THEN_MAX = 8
 } ErrorCode;
 
 /* opcodes */
@@ -80,4 +81,5 @@ typedef struct word { /* bitfield struct */
 /* functions */
 char* base4(int *word);
 int executePreprocessor(char *inputFileName);
+
 #endif
