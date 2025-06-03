@@ -3,61 +3,56 @@
 #include "util.h"
 
 /* MacroTable functions that operate on the MacroTable struct (linked list)*/
-macroTable* createMacroTable(char* macroName , char* line) {
+macroTable* createMacroTable() {
     macroTable* newTable; /* returned table */
-    if (macroName == NULL || line == NULL) { /*test123*/
-        fprintf(stderr, "invalid macro name or line\n");
-        return NULL; /* exit if the name or line is NULL */
-    }
-    
-    newTable = malloc(sizeof(macroTable));
-    if (newTable == NULL) { /*testMalloc*/
+
+    newTable = malloc(sizeof(macroTable)); /* allocate memory for the table */
+    if (newTable == NULL) {
         fprintf(stderr, "Memory allocation failed for macro table\n");
         return NULL; /* exit if memory allocation fails */
     }
-    
-    newTable->head = createMacroNode(macroName, line); /* create the first macro node */
-
-    if (newTable->head == NULL) {
-        free(newTable);
-        return NULL; /* exit if memory allocation fails */
-    }
-    newTable->macroCount = 1; /* initialize the macro count to 1 */
-    return newTable; /* return the new macro table */
+    newTable->macroCount = 0; /* initialize the macro count to 0 */
+    newTable->head = NULL; /* initialize the head of the list to NULL */
+    return newTable; /* return the new table */
 }
 
-macroNode* createMacroNode(char* macroName , char* line){
+macroNode* createMacroNode(char* macroName , MacroBody* body){
     macroNode* newMacro; /* returned macro */
-    MacroBody* newBody; /* body of the macro */
-    if (macroName == NULL || line == NULL) { /*test123*/
-        fprintf(stderr, "invalid macro name or line\n");
-        return NULL; /* exit if the name or line is NULL */
+    MacroBody* next; /* used to iterate through the body lines */
+    int lineCount = 0; /* used to count the number of lines in the body */
+    if (macroName == NULL || body == NULL) { /*test123*/
+        fprintf(stderr, "invalid macro name or body\n");
+        return NULL; /* exit if the name or body is NULL */
     }
-    
+
+    if (!isMacroNameValid(macroName)) {
+        fprintf(stderr, "Invalid macro name: %s\n", macroName);
+        return NULL; /* exit if the macro name is not valid */
+    }
+
     newMacro = malloc(sizeof(macroNode));
-    if (newMacro == NULL) { /*testMalloc*/
+    if (newMacro == NULL) {
         fprintf(stderr, "Memory allocation failed for macro node\n");
         return NULL; /* exit if memory allocation fails */
     }
-    
+
     newMacro->macroName = strDup(macroName);
     if (newMacro->macroName == NULL) { /*test123*/
         fprintf(stderr, "Memory allocation failed for macro name\n");
         free(newMacro);
         return NULL; /* exit if memory allocation fails */
     }
-    
-    newBody = createMacroBody(line);
-    if (newBody == NULL) {
-        free(newMacro->macroName);
-        free(newMacro);
-        return NULL; /* exit if memory allocation fails */
-    }
-    
-    newMacro->bodyHead = newBody;
-    newMacro->bodyTail = newBody;
-    newMacro->lineCount = 1;
 
+    newMacro->bodyHead = body;
+
+    next = body; /* initialize next to the first line in the body */
+    while (next->nextLine != NULL) { /* move next to the last line */
+        next = next->nextLine;
+        lineCount++; /* increment the line count for each line in the body */
+    }
+    newMacro->bodyTail = next; /* set the body tail to the last line in the body */
+    newMacro->lineCount = lineCount; /* set the line count */
+    newMacro->nextMacro = NULL; /* initialize the next macro pointer to NULL */
     return newMacro;
 }
 
@@ -85,20 +80,14 @@ MacroBody* createMacroBody(char* line) {
     return newBody;
 }
 
-MacroErrorCode addMacro(macroTable* table , char* name, char* line) {
+MacroErrorCode addMacro(macroTable* table , char* name, MacroBody* body) {
     macroNode* newMacro; /* new macro node to be added */
-    if (table == NULL || name == NULL || line == NULL) { /*test123*/
-        fprintf(stderr, "invalid macro table, name or line\n");
-        return MACRO_MALLOC_ERROR; /* exit if the table, name or line is NULL */
+    if (table == NULL || name == NULL || body == NULL) { /*test123*/
+        fprintf(stderr, "invalid macro table, name or body\n");
+        return MACRO_MALLOC_ERROR; /* exit if the table, name or body is NULL */
     }
 
-    
-    if (isMacroNameValid(name)) { /* if the macro already exists */
-        return MACRO_NAME_EXISTS;
-    }
-    
-    /* if the macro does not exist, create a new macro node */
-    newMacro = createMacroNode(name, line); 
+    newMacro = createMacroNode(name, body);
     if (newMacro == NULL) {
         return MACRO_MALLOC_ERROR; /* exit if memory allocation fails */
     }

@@ -28,7 +28,8 @@ typedef enum ErrorCode {
     EOF_REACHED = 3,
     MALLOC_ERROR = 4,
     FILE_READ_ERROR = 5,
-    FILE_WRITE_ERROR = 6
+    FILE_WRITE_ERROR = 6,
+    LINE_LONGER_THEN_MAX = 7
 } ErrorCode;
 
 /* opcodes */
@@ -78,7 +79,5 @@ typedef struct word { /* bitfield struct */
 
 /* functions */
 char* base4(int *word);
-char* readLine(FILE *fp, int *errorCode);
-FILE* openFile(char* filename, char* ending , char* mode, int* errorCode);
 int executePreprocessor(char *inputFileName);
 #endif

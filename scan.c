@@ -1,8 +1,9 @@
 #include "global.h"
-
+#include "scan.h"
 char* readLine(FILE *fp, int *errorCode) {
-    char *line = malloc(MAX_INFILE_LENGTH);
-    *errorCode = NULL_INITIAL; /* Reset error code to initial state */
+    char *line = malloc(MAX_INFILE_LENGTH); /* allocate memory for the line to read */
+    short int len; /* length of the line read */
+    *errorCode = NULL_INITIAL; /* reset error code to initial state */
     if (line == NULL) {
         fprintf(stderr, "Memory allocation failed\n");
         *errorCode = MALLOC_ERROR;
@@ -15,12 +16,12 @@ char* readLine(FILE *fp, int *errorCode) {
             *errorCode = EOF_REACHED;
         else 
             *errorCode = FILE_READ_ERROR;
-        return NULL; /* End of file or error */
+        return NULL; /* end of file or error */
     }
 
-    short int len = strlen(line);
+    len = strlen(line);
     if (len > 0 && line[len - 1] == '\n') {
-        line[len - 1] = '\0'; /* Remove newline character */
+        line[len - 1] = '\0'; /* remove newline character */
     }
 
     return line;
@@ -29,8 +30,9 @@ char* readLine(FILE *fp, int *errorCode) {
 FILE *openFile(char *filename, char *ending, char *mode, int *errorCode)
 {
     FILE *fp;
-    char fullFileName[strlen(filename) + strlen(ending) + NULL_TERMINATOR];
     *errorCode = NULL_INITIAL; /* reset error code to initial state */
+    int len = strlen(filename) + strlen(ending) + NULL_TERMINATOR; /* calculate length of full file name */
+    char fullFileName[len];
 
     strcpy(fullFileName, filename); /* copy filename to fullFileName */
     strcat(fullFileName, ending); /* add file ending */
@@ -46,7 +48,7 @@ FILE *openFile(char *filename, char *ending, char *mode, int *errorCode)
         } else {
             fprintf(stderr, "david you are a fucking idiot, you should never reach this point\n");
             fprintf(stderr, "Error opening file: %s with mode: %s\n", fullFileName, mode);
-            *errorCode = NULL_INITIAL; /* Default error code for unknown mode */
+            *errorCode = NULL_INITIAL; /* default error code for unknown mode */
         }
     }
     return fp;
