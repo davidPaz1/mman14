@@ -27,7 +27,7 @@ char* readLine(FILE *fp, int *errorCode) {
         printf("line[%d] = %c in int %d\n", i, line[i], line[i]); /* debug print to check each character */
     }
 
-    if (strchr(line, '\n') != NULL) /* check if the line is longer than MAX_INFILE_LENGTH */
+    if (strchr(line, '\n') != NULL || strchr(line, '\r') != NULL) /* check if the line is longer than MAX_INFILE_LENGTH */
         printf("line is okkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkk\n");
     return line;
 }
