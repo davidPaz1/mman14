@@ -19,16 +19,19 @@ scan.o : scan.c scan.h global.h
 
 a:
 	rm -rf *.o *.am *.ob *.ent *.ext *.exe run
+	clear
+	clear
 c:
 	rm -rf *.o *.am *.ob *.ent *.ext
 o:
 	rm -rf *.o
 am:
 	rm -rf *.am
-
-cls:
-	clear
 r:
+	make o
+	make am
+	clear 
+	clear
 	./run
 rv:
 	valgrind ./run

@@ -22,7 +22,10 @@ char* readLine(FILE *fp, int *errorCode) {
 
     len = strlen(line); /* get the length of the line read */
     printf ("len %d\n", len); /* debug print to check the length of the line */
-    printf ("char: %c is l-1 %c\n", line[len], line[len-1]); /* debug print to check the line read */
+    int i;
+    for (i = 0; i < len + 1; i++) { /* iterate through the line */
+        printf("line[%d] = %c in int %d\n", i, line[i], line[i]); /* debug print to check each character */
+    }
 
     if (strchr(line, '\n') != NULL) /* check if the line is longer than MAX_INFILE_LENGTH */
         printf("line is okkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkk\n");
