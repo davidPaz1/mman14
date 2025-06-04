@@ -30,7 +30,8 @@ char* readLine(FILE *fp, int *errorCode) {
         char c; /* discard the rest of the line from the input stream */
         while ((c = fgetc(fp)) != '\n' && c != EOF);
         *errorCode = LINE_TOO_LONG;
-        return line; /* return the line read so far, but set error code to LINE_TOO_LONG */
+        free(line);
+        return NULL; /* line is too long, return NULL */
     }
     else {
         line[strcspn(line, "\r\n")] = '\0'; /* remove the newline or carriage return character from the end of the line */

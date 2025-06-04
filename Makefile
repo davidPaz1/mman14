@@ -28,9 +28,14 @@ o:
 am:
 	rm -rf *.am
 r:
-	make o
+	make c
 	clear 
 	clear
 	./run
 rv:
+	make c
+	clear 
+	clear
 	valgrind ./run
+vr:
+	make rv

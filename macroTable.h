@@ -30,14 +30,14 @@ typedef enum MacroErrorCode {
 } MacroErrorCode;
 
 /* function prototypes */
-macroTable* createMacroTable ();
-macroNode* createMacroNode (char* macroName, MacroBody* body);
-MacroBody* createMacroBody (char* line);
-Bool isMacroNameValid (char* macroName);
-Bool isMacroExists (macroTable* table, char* macroName);
+macroTable* createMacroTable(void);
+macroNode* createMacroNode(char* macroName, MacroBody* body);
+MacroBody* createMacroBody(char* line);
+Bool isMacroNameValid(char* macroName);
+Bool isMacroExists(macroTable* table, char* macroName);
 MacroErrorCode addMacro(macroTable* table, char* name, MacroBody* body);
-MacroBody* findMacro (macroTable* table, char* macroName);
-void freeMacroTable (macroTable* table);
-void freeMacroNode (macroNode* node);
-void freeMacroBody (MacroBody* body);
+MacroBody* findMacro(macroTable* table, char* macroName);
+void freeMacroTable(macroTable* table);
+void freeMacroNode(macroNode* node);
+void freeMacroBody(MacroBody* body);
 #endif

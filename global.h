@@ -30,7 +30,8 @@ typedef enum ErrorCode {
     MALLOC_ERROR = 5,
     FILE_READ_ERROR = 6,
     FILE_WRITE_ERROR = 7,
-    LINE_TOO_LONG = 8
+    LINE_TOO_LONG = 8,
+    UNKNOWN_ERROR = 9
 } ErrorCode;
 
 /* opcodes */

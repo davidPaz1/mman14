@@ -8,9 +8,10 @@
 int executePreprocessor(char *inputFileName) {
     FILE* asFile, *amFile;
     char* line;
-    int errorCode;
+    int errorCode = NULL_INITIAL; /* Initialize error code */
     macroTable* table = NULL;
     MacroBody* body = NULL;
+    Bool isMacroDefLine = FALSE; /* flag to indicate if the current line is a macro definition line */
 
     /*
     macroTable *macroTable = NULL;
@@ -30,59 +31,58 @@ int executePreprocessor(char *inputFileName) {
         return FILE_WRITE_ERROR;
     }
 
-    /* Initialize the macro table */
-    table = createMacroTable();
-    int i = 0;
-    for (i = 0; i < 11; i++)
-    {
-        printf("\n");
-        line = readLine(asFile, &errorCode);
-        switch (errorCode) {
-            case SUCCESS:
-                printf("Line read successfully\n");
-                break;
-            case EOF_REACHED:
-                printf("End of file reached\n");
-                break;
-            case MALLOC_ERROR:
-                printf("Memory allocation error\n");
-                break;
-            case FILE_READ_ERROR:
-                printf("File read error\n");
-                break;
-            case FILE_WRITE_ERROR:
-                printf("File write error\n");
-                break;
-            case LINE_TOO_LONG:
-                printf("Line too long\n");
-                break;
-            default:
-                printf("Unknown error\n");
-                break;
-        }
-        printf("Line: %s\n", line);
-    }
-
     /* need to add preprocessing algorithm */
+    while (errorCode != EOF_REACHED) {
+        line = readLine(asFile, &errorCode); /* read a line from the .as file */
+        
+        if (line == NULL) { /* check if the line is NULL */
+            if (errorCode == EOF_REACHED) {
+                break; /* end of file reached, exit the loop */
+            } else {
+                fprintf(stderr, "Error reading line from .as file: %s\n", inputFileName);
+                freeFilesAndMemory(table, body, asFile, amFile, line);
+                return errorCode; /* return the error code */
+            }
+        }
 
-    free(line); /* free the line after reading */
-    freeMacroTable(table); /* free the macro table */
-    if (body != NULL) {
-        freeMacroBody(body); /* free the macro body if it was created */
+        fputs(line, amFile); /* write the line to the .am file */
+        fputc('\n', amFile); /* add a newline character after the line */
+        free(line); /* free the line memory */
     }
-    fclose(asFile);
-    fclose(amFile);
-    return 0;
+    freeFilesAndMemory(table, body, asFile, amFile, line); /* free all allocated memory and close files */
+    return SUCCESS; /* return success */
 }
 
-Bool isMacroLine(char *line)
-{
-
-    return TRUE;
+Bool isMacroDef(char *line) {
+    /* check if the line is a macro definition line */
+    return TRUE; 
 }
 
 Bool isMacroEndLine(char *line)
 {
+    /* check if the line indicates the end of a macro definition */
+    return TRUE;
+}
 
-    return FALSE;
+Bool isMacroUse(char *line, MacroBody **body)
+{
+    /* check if the line is a macro use line */
+    return TRUE;
+}
+
+void freeFilesAndMemory(macroTable* table, MacroBody* body, FILE* asFile, FILE* amFile, char* line)
+{
+    if (body != NULL) {
+        freeMacroBody(body); /* free the macro body if it was created */
+    }
+    if (table != NULL) {
+        freeMacroTable(table); /* free the macro table if it was created */
+    }
+    if (line != NULL) {
+        free(line);
+    }
+    if (asFile != NULL)
+        fclose(asFile); /* close the .as file */
+    if (amFile != NULL)
+        fclose(amFile); /* close the .am file */
 }
