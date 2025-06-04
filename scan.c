@@ -1,7 +1,10 @@
 #include "global.h"
 #include "scan.h"
+
+#define overlength 1 /* overlength should store \n or \r if line is under MAX_LINE_FILE_LENGTH */
+
 char* readLine(FILE *fp, int *errorCode) {
-    char *line = malloc(MAX_INFILE_LENGTH); /* allocate memory for the line to read */
+    char *line = malloc(MAX_LINE_FILE_LENGTH + overlength + NULL_TERMINATOR); /* overlength should store \n or \r if line is under MAX_LINE_FILE_LENGTH */
     short int len; /* length of the line read */
     *errorCode = NULL_INITIAL; /* reset error code to initial state */
     if (line == NULL) {
@@ -9,8 +12,8 @@ char* readLine(FILE *fp, int *errorCode) {
         *errorCode = MALLOC_ERROR;
         return NULL; /* malloc failed */
     }
-    
-    if (fgets(line, MAX_INFILE_LENGTH + NULL_TERMINATOR, fp) == NULL) {
+
+    if (fgets(line, MAX_LINE_FILE_LENGTH + overlength + NULL_TERMINATOR, fp) == NULL) {  /* overlength should store \n or \r if line is under MAX_LINE_FILE_LENGTH */
         free(line);
         if (feof(fp))
             *errorCode = EOF_REACHED;
@@ -18,17 +21,24 @@ char* readLine(FILE *fp, int *errorCode) {
             *errorCode = FILE_READ_ERROR;
         return NULL; /* end of file or error */
     }
-    *errorCode = SUCCESS; /* set error code to success */
 
-    len = strlen(line); /* get the length of the line read */
-    printf ("len %d\n", len); /* debug print to check the length of the line */
-    int i;
-    for (i = 0; i < len + 1; i++) { /* iterate through the line */
-        printf("line[%d] = %c in int %d\n", i, line[i], line[i]); /* debug print to check each character */
+    char next = fgetc(fp); /* peek on the next character */
+    if (next != EOF) { /* if the next character is not EOF, it means the line is longer than MAX_LINE_FILE_LENGTH */
+        ungetc(next, fp); /* put back the next character to the input stream */
     }
-
-    if (strchr(line, '\n') != NULL || strchr(line, '\r') != NULL) /* check if the line is longer than MAX_INFILE_LENGTH */
-        printf("line is okkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkk\n");
+    if (strchr(line, '\n') == NULL && strchr(line, '\r') == NULL && next != EOF) {
+        char c; /* discard the rest of the line from the input stream */
+        while ((c = fgetc(fp)) != '\n' && c != EOF);
+        *errorCode = LINE_TOO_LONG;
+        return line; /* return the line read so far, but set error code to LINE_TOO_LONG */
+    }
+    else {
+        line[strcspn(line, "\r\n")] = '\0'; /* remove the newline or carriage return character from the end of the line */
+        len = strlen(line); /* get the length of the line read */
+        if (len == MAX_LINE_FILE_LENGTH)  /* if the line is exactly MAX_LINE_FILE_LENGTH characters long, it has a remaining '\n' */
+            (void) fgetc(fp);  /* discard the unused character '\n' from the input stream */
+        *errorCode = SUCCESS; /* set error code to success */
+    }
     return line;
 }
 

@@ -29,7 +29,6 @@ am:
 	rm -rf *.am
 r:
 	make o
-	make am
 	clear 
 	clear
 	./run

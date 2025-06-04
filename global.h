@@ -7,8 +7,8 @@
 /* defines */
 #define NULL_TERMINATOR 1
 
-#define MAX_INFILE_LENGTH 5 /*81 +1 for null terminator */
-#define MAX_LABEL_SIZE 30 
+#define MAX_LINE_FILE_LENGTH 80 /* maximum length of a line in the file */
+#define MAX_LABEL_SIZE 30
 
 #define BASE2_INSTRUCTION_LENGTH 10
 #define BASE4_INSTRUCTION_LENGTH 5
@@ -30,7 +30,7 @@ typedef enum ErrorCode {
     MALLOC_ERROR = 5,
     FILE_READ_ERROR = 6,
     FILE_WRITE_ERROR = 7,
-    LINE_LONGER_THEN_MAX = 8
+    LINE_TOO_LONG = 8
 } ErrorCode;
 
 /* opcodes */

@@ -32,10 +32,36 @@ int executePreprocessor(char *inputFileName) {
 
     /* Initialize the macro table */
     table = createMacroTable();
-    line = readLine(asFile, &errorCode);
-    printf("errorCode: %d\n", errorCode);
-    printf("Reading lines from .as file...\n");
-    printf("Line: %s\n", line);
+    int i = 0;
+    for (i = 0; i < 11; i++)
+    {
+        printf("\n");
+        line = readLine(asFile, &errorCode);
+        switch (errorCode) {
+            case SUCCESS:
+                printf("Line read successfully\n");
+                break;
+            case EOF_REACHED:
+                printf("End of file reached\n");
+                break;
+            case MALLOC_ERROR:
+                printf("Memory allocation error\n");
+                break;
+            case FILE_READ_ERROR:
+                printf("File read error\n");
+                break;
+            case FILE_WRITE_ERROR:
+                printf("File write error\n");
+                break;
+            case LINE_TOO_LONG:
+                printf("Line too long\n");
+                break;
+            default:
+                printf("Unknown error\n");
+                break;
+        }
+        printf("Line: %s\n", line);
+    }
 
     /* need to add preprocessing algorithm */
 
