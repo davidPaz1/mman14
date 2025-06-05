@@ -60,7 +60,7 @@ scannedLine* readLine2(FILE *fp, int *errorCode)
     return lineRead;
 }
 
-FILE *openFile(char *filename, char *ending, char *mode, int *errorCode)
+FILE* openFile(char *filename, char *ending, char *mode, int *errorCode)
 {
     FILE *fp;
     int len = strlen(filename) + strlen(ending) + NULL_TERMINATOR; /* length of the full file name */
@@ -141,6 +141,7 @@ lineType determineLineType(scannedLine *sLine)
     while (isspace(dupLine[i])) /* skip leading whitespace */
         i++;
     cutnChar(dupLine, i); /* cut the leading whitespace */
+    
     if (dupLine[0] == '\0') { /* if the line is empty */
         type = EMPTY_LINE;
     } else if (dupLine[0] == ';') { /* if the line is a comment */

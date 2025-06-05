@@ -38,5 +38,5 @@ void cutnChar(char *str, int n)
         printf(" util Error: n is out of bounds.\n"); /*test123*/
         return;
     }
-    memmove(str, str + n, strlen(str) - n + 1); // Move the string left by n characters
+    memmove(str, str + n, strlen(str) - n + 1); /* Move the string left by n characters */
 }
