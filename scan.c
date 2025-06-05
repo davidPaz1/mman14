@@ -1,6 +1,6 @@
 #include "global.h"
 #include "scan.h"
-
+#include "util.h"
 #define overlength 1 /* overlength should store \n or \r if line is under MAX_LINE_FILE_LENGTH */
 
 char* readLine(FILE *fp, int *errorCode) {
@@ -43,6 +43,23 @@ char* readLine(FILE *fp, int *errorCode) {
     return line;
 }
 
+scannedLine* readLine2(FILE *fp, int *errorCode)
+{
+    scannedLine *lineRead = malloc(sizeof(scannedLine));
+    if (lineRead == NULL) {
+        *errorCode = MALLOC_ERROR;
+        return NULL;
+    }
+    lineRead->line = readLine(fp, errorCode);
+    if (lineRead->line == NULL) {
+        free(lineRead);
+        return NULL;
+    }
+    
+    lineRead->type = determineLineType(lineRead->line);
+    return lineRead;
+}
+
 FILE *openFile(char *filename, char *ending, char *mode, int *errorCode)
 {
     FILE *fp;
@@ -75,4 +92,70 @@ FILE *openFile(char *filename, char *ending, char *mode, int *errorCode)
     }
     free(fullFileName); /* free the allocated memory for fullFileName */
     return fp;
+}
+
+char* getFirstWord(char *str)
+{
+    int i = 0, start = 0;
+    char* word;
+    while (isspace(str[i]))
+        i++;
+    
+    if (str[i] == ';' || str[i] == ',') { /* if the first character is ';' or ',' */
+        word = malloc(2); /* 1 for illegal character and 1 for '\0' */
+        if (word == NULL) {
+            return NULL; /*malloc failed*/
+        }
+        word[0] = str[i]; /* set the first character to ';' */
+        word[1] = '\0';  /* set the last character to '\0' */
+        i++; /* skip the illegal character */
+    }
+    else {
+        start = i;
+        while (str[i] != EOF && str[i] != '\0' && str[i] != ',' && !isspace(str[i])) {
+            i++; 
+        }
+
+        word = malloc(i - start + 1); /* +1 for '\0' */
+        if (word == NULL)  /*malloc failed*/
+            return NULL; 
+        
+        strncpy(word, str + start, i - start);
+        word[i - start] = '\0';
+        
+        /* Move the rest of the string to the beginning */
+    }
+    
+    while (isspace(str[i])) 
+        i++;
+    
+    return word;
+}
+
+lineType determineLineType(scannedLine *sLine)
+{
+    int i = 0;
+    lineType type = -1; /* default type is empty line */
+    char* dupLine = strDup(sLine->line); /* duplicate the line to avoid modifying the original line */
+    
+    while (isspace(dupLine[i])) /* skip leading whitespace */
+        i++;
+    cutnChar(dupLine, i); /* cut the leading whitespace */
+    if (dupLine[0] == '\0') { /* if the line is empty */
+        type = EMPTY_LINE;
+    } else if (dupLine[0] == ';') { /* if the line is a comment */
+        type = COMMENT_LINE;
+    } else if (isOperationName(getFirstWord(dupLine))) { /* if the line is an instruction */
+        type = INSTRUCTION_LINE;
+    } else if (strchr(dupLine, '.') != NULL) { /* if the line is a data or string line */
+        if (strstr(dupLine, ".data") != NULL || strstr(dupLine, ".extern") != NULL) {
+            type = DATA_LINE;
+        } else if (strstr(dupLine, ".string") != NULL) {
+            type = STRING_LINE;
+        } else if (strstr(dupLine, ".entry") != NULL) {
+            type = ENTRY_LINE;
+        } else {
+            type = EXTERN_LINE; /* default to extern line */
+        }
+    }
 }
