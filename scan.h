@@ -27,4 +27,5 @@ scannedLine* readLine2(FILE *fp, int *errorCode);
 char* getFirstWord(char *str); /* get the first word from the string and remove it from the string */
 lineType determineLineType(scannedLine *sLine); /* determine the type of the line and if it has a label */
 FILE* openFile(char* filename, char* ending , char* mode, int* errorCode);
+Bool isLabel(char* str); /* check if the string is a label */
 #endif

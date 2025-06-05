@@ -56,7 +56,7 @@ scannedLine* readLine2(FILE *fp, int *errorCode)
         return NULL;
     }
     
-    lineRead->type = determineLineType(lineRead->line);
+    determineLineType(lineRead);
     return lineRead;
 }
 
@@ -137,11 +137,10 @@ lineType determineLineType(scannedLine *sLine)
     int i = 0;
     lineType type = -1; /* default type is empty line */
     char* dupLine = strDup(sLine->line); /* duplicate the line to avoid modifying the original line */
-    
     while (isspace(dupLine[i])) /* skip leading whitespace */
         i++;
     cutnChar(dupLine, i); /* cut the leading whitespace */
-    
+    sLine->isLabel = isLabel(dupLine); /* check if the line has a label, this function is not implemented yet */
     if (dupLine[0] == '\0') { /* if the line is empty */
         type = EMPTY_LINE;
     } else if (dupLine[0] == ';') { /* if the line is a comment */
@@ -159,4 +158,10 @@ lineType determineLineType(scannedLine *sLine)
             type = EXTERN_LINE; /* default to extern line */
         }
     }
+}
+
+Bool isLabel(char *str)
+{
+    /* UNSET */
+    return TRUE;
 }
