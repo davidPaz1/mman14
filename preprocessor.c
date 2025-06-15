@@ -1,5 +1,6 @@
 #include "global.h"
 #include "scan.h"
+#include "util.h"
 #include "error.h"
 #include "macroTable.h"
 #include "preprocessor.h"
@@ -20,15 +21,17 @@ ErrCode executePreprocessor(char *inputFileName) {
     */
     /* Open the .as file for reading and .am file for writing */
     asFile = openFile(inputFileName, ".as", "r", &errorCode);
-    if (asFile == NULL) {
+    if (errorCode != SCAN_SUCCESS) {
         fprintf(stderr, "Error opening .as file: %s\n", inputFileName);
+        printErrorMsg(errorCode); /* print the error message */
         return errorCode; /* return the error code */
     }
 
     amFile = openFile(inputFileName, ".am", "w", &errorCode);
-    if (amFile == NULL) {
+    if (errorCode != SCAN_SUCCESS) {
         fprintf(stderr, "Error opening .am file: %s\n", inputFileName);
         fclose(asFile);
+        printErrorMsg(errorCode); /* print the error message */
         return errorCode; /* return the error code */
     }
 
@@ -55,17 +58,24 @@ ErrCode executePreprocessor(char *inputFileName) {
 }
 
 Bool isMacroDef(char *line) {
-    /* check if the line is a macro definition line */
-    return TRUE; 
+    char* firstWord = getFirstWord(line); /* get the first word of the line */
+    if( firstWord != NULL && strcmp(firstWord, "mcro") == 0) {
+        cutnChar(line, strlen(firstWord)); /* cut the first word from the line for processing */
+        return TRUE; /* if the line is "mcro", it is a macro definition line */
+    }
+    return FALSE;
 }
 
 Bool isMacroEndLine(char *line)
 {
-    /* check if the line indicates the end of a macro definition */
-    return TRUE;
+    char* firstWord = getFirstWord(line); /* get the first word of the line */
+    if( firstWord != NULL && strcmp(firstWord, "mcroend") == 0) {
+        return TRUE; /* if the line is "mcroend", it is a macro end line */
+    }
+    return FALSE;
 }
 
-Bool isMacroUse(char *line, macroBody **body)
+Bool isMacroUse(char *line)
 {
     /* check if the line is a macro use line */
     return TRUE;
