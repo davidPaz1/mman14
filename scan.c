@@ -134,33 +134,40 @@ char* getFirstWord(char *str)
     return word;
 }
 
-lineType determineLineType(scannedLine *sLine)
+lineType* determineLineType(scannedLine *sLine) /* add errorcode */
 {
     int i = 0;
-    lineType type = -1; /* default type is empty line */
+    lineType* type = malloc(sizeof(lineType)); /* pointer to the type of the line */
     char* dupLine = strDup(sLine->line); /* duplicate the line to avoid modifying the original line */
+
+    if (dupLine == NULL) {
+        *type = NULL_INITIAL; /* malloc failed */
+        return type; /* return NULL_INITIAL */
+    }
+
+    *type = -1; /* default type is empty line */
     while (isspace(dupLine[i])) /* skip leading whitespace */
         i++;
     cutnChar(dupLine, i); /* cut the leading whitespace */
     sLine->isLabel = isLabel(dupLine); /* check if the line has a label, this function is not implemented yet */
     if (dupLine[0] == '\0') { /* if the line is empty */
-        type = EMPTY_LINE;
+        *type = EMPTY_LINE;
     } else if (dupLine[0] == ';') { /* if the line is a comment */
-        type = COMMENT_LINE;
+        *type = COMMENT_LINE;
     } else if (isOperationName(getFirstWord(dupLine))) { /* if the line is an instruction */
-        type = INSTRUCTION_LINE;
+        *type = INSTRUCTION_LINE;
     } else if (strchr(dupLine, '.') != NULL) { /* if the line is a data or string line */
         if (strstr(dupLine, ".data") != NULL || strstr(dupLine, ".extern") != NULL) {
-            type = DATA_LINE;
+            *type = DATA_LINE;
         } else if (strstr(dupLine, ".string") != NULL) {
-            type = STRING_LINE;
+            *type = STRING_LINE;
         } else if (strstr(dupLine, ".entry") != NULL) {
-            type = ENTRY_LINE;
+            *type = ENTRY_LINE;
         } else {
-            type = EXTERN_LINE; /* default to extern line */
+            *type = EXTERN_LINE; /* default to extern line */
         }
     }
-    return NULL; 
+    return type; /* return the type of the line */
 }
 
 Bool isLabel(char *str)

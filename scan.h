@@ -29,7 +29,7 @@ char* getFirstWord(char *str); /* get the first word from the string */
 
 /* for first pass mainly */
 scannedLine* readLineType(FILE *fp, ErrCode *errorCode);
-lineType determineLineType(scannedLine *sLine); /* determine the type of the line and if it has a label */
+lineType* determineLineType(scannedLine *sLine); /* determine the type of the line and if it has a label */
 FILE* openFile(char* filename, char* ending , char* mode, ErrCode* errorCode);
 Bool isLabel(char* str); /* check if the string is a label */
 #endif
