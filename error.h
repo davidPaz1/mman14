@@ -5,12 +5,10 @@
 
 /* error codes are divided into categories*/
 typedef enum ErrCode {
-    /* VERY GENERAL error codes 0 - 2 */
+    /* VERY GENERAL error codes 0 - 9 */
     NULL_INITIAL = 0, /* initial state of error code, used to "forget" previous errorCode */
     UNKNOWN_ERROR = 1, /* unknown error, should never be used */
     MALLOC_ERROR = 2, /* memory allocation error */
-
-    /* util errors 2 - 9 */
 
     /* scan errors 10 - 19 */
     SCAN_SUCCESS = 10, 
