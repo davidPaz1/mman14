@@ -17,13 +17,11 @@ macroTable* createMacroTable() {
     return newTable; /* return the new table */
 }
 
-macroNode* createMacroNode(char* macroName , MacroBody* body){
+macroNode* createMacroNode(char* macroName){
     macroNode* newMacro; /* returned macro */
-    MacroBody* next; /* used to iterate through the body lines */
-    int lineCount = 0; /* used to count the number of lines in the body */
-    if (macroName == NULL || body == NULL) { /*test123*/
-        fprintf(stderr, "invalid macro name or body\n");
-        return NULL; /* exit if the name or body is NULL */
+    if (macroName == NULL) { /*test123*/
+        fprintf(stderr, "invalid macro name\n");
+        return NULL; /* exit if the name is NULL */
     }
 
     if (!isMacroNameValid(macroName)) {
@@ -44,27 +42,21 @@ macroNode* createMacroNode(char* macroName , MacroBody* body){
         return NULL; /* exit if memory allocation fails */
     }
 
-    newMacro->bodyHead = body;
-
-    next = body; /* initialize next to the first line in the body */
-    while (next->nextLine != NULL) { /* move next to the last line */
-        next = next->nextLine;
-        lineCount++; /* increment the line count for each line in the body */
-    }
-    newMacro->bodyTail = next; /* set the body tail to the last line in the body */
-    newMacro->lineCount = lineCount; /* set the line count */
+    newMacro->bodyHead = NULL; /* set the body head to the first line in the body */
+    newMacro->bodyTail = NULL; /* set the body tail to the last line in the body */
+    newMacro->lineCount = 0; /* set the line count */
     newMacro->nextMacro = NULL; /* initialize the next macro pointer to NULL */
     return newMacro;
 }
 
-MacroBody* createMacroBody(char* line) {
-    MacroBody* newBody; /* returned body */
+macroBody* createMacroBody(char* line) {
+    macroBody* newBody; /* returned body */
     if (line == NULL) { /*test123*/
         fprintf(stderr, "invalid macro line\n");
         return NULL; /* exit if the line is NULL */
     }
     
-    newBody = malloc(sizeof(MacroBody));
+    newBody = malloc(sizeof(macroBody));
     if (newBody == NULL) {
         fprintf(stderr, "Memory allocation failed for macro body\n");
         return NULL; /* exit if memory allocation fails */
@@ -81,25 +73,53 @@ MacroBody* createMacroBody(char* line) {
     return newBody;
 }
 
-ErrCode addMacro(macroTable* table , char* name, MacroBody* body) {
-    macroNode* newMacro; /* new macro node to be added */
-    if (table == NULL || name == NULL || body == NULL) { /*test123*/
-        fprintf(stderr, "invalid macro table, name or body\n");
-        return MALLOC_ERROR; /* exit if the table, name or body is NULL */
+/* add a new macro to the table */
+ErrCode addMacro(macroTable* table , char* name) {
+    macroNode* newMacro; /* new macro to be added */
+    if (table == NULL || name == NULL) { /*test123*/
+        fprintf(stderr, "invalid macro table or line\n");
+        return MALLOC_ERROR; /* exit if the table or line is NULL */
     }
 
-    newMacro = createMacroNode(name, body);
+    newMacro = createMacroNode(name);
     if (newMacro == NULL) {
         return MALLOC_ERROR; /* exit if memory allocation fails */
     }
-    
+
     newMacro->nextMacro = table->head; /* insert at the beginning of the list */
     table->head = newMacro; /* update the head of the list */
     table->macroCount++; /* increment the macro count */
     return MACROTABLE_SUCCESS; /* return success */
 }
 
-MacroBody* findMacro(macroTable* table, char* macroName) {
+/* add to the last entered macro the new line*/
+ErrCode addMacroLine(macroTable* table, char* line) {
+    macroBody* newLine; /* new line to be added */
+    macroNode* macrohead; /* the macro to which the line will be added */
+    if (table == NULL || line == NULL) { /*test123*/
+        fprintf(stderr, "invalid macro table or line\n");
+        return MALLOC_ERROR; /* exit if the table or line is NULL */
+    }
+    macrohead = table->head; /* get the head of the macro list */
+    
+    newLine = createMacroBody(line); /* create a new body for the line */
+    if (newLine == NULL) {
+        return MALLOC_ERROR; /* exit if memory allocation fails */
+    }
+
+    if (macrohead->bodyHead == NULL) { /* if this is the first line in the macro */
+        macrohead->bodyHead = newLine; /* set the head of the body */
+        macrohead->bodyTail = newLine; /* set the tail of the body */
+    } else {
+        macrohead->bodyTail->nextLine = newLine; /* link the new line to the end of the body */
+        macrohead->bodyTail = newLine; /* update the tail of the body */
+    }
+
+    macrohead->lineCount++; /* increment the line count */
+    return MACROTABLE_SUCCESS; /* return success */
+}
+
+macroBody* findMacro(macroTable* table, char* macroName) {
     macroNode* current; /* used to iterate through the macro list */
     if (table == NULL || macroName == NULL) {
         fprintf(stderr, "invalid macro table or macro name\n");
@@ -190,15 +210,15 @@ void freeMacroNode(macroNode* node) {
     free(node); /* free the macro node itself */
 }
 
-void freeMacroBody(MacroBody* body) {
-    MacroBody* current; /* used to iterate through the body lines */
+void freeMacroBody(macroBody* body) {
+    macroBody* current; /* used to iterate through the body lines */
     if (body == NULL) { /*test123*/
         fprintf(stderr, "invalid macro body\n");
         return;
     }
     current = body;
     while (current != NULL) { /* iterate through the body lines and free them */
-        MacroBody* next = current->nextLine;
+        macroBody* next = current->nextLine;
         free(current->line);
         free(current);
         current = next;

@@ -11,12 +11,12 @@ ErrCode executePreprocessor(char *inputFileName) {
     char* line;
     ErrCode errorCode = NULL_INITIAL; /* Initialize error code */
     macroTable* table = NULL;
-    MacroBody* body = NULL;
+    macroBody* body = NULL;
     Bool isMacroDefLine = FALSE; /* flag to indicate if the current line is a macro definition line */
 
     /*
     macroTable *macroTable = NULL;
-    MacroBody *macroBody = NULL;
+    macroBody *macroBody = NULL;
     */
     /* Open the .as file for reading and .am file for writing */
     asFile = openFile(inputFileName, ".as", "r", &errorCode);
@@ -65,13 +65,13 @@ Bool isMacroEndLine(char *line)
     return TRUE;
 }
 
-Bool isMacroUse(char *line, MacroBody **body)
+Bool isMacroUse(char *line, macroBody **body)
 {
     /* check if the line is a macro use line */
     return TRUE;
 }
 
-void freeFilesAndMemory(macroTable* table, MacroBody* body, FILE* asFile, FILE* amFile, char* line)
+void freeFilesAndMemory(macroTable* table, macroBody* body, FILE* asFile, FILE* amFile, char* line)
 {
     if (body != NULL) {
         freeMacroBody(body); /* free the macro body if it was created */

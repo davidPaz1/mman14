@@ -4,16 +4,16 @@
 #include "global.h"
 #include "error.h"
 
-typedef struct MacroBody{ /* linked list of all of the macro lines */
+typedef struct macroBody{ /* linked list of all of the macro lines */
     char* line; /* 1 line from the macro */
-    struct MacroBody* nextLine; /* pointer to the next line in the body of the macro */
-}MacroBody;
+    struct macroBody* nextLine; /* pointer to the next line in the body of the macro */
+}macroBody;
 
 typedef struct macroNode { /* linked list of all the macros */
     char* macroName; /* macro name */
     unsigned int lineCount; /* number of lines in the macro body */
-    MacroBody* bodyHead; /* pointer to the first line in the body of the macro */
-    MacroBody* bodyTail; /* pointer to the last line in the body of the macro */
+    macroBody* bodyHead; /* pointer to the first line in the body of the macro */
+    macroBody* bodyTail; /* pointer to the last line in the body of the macro */
     struct macroNode* nextMacro; /* pointer to the next macro in the list */
 } macroNode;
 
@@ -25,13 +25,14 @@ typedef struct macroTable {
 
 /* function prototypes */
 macroTable* createMacroTable(void);
-macroNode* createMacroNode(char* macroName, MacroBody* body);
-MacroBody* createMacroBody(char* line);
+macroNode* createMacroNode(char* macroName);
+macroBody* createMacroBody(char* line);
+ErrCode addMacro(macroTable* table , char* name);
+ErrCode addMacroLine(macroTable* table, char* line);
+macroBody* findMacro(macroTable* table, char* macroName);
 Bool isMacroNameValid(char* macroName);
 Bool isMacroExists(macroTable* table, char* macroName);
-ErrCode addMacro(macroTable* table, char* name, MacroBody* body);
-MacroBody* findMacro(macroTable* table, char* macroName);
 void freeMacroTable(macroTable* table);
 void freeMacroNode(macroNode* node);
-void freeMacroBody(MacroBody* body);
+void freeMacroBody(macroBody* body);
 #endif
