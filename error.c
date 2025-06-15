@@ -36,7 +36,7 @@ void printErrorMsg(ErrCode error) {
                 error == PREPROCESSOR_SUCCESS || 
                 error == MACROTABLE_SUCCESS) {
                 /* We consider these success codes - no error */
-                // Optionally print nothing or:
+                /* Optionally print nothing or: */
                 printf("Operation successful. but still, you shouldn't reach this point\n");
             } else {
                 printf("Unrecognized error code: %d - shouldn't reach this point\n", error);

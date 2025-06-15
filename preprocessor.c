@@ -23,7 +23,7 @@ ErrCode executePreprocessor(char *inputFileName) {
     asFile = openFile(inputFileName, ".as", "r", &errorCode);
     if (errorCode != SCAN_SUCCESS) {
         fprintf(stderr, "Error opening .as file: %s\n", inputFileName);
-        printErrorMsg(errorCode); /* print the error message */
+        /*printErrorMsg(errorCode);  print the error message */
         return errorCode; /* return the error code */
     }
 
@@ -31,7 +31,7 @@ ErrCode executePreprocessor(char *inputFileName) {
     if (errorCode != SCAN_SUCCESS) {
         fprintf(stderr, "Error opening .am file: %s\n", inputFileName);
         fclose(asFile);
-        printErrorMsg(errorCode); /* print the error message */
+        /*printErrorMsg(errorCode);  print the error message */
         return errorCode; /* return the error code */
     }
 
