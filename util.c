@@ -33,10 +33,5 @@ Bool isOperationName(char* str) {
 
 void cutnChar(char *str, int n)
 {
-    if (n < 0 || n > strlen(str)) {
-        str = NULL; /* If n is negative or greater than the string length, return NULL */
-        printf(" util Error: n is out of bounds.\n"); /*test123*/
-        return;
-    }
     memmove(str, str + n, strlen(str) - n + 1); /* Move the string left by n characters */
 }
