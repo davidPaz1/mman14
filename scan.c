@@ -92,6 +92,7 @@ FILE* openFile(char *filename, char *ending, char *mode, ErrCode *errorCode)
         }
     }
     free(fullFileName); /* free the allocated memory for fullFileName */
+    *errorCode = SCAN_SUCCESS; /* set error code to success */
     return fp;
 }
 
