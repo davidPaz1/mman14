@@ -1,4 +1,5 @@
 #include "global.h"
+#include "error.h"
 #include "macroTable.h"
 #include "util.h"
 
@@ -80,22 +81,22 @@ MacroBody* createMacroBody(char* line) {
     return newBody;
 }
 
-MacroErrorCode addMacro(macroTable* table , char* name, MacroBody* body) {
+ErrCode addMacro(macroTable* table , char* name, MacroBody* body) {
     macroNode* newMacro; /* new macro node to be added */
     if (table == NULL || name == NULL || body == NULL) { /*test123*/
         fprintf(stderr, "invalid macro table, name or body\n");
-        return MACRO_MALLOC_ERROR; /* exit if the table, name or body is NULL */
+        return MALLOC_ERROR; /* exit if the table, name or body is NULL */
     }
 
     newMacro = createMacroNode(name, body);
     if (newMacro == NULL) {
-        return MACRO_MALLOC_ERROR; /* exit if memory allocation fails */
+        return MALLOC_ERROR; /* exit if memory allocation fails */
     }
     
     newMacro->nextMacro = table->head; /* insert at the beginning of the list */
     table->head = newMacro; /* update the head of the list */
     table->macroCount++; /* increment the macro count */
-    return MACRO_SUCCESS; /* return success */
+    return MACROTABLE_SUCCESS; /* return success */
 }
 
 MacroBody* findMacro(macroTable* table, char* macroName) {

@@ -2,6 +2,7 @@
 #define MACRO_TABLE_H
 
 #include "global.h"
+#include "error.h"
 
 typedef struct MacroBody{ /* linked list of all of the macro lines */
     char* line; /* 1 line from the macro */
@@ -21,13 +22,6 @@ typedef struct macroTable {
     macroNode* head; /* pointer to the first macro in the list */
 } macroTable;
 
-typedef enum MacroErrorCode {
-    MACRO_NO_ERROR = 0, /* no error */
-    MACRO_SUCCESS, /* macro operation was successful */
-    MACRO_NAME_EXISTS, /* macro name already exists */
-    MACRO_NOT_FOUND, /* macro not found */
-    MACRO_MALLOC_ERROR /* memory allocation error */
-} MacroErrorCode;
 
 /* function prototypes */
 macroTable* createMacroTable(void);
@@ -35,7 +29,7 @@ macroNode* createMacroNode(char* macroName, MacroBody* body);
 MacroBody* createMacroBody(char* line);
 Bool isMacroNameValid(char* macroName);
 Bool isMacroExists(macroTable* table, char* macroName);
-MacroErrorCode addMacro(macroTable* table, char* name, MacroBody* body);
+ErrCode addMacro(macroTable* table, char* name, MacroBody* body);
 MacroBody* findMacro(macroTable* table, char* macroName);
 void freeMacroTable(macroTable* table);
 void freeMacroNode(macroNode* node);

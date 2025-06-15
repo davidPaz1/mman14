@@ -15,24 +15,11 @@
 
 #define REGISTER_SIZE 10
 
-#define NULL_INITIAL 2 /* used to "forget" previous errorCode */
-
 /*enums*/
 typedef enum boolean {
     FALSE = 0,
     TRUE = 1
 } Bool;
-
-/* error codes */
-typedef enum ErrorCode {
-    SUCCESS = 3, 
-    EOF_REACHED = 4,
-    MALLOC_ERROR = 5,
-    FILE_READ_ERROR = 6,
-    FILE_WRITE_ERROR = 7,
-    LINE_TOO_LONG = 8,
-    UNKNOWN_ERROR = 9
-} ErrorCode;
 
 /* opcodes */
 typedef enum opCode {

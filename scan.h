@@ -1,6 +1,7 @@
 #ifndef SCAN_H
 #define SCAN_H
 #include "global.h"
+#include "error.h"
 
 
 typedef enum lineType {
@@ -21,11 +22,11 @@ typedef struct scannedLine {
 } scannedLine;
 
 /* scan functions prototypes */
-char* readLine(FILE *fp, int *errorCode);
-scannedLine* readLine2(FILE *fp, int *errorCode);
+char* readLine(FILE *fp, ErrCode *errorCode);
+scannedLine* readLine2(FILE *fp, ErrCode *errorCode);
 
 char* getFirstWord(char *str); /* get the first word from the string and remove it from the string */
 lineType determineLineType(scannedLine *sLine); /* determine the type of the line and if it has a label */
-FILE* openFile(char* filename, char* ending , char* mode, int* errorCode);
+FILE* openFile(char* filename, char* ending , char* mode, ErrCode* errorCode);
 Bool isLabel(char* str); /* check if the string is a label */
 #endif

@@ -1,9 +1,10 @@
 #include "global.h"
+#include "error.h"
 #include "scan.h"
 #include "util.h"
 #define overlength 1 /* overlength should store \n or \r if line is under MAX_LINE_FILE_LENGTH */
 
-char* readLine(FILE *fp, int *errorCode) {
+char* readLine(FILE *fp, ErrCode *errorCode) {
     char *line = malloc(MAX_LINE_FILE_LENGTH + overlength + NULL_TERMINATOR); /* overlength should store \n or \r if line is under MAX_LINE_FILE_LENGTH */
     short int len; /* length of the line read */
     *errorCode = NULL_INITIAL; /* reset error code to initial state */
@@ -38,12 +39,12 @@ char* readLine(FILE *fp, int *errorCode) {
         len = strlen(line); /* get the length of the line read */
         if (len == MAX_LINE_FILE_LENGTH)  /* if the line is exactly MAX_LINE_FILE_LENGTH characters long, it has a remaining '\n' */
             (void) fgetc(fp);  /* discard the unused character '\n' from the input stream */
-        *errorCode = SUCCESS; /* set error code to success */
+        *errorCode = SCAN_SUCCESS; /* set error code to success */
     }
     return line;
 }
 
-scannedLine* readLine2(FILE *fp, int *errorCode)
+scannedLine* readLine2(FILE *fp, ErrCode *errorCode)
 {
     scannedLine *lineRead = malloc(sizeof(scannedLine));
     if (lineRead == NULL) {
@@ -60,7 +61,7 @@ scannedLine* readLine2(FILE *fp, int *errorCode)
     return lineRead;
 }
 
-FILE* openFile(char *filename, char *ending, char *mode, int *errorCode)
+FILE* openFile(char *filename, char *ending, char *mode, ErrCode *errorCode)
 {
     FILE *fp;
     int len = strlen(filename) + strlen(ending) + NULL_TERMINATOR; /* length of the full file name */

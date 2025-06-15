@@ -1,14 +1,15 @@
 #include "global.h"
 #include "scan.h"
+#include "error.h"
 #include "macroTable.h"
 #include "preprocessor.h"
 /* .as -> .am -> .ob , .ext , .ent*/
 /*page 15 or 31 for algorithm for preprocessing */
 
-int executePreprocessor(char *inputFileName) {
+ErrCode executePreprocessor(char *inputFileName) {
     FILE* asFile, *amFile;
     char* line;
-    int errorCode = NULL_INITIAL; /* Initialize error code */
+    ErrCode errorCode = NULL_INITIAL; /* Initialize error code */
     macroTable* table = NULL;
     MacroBody* body = NULL;
     Bool isMacroDefLine = FALSE; /* flag to indicate if the current line is a macro definition line */
@@ -21,14 +22,14 @@ int executePreprocessor(char *inputFileName) {
     asFile = openFile(inputFileName, ".as", "r", &errorCode);
     if (asFile == NULL) {
         fprintf(stderr, "Error opening .as file: %s\n", inputFileName);
-        return FILE_READ_ERROR;
+        return errorCode; /* return the error code */
     }
 
     amFile = openFile(inputFileName, ".am", "w", &errorCode);
     if (amFile == NULL) {
         fprintf(stderr, "Error opening .am file: %s\n", inputFileName);
         fclose(asFile);
-        return FILE_WRITE_ERROR;
+        return errorCode; /* return the error code */
     }
 
     /* need to add preprocessing algorithm */
@@ -50,7 +51,7 @@ int executePreprocessor(char *inputFileName) {
         free(line); /* free the line memory */
     }
     freeFilesAndMemory(table, body, asFile, amFile, line); /* free all allocated memory and close files */
-    return SUCCESS; /* return success */
+    return PREPROCESSOR_SUCCESS; /* return success */
 }
 
 Bool isMacroDef(char *line) {

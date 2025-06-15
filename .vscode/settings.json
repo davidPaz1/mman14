@@ -4,6 +4,10 @@
         "stdio.h": "c",
         "stdlib.h": "c",
         "string.h": "c",
-        "global.h": "c"
+        "global.h": "c",
+        "util.h": "c",
+        "scan.h": "c",
+        "error.h": "c",
+        "preprocessor.h": "c"
     }
 }
