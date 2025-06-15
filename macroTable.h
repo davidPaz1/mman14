@@ -24,15 +24,20 @@ typedef struct macroTable {
 
 
 /* function prototypes */
+
+/* "public" functions */
 macroTable* createMacroTable(void);
-macroNode* createMacroNode(char* macroName);
-macroBody* createMacroBody(char* line);
 ErrCode addMacro(macroTable* table , char* name);
 ErrCode addMacroLine(macroTable* table, char* line);
 macroBody* findMacro(macroTable* table, char* macroName);
+void freeMacroTable(macroTable* table);
+
+/* "private" functions */
+macroNode* createMacroNode(char* macroName);
+macroBody* createMacroBody(char* line);
 Bool isMacroNameValid(char* macroName);
 Bool isMacroExists(macroTable* table, char* macroName);
-void freeMacroTable(macroTable* table);
 void freeMacroNode(macroNode* node);
 void freeMacroBody(macroBody* body);
+
 #endif
