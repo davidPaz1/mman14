@@ -4,17 +4,17 @@ compileFlags =  $(exeFlags) -c
 
 run: main.o macroTable.o preprocessor.o util.o scan.o
 	$(exeFlags) main.o macroTable.o preprocessor.o util.o scan.o -o run
-main.o: main.c preprocessor.h macroTable.h
+main.o: main.c preprocessor.h macroTable.h 
 	$(compileFlags) main.c
-macroTable.o: macroTable.c macroTable.h global.h util.h
+macroTable.o: macroTable.c macroTable.h global.h util.h error.h
 	$(compileFlags) macroTable.c
-preprocessor.o: preprocessor.c preprocessor.h global.h scan.h macroTable.h
+preprocessor.o: preprocessor.c preprocessor.h macroTable.h scan.h error.h global.h
 	$(compileFlags) preprocessor.c
 
 
 util.o : util.c util.h global.h
 	$(compileFlags) util.c
-scan.o : scan.c scan.h global.h
+scan.o : scan.c scan.h global.h error.h	
 	$(compileFlags) scan.c
 
 a:

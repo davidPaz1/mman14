@@ -8,6 +8,7 @@
         "util.h": "c",
         "scan.h": "c",
         "error.h": "c",
-        "preprocessor.h": "c"
+        "preprocessor.h": "c",
+        "macrotable.h": "c"
     }
 }

@@ -66,8 +66,5 @@ typedef struct word { /* bitfield struct */
     unsigned int op_code: 4;
 } word;
 
-/* functions */
-char* base4(int *word);
-int executePreprocessor(char *inputFileName);
 
 #endif

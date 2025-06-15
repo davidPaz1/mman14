@@ -4,6 +4,8 @@
 #define c 2
 #define d 3
 
+char* base4(int *word);
+
 char* base4(int *word)
 {
     char *base4 = malloc(BASE4_INSTRUCTION_LENGTH + NULL_TERMINATOR);

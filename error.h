@@ -25,7 +25,7 @@ typedef enum ErrCode {
     /* macroTable errors 30 - 39 */
     MACROTABLE_SUCCESS = 30, /* macro operation was successful */
     MACRO_NAME_EXISTS = 31, /* macro name already exists */
-    MACRO_NOT_FOUND = 32, /* macro not found */
+    MACRO_NOT_FOUND = 32 /* macro not found */
 
     /* ??? 40 - 49 */
 } ErrCode;
