@@ -44,7 +44,7 @@ char* readLine(FILE *fp, ErrCode *errorCode) {
     return line;
 }
 
-scannedLine* readLine2(FILE *fp, ErrCode *errorCode)
+scannedLine* readLineType(FILE *fp, ErrCode *errorCode)
 {
     scannedLine *lineRead = malloc(sizeof(scannedLine));
     if (lineRead == NULL) {
@@ -159,6 +159,7 @@ lineType determineLineType(scannedLine *sLine)
             type = EXTERN_LINE; /* default to extern line */
         }
     }
+    return NULL; 
 }
 
 Bool isLabel(char *str)
