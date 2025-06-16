@@ -3,6 +3,8 @@
 
 #include "global.h"
 
+#define MAX_ERROR_MSG_LENGTH 150 /* maximum length of an error message */
+
 /* error codes are divided into categories*/
 typedef enum ErrCode {
     /* VERY GENERAL error codes 0 - 9 */

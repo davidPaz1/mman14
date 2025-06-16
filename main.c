@@ -6,7 +6,7 @@
 int main(int argc, char const *argv[])
 {
     printf("Starting preprocessor...\n");
-    executePreprocessor("test"); /* test with a sample file name */
+    executePreprocessor("tes"); /* test with a sample file name */
     return 0;
 }
 

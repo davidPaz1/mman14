@@ -7,9 +7,10 @@
 /* .as -> .am -> .ob , .ext , .ent*/
 /*page 15 or 31 for algorithm for preprocessing */
 
+
 ErrCode executePreprocessor(char *inputFileName) {
     FILE* asFile, *amFile;
-    char* line;
+    char* line, errorContext[MAX_ERROR_MSG_LENGTH] = ""; /* buffer for error context */
     ErrCode errorCode = NULL_INITIAL; /* Initialize error code */
     macroTable* table = NULL;
     macroBody* body = NULL;
@@ -22,16 +23,16 @@ ErrCode executePreprocessor(char *inputFileName) {
     /* Open the .as file for reading and .am file for writing */
     asFile = openFile(inputFileName, ".as", "r", &errorCode);
     if (errorCode != SCAN_SUCCESS) {
-        fprintf(stderr, "Error opening .as file: %s\n", inputFileName);
-        /*printErrorMsg(errorCode);  print the error message */
+        sprintf(errorContext, "while opening file %s.as", inputFileName);
+        printErrorMsg(errorCode, errorContext);  /* print the error message */
         return errorCode; /* return the error code */
     }
 
     amFile = openFile(inputFileName, ".am", "w", &errorCode);
     if (errorCode != SCAN_SUCCESS) {
-        fprintf(stderr, "Error opening .am file: %s\n", inputFileName);
+        sprintf(errorContext, "while opening file %s.am", inputFileName);
+        printErrorMsg(errorCode, errorContext);  /* print the error message */
         fclose(asFile);
-        /*printErrorMsg(errorCode);  print the error message */
         return errorCode; /* return the error code */
     }
 
@@ -39,14 +40,13 @@ ErrCode executePreprocessor(char *inputFileName) {
     while (errorCode != EOF_REACHED) {
         line = readLine(asFile, &errorCode); /* read a line from the .as file */
         
+        if (errorCode == EOF_REACHED) 
+            break; /* end of file reached, exit the loop */
+            
         if (line == NULL) { /* check if the line is NULL */
-            if (errorCode == EOF_REACHED) {
-                break; /* end of file reached, exit the loop */
-            } else {
-                fprintf(stderr, "Error reading line from .as file: %s\n", inputFileName);
-                freeFilesAndMemory(table, body, asFile, amFile, line);
-                return errorCode; /* return the error code */
-            }
+            printErrorMsg(errorCode, "while reading line from .as file"); /* print the error message */
+            freeFilesAndMemory(table, body, asFile, amFile, line);
+            return PREPROCESSOR_FAILURE; /* return failure if an error occurred */
         }
 
         fputs(line, amFile); /* write the line to the .am file */
