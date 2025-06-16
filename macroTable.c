@@ -4,40 +4,46 @@
 #include "util.h"
 
 /* MacroTable functions that operate on the MacroTable struct (linked list)*/
-macroTable* createMacroTable() {
+macroTable* createMacroTable(ErrCode *errorCode) {
     macroTable* newTable; /* returned table */
+    *errorCode = NULL_INITIAL; /* initialize error code to NULL_INITIAL */
 
     newTable = malloc(sizeof(macroTable)); /* allocate memory for the table */
     if (newTable == NULL) {
-        fprintf(stderr, "Memory allocation failed for macro table\n");
+        *errorCode = MALLOC_ERROR; /* set error code to MALLOC_ERROR */
         return NULL; /* exit if memory allocation fails */
     }
     newTable->macroCount = 0; /* initialize the macro count to 0 */
     newTable->head = NULL; /* initialize the head of the list to NULL */
+    *errorCode = MACROTABLE_SUCCESS; /* set error code to MACROTABLE_SUCCESS */
     return newTable; /* return the new table */
 }
 
-macroNode* createMacroNode(char* macroName){
+macroNode* createMacroNode(char* macroName, ErrCode* errorCode) {
     macroNode* newMacro; /* returned macro */
+    *errorCode = NULL_INITIAL; /* initialize error code to NULL_INITIAL */
+
     if (macroName == NULL) { /*test123*/
         fprintf(stderr, "invalid macro name\n");
+        *errorCode = UNKNOWN_ERROR;
         return NULL; /* exit if the name is NULL */
     }
 
     if (!isMacroNameValid(macroName)) {
         fprintf(stderr, "Invalid macro name: %s\n", macroName);
+        *errorCode = MACRO_NAME_INVALID;
         return NULL; /* exit if the macro name is not valid */
     }
 
     newMacro = malloc(sizeof(macroNode));
     if (newMacro == NULL) {
-        fprintf(stderr, "Memory allocation failed for macro node\n");
+        *errorCode = MALLOC_ERROR; /* set error code to MALLOC_ERROR */
         return NULL; /* exit if memory allocation fails */
     }
 
     newMacro->macroName = strDup(macroName);
     if (newMacro->macroName == NULL) { /*test123*/
-        fprintf(stderr, "Memory allocation failed for macro name\n");
+        *errorCode = MALLOC_ERROR; /* set error code to MALLOC_ERROR */
         free(newMacro);
         return NULL; /* exit if memory allocation fails */
     }
@@ -76,14 +82,16 @@ macroBody* createMacroBody(char* line) {
 /* add a new macro to the table */
 ErrCode addMacro(macroTable* table , char* name) {
     macroNode* newMacro; /* new macro to be added */
+    ErrCode errorCode = NULL_INITIAL; /* initialize error code to NULL_INITIAL */
+
     if (table == NULL || name == NULL) { /*test123*/
         fprintf(stderr, "invalid macro table or line\n");
-        return MALLOC_ERROR; /* exit if the table or line is NULL */
+        return UNKNOWN_ERROR; /* exit if the table or line is NULL */
     }
 
-    newMacro = createMacroNode(name);
+    newMacro = createMacroNode(name, &errorCode);
     if (newMacro == NULL) {
-        return MALLOC_ERROR; /* exit if memory allocation fails */
+        return errorCode; /* exit if memory allocation fails */
     }
 
     newMacro->nextMacro = table->head; /* insert at the beginning of the list */
@@ -98,7 +106,7 @@ ErrCode addMacroLine(macroTable* table, char* line) {
     macroNode* macrohead; /* the macro to which the line will be added */
     if (table == NULL || line == NULL) { /*test123*/
         fprintf(stderr, "invalid macro table or line\n");
-        return MALLOC_ERROR; /* exit if the table or line is NULL */
+        return UNKNOWN_ERROR; /* exit if the table or line is NULL */
     }
     macrohead = table->head; /* get the head of the macro list */
     
@@ -151,9 +159,9 @@ Bool isMacroNameValid(char* macroName) {
         }
     }
     
-    if (isOperationName(macroName)) { /*test123*/
-        fprintf(stderr, "Macro name cannot be an operation name\n");
-        return FALSE; /* exit if the macro name is an operation name */
+    if (isKeywords(macroName)) { /*test123*/
+        fprintf(stderr, "Macro name cannot be a keyword\n");
+        return FALSE; /* exit if the macro name is a keyword */
     }
 
     if (isMacroExists(NULL, macroName)) { /*test123*/

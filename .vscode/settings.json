@@ -9,6 +9,7 @@
         "scan.h": "c",
         "error.h": "c",
         "preprocessor.h": "c",
-        "macrotable.h": "c"
+        "macrotable.h": "c",
+        "lexer.h": "c"
     }
 }

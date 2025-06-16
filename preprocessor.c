@@ -13,7 +13,6 @@ ErrCode executePreprocessor(char *inputFileName) {
     char* line, errorContext[MAX_ERROR_MSG_LENGTH] = ""; /* buffer for error context */
     ErrCode errorCode = NULL_INITIAL; /* Initialize error code */
     macroTable* table = NULL;
-    macroBody* body = NULL;
     Bool isMacroDefLine = FALSE; /* flag to indicate if the current line is a macro definition line */
 
     /*
@@ -37,23 +36,50 @@ ErrCode executePreprocessor(char *inputFileName) {
     }
 
     /* need to add preprocessing algorithm */
+    table = createMacroTable(&errorCode);
+    if (errorCode != MACROTABLE_SUCCESS) { /* check if the macro table was created successfully */
+        printErrorMsg(errorCode, "while creating macro table"); /* print the error message */
+        freeFilesAndMemory(table, asFile, amFile, line); /* free all allocated memory and close files */
+        return errorCode; /* return failure if an error occurred */
+    }
     while (errorCode != EOF_REACHED) {
-        line = readLine(asFile, &errorCode); /* read a line from the .as file */
+        line = readLine(asFile, &errorCode); /* read a line from the .as file 1 */
         
         if (errorCode == EOF_REACHED) 
             break; /* end of file reached, exit the loop */
             
-        if (line == NULL) { /* check if the line is NULL */
+        if (errorCode != SCAN_SUCCESS) { /* check if an error occurred while reading the line */
             printErrorMsg(errorCode, "while reading line from .as file"); /* print the error message */
-            freeFilesAndMemory(table, body, asFile, amFile, line);
+            freeFilesAndMemory(table, asFile, amFile, line);
             return PREPROCESSOR_FAILURE; /* return failure if an error occurred */
         }
 
+        if(isMacroUse(line)) {
+            
+        }
+        else if (isMacroDef(line)) { /* check if the line is a macro definition line */
+            isMacroDefLine = TRUE; /* set the flag to indicate that we are in a macro definition */
+            char* macroName = getFirstWord(line); /* get the macro name */
+            if (macroName == NULL) {
+                printErrorMsg(MALLOC_ERROR, "while getting macro name"); /* print error message if memory allocation failed */
+                freeFilesAndMemory(table, asFile, amFile, line);
+                return PREPROCESSOR_FAILURE; /* return failure if an error occurred */
+            }
+            cutnChar(line, strlen(macroName)); /* cut the first word from the line for processing */
+            addMacroToTable(table, macroName, line); /* add the macro to the table */
+            free(macroName); /* free the macro name memory */
+        } else if (isMacroEndLine(line)) { /* check if the line is a macro end line */
+            isMacroDefLine = FALSE; /* reset the flag as we reached the end of a macro definition */
+        } else if (isMacroDefLine) {
+            addLineToCurrentMacro(table, line); /* add the line to the current macro body */
+        } else {
+            fputs(line, amFile); /* write the line to the .am file if it is not a macro definition or end line */
+        }
         fputs(line, amFile); /* write the line to the .am file */
         fputc('\n', amFile); /* add a newline character after the line */
         free(line); /* free the line memory */
     }
-    freeFilesAndMemory(table, body, asFile, amFile, line); /* free all allocated memory and close files */
+    freeFilesAndMemory(table, asFile, amFile, line); /* free all allocated memory and close files */
     return PREPROCESSOR_SUCCESS; /* return success */
 }
 
@@ -81,11 +107,14 @@ Bool isMacroUse(char *line)
     return TRUE;
 }
 
-void freeFilesAndMemory(macroTable* table, macroBody* body, FILE* asFile, FILE* amFile, char* line)
+ErrCode getMacroName(char *line)
 {
-    if (body != NULL) {
-        freeMacroBody(body); /* free the macro body if it was created */
-    }
+    
+}
+
+
+void freeFilesAndMemory(macroTable* table, FILE* asFile, FILE* amFile, char* line)
+{
     if (table != NULL) {
         freeMacroTable(table); /* free the macro table if it was created */
     }
