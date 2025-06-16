@@ -16,9 +16,6 @@ void printErrorMsg(ErrCode error) {
         case LINE_TOO_LONG:
             fprintf(stderr, "Error: Line too long.\n");
             break;
-        case EOF_REACHED:
-            fprintf(stderr, "End of file reached.\n");
-            break;
         case FILE_READ_ERROR:
             fprintf(stderr, "File read error.\n");
             break;

@@ -9,16 +9,17 @@ typedef enum ErrCode {
     NULL_INITIAL = 0, /* initial state of error code, used to "forget" previous errorCode */
     UNKNOWN_ERROR = 1, /* unknown error, should never be used */
     MALLOC_ERROR = 2, /* memory allocation error */
+    EOF_REACHED = 3,
 
     /* scan errors 10 - 19 */
-    SCAN_SUCCESS = 10, 
+    SCAN_SUCCESS = 10,  
     LINE_TOO_LONG = 11,
-    EOF_REACHED = 12,
-    FILE_READ_ERROR = 13,
-    FILE_WRITE_ERROR = 14,
+    FILE_READ_ERROR = 12, 
+    FILE_WRITE_ERROR = 13,
 
     /* preprocessor errors 20 - 29 */
     PREPROCESSOR_SUCCESS = 20, /* preprocessor executed successfully */
+    PREPROCESSOR_FAILURE = 21, /* preprocessor error, should never be used */
 
     /* macroTable errors 30 - 39 */
     MACROTABLE_SUCCESS = 30, /* macro operation was successful */
