@@ -147,7 +147,7 @@ macroBody* findMacro(macroTable* table, char* macroName) {
 
 Bool isMacroNameValid(char* macroName) {
     int i; /* index for iterating through the macro name */
-    if (strlen(macroName) == 0 || strlen(macroName) > MAX_MACRO_SIZE) { /*test123*/
+    if (strlen(macroName) == 0 || strlen(macroName) > MAX_MACRO_SIZE) {
         fprintf(stderr, "Macro name must be between 1 and 30 characters long\n");
         return FALSE; /* exit if the macro name is not valid */
     }
