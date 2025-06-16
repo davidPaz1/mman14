@@ -15,10 +15,6 @@ ErrCode executePreprocessor(char *inputFileName) {
     macroTable* table = NULL;
     Bool inMacroDef = FALSE; /* flag to indicate if the current line is a macro definition line */
 
-    /*
-    macroTable *macroTable = NULL;
-    macroBody *macroBody = NULL;
-    */
     /* Open the .as file for reading and .am file for writing */
     asFile = openFile(inputFileName, ".as", "r", &errorCode);
     if (errorCode != SCAN_SUCCESS) {
@@ -44,15 +40,12 @@ ErrCode executePreprocessor(char *inputFileName) {
     }
     while (errorCode != EOF_REACHED) {
         line = readLine(asFile, &errorCode); /* read a line from the .as file 1 */
-        line = readLine(asFile, &errorCode); /* read a line from the .as file 1 */
         
         if (errorCode == EOF_REACHED) 
             break; /* end of file reached, exit the loop */
             
         if (errorCode != SCAN_SUCCESS) { /* check if an error occurred while reading the line */
-        if (errorCode != SCAN_SUCCESS) { /* check if an error occurred while reading the line */
             printErrorMsg(errorCode, "while reading line from .as file"); /* print the error message */
-            freeFilesAndMemory(table, asFile, amFile, line);
             freeFilesAndMemory(table, asFile, amFile, line);
             return PREPROCESSOR_FAILURE; /* return failure if an error occurred */
         }
@@ -77,7 +70,6 @@ ErrCode executePreprocessor(char *inputFileName) {
         fputc('\n', amFile); /* add a newline character after the line */
         free(line); /* free the line memory */
     }
-    freeFilesAndMemory(table, asFile, amFile, line); /* free all allocated memory and close files */
     freeFilesAndMemory(table, asFile, amFile, line); /* free all allocated memory and close files */
     return PREPROCESSOR_SUCCESS; /* return success */
 }
@@ -106,7 +98,6 @@ Bool isMacroUse(char *line)
     return TRUE;
 }
 
-ErrCode getMacroName(char *line)
 ErrCode getMacroName(char *line)
 {
      
