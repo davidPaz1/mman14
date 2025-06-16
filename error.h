@@ -16,6 +16,7 @@ typedef enum ErrCode {
     LINE_TOO_LONG = 11,
     FILE_READ_ERROR = 12, 
     FILE_WRITE_ERROR = 13,
+    INVALID_FILE_MODE = 14, /* invalid file mode, should never be used */
 
     /* preprocessor errors 20 - 29 */
     PREPROCESSOR_SUCCESS = 20, /* preprocessor executed successfully */
@@ -30,5 +31,7 @@ typedef enum ErrCode {
 } ErrCode;
 
 /* errorcode handling functions prototypes */
-void printErrorMsg(ErrCode error); /* print error message based on error code */
+char* getErrorMessage(ErrCode error); /* print error message based on error code */
+void printErrorMsg(ErrCode code, char *context); /* print error message based on error code */
+
 #endif

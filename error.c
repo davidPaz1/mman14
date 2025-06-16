@@ -1,43 +1,48 @@
 #include "global.h"
 #include "error.h"
 
-void printErrorMsg(ErrCode error) {
-    fprintf(stderr, "Error code: %d - ", error);
-    switch (error) {
-        case NULL_INITIAL:
-            fprintf(stderr, "initial state shouldn't be reached.\n");
-            break;
-        case UNKNOWN_ERROR:
-            fprintf(stderr, "Unknown error occurred.\n");
-            break;
-        case MALLOC_ERROR:
-            fprintf(stderr, "Memory allocation failed.\n");
-            break;
-        case LINE_TOO_LONG:
-            fprintf(stderr, "Error: Line too long.\n");
-            break;
-        case FILE_READ_ERROR:
-            fprintf(stderr, "File read error.\n");
-            break;
-        case FILE_WRITE_ERROR:
-            fprintf(stderr, "File write error.\n");
-            break;
-        case MACRO_NAME_EXISTS:
-            fprintf(stderr, "Macro name already exists.\n");
-            break;
-        case MACRO_NOT_FOUND:
-            fprintf(stderr, "Macro not found.\n");
-            break;
+char* getErrorMessage(ErrCode code) {
+    switch (code) {
+        case NULL_INITIAL: /* 0 */
+            return "initial state shouldn't be reached.";
+        case UNKNOWN_ERROR: /* 1*/
+            return "unknown error occurred.";
+        case MALLOC_ERROR: /* 2 */
+            return "memory allocation failed.";
+        
+        case LINE_TOO_LONG: /* 11 */
+            return "line length in file is longer than allowed (80).";
+        case FILE_READ_ERROR: /* 12 */
+            return "file read error.";
+        case FILE_WRITE_ERROR: /* 13 */
+            return "file write error.";
+        case INVALID_FILE_MODE: /* 14 */
+            return "file mode error, should never be used.";
+
+        case PREPROCESSOR_FAILURE: /* 21 */
+            return "preprocessor failed.";
+        
+        case MACRO_NAME_EXISTS: /* 31 */
+            return "macro name already exists.";
+        case MACRO_NOT_FOUND: /* 32 */
+            return "macro not found.";
+        
+        case SCAN_SUCCESS: /* 10 */
+        case PREPROCESSOR_SUCCESS: /* 20 */
+        case MACROTABLE_SUCCESS: /* 30 */
+            return "operation successful, but you shouldn't reach this point.";
         default:
-            if (error == SCAN_SUCCESS || 
-                error == PREPROCESSOR_SUCCESS || 
-                error == MACROTABLE_SUCCESS) {
-                /* We consider these success codes - no error */
-                /* Optionally print nothing or: */
-                fprintf(stderr, "Operation successful. but still, you shouldn't reach this point\n");
-            } else {
-                fprintf(stderr, "Unrecognized error code: %d - shouldn't reach this point\n", error);
-            }
-            break;
+            return "unrecognized error code - shouldn't reach this point.";
     }
+}
+
+void printErrorMsg(ErrCode code, char *context)
+{
+    fprintf(stderr, "Ecode: %d - ", code);
+    if (context[0] == '\0' || context == NULL) /* if context is NULL or empty */
+        fprintf(stderr, "%s\n", getErrorMessage(code));
+    else
+        fprintf(stderr, "Error %s because %s\n", context, getErrorMessage(code));
+    if(context == NULL) /* if context is NULL it is due to malloc failure */
+        fprintf(stderr, "Error %s\n", getErrorMessage(MALLOC_ERROR));
 }
