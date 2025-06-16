@@ -29,7 +29,23 @@ Bool isOperationName(char* str) {
         return TRUE;
     else 
         return FALSE;
-} 
+}
+char *mergeStrings(char *start, char *end)
+{
+    char *merged;
+    if (start == NULL || end == NULL)
+        return NULL;
+    
+
+    merged = malloc(strlen(start) + strlen(end) + NULL_TERMINATOR); /* enough room for merged string */
+    if (merged == NULL) { /* malloc failed */
+        return NULL;
+    }
+
+    strcpy(merged, start); /* copy the first string */
+    strcat(merged, end); /* concatenate the two strings */
+    return merged;
+}
 
 void cutnChar(char *str, int n)
 {
