@@ -13,8 +13,7 @@ ErrCode executePreprocessor(char *inputFileName) {
     char* line, errorContext[MAX_ERROR_MSG_LENGTH] = ""; /* buffer for error context */
     ErrCode errorCode = NULL_INITIAL; /* Initialize error code */
     macroTable* table = NULL;
-    macroBody* body = NULL;
-    Bool isMacroDefLine = FALSE; /* flag to indicate if the current line is a macro definition line */
+    Bool inMacroDef = FALSE; /* flag to indicate if the current line is a macro definition line */
 
     /*
     macroTable *macroTable = NULL;
@@ -37,23 +36,45 @@ ErrCode executePreprocessor(char *inputFileName) {
     }
 
     /* need to add preprocessing algorithm */
+    table = createMacroTable(&errorCode);
+    if (errorCode != MACROTABLE_SUCCESS) { /* check if the macro table was created successfully */
+        printErrorMsg(errorCode, "while creating macro table"); /* print the error message */
+        freeFilesAndMemory(table, asFile, amFile, NULL); /* free all allocated memory and close files */
+        return errorCode; /* return failure if an error occurred */
+    }
     while (errorCode != EOF_REACHED) {
-        line = readLine(asFile, &errorCode); /* read a line from the .as file */
+        line = readLine(asFile, &errorCode); /* read a line from the .as file 1 */
         
         if (errorCode == EOF_REACHED) 
             break; /* end of file reached, exit the loop */
             
-        if (line == NULL) { /* check if the line is NULL */
+        if (errorCode != SCAN_SUCCESS) { /* check if an error occurred while reading the line */
             printErrorMsg(errorCode, "while reading line from .as file"); /* print the error message */
-            freeFilesAndMemory(table, body, asFile, amFile, line);
+            freeFilesAndMemory(table, asFile, amFile, line);
             return PREPROCESSOR_FAILURE; /* return failure if an error occurred */
         }
 
+        if(isMacroUse(line)) { /* check if the line is a macro use line 2 */
+            
+        }
+        else if (isMacroDef(line)) { /* check if the line is a macro definition line 3 */
+            inMacroDef = TRUE; /* set the flag to indicate that we are in a macro definition 4 */
+        }
+        else if (isMacroEndLine(line)) { /* check if the line is a macro end line */
+            inMacroDef = FALSE; /* reset the flag to indicate that we are no longer in a macro definition */
+
+            /* some more code */
+
+            continue; /* skip the rest of the loop and continue to the next line 6 */
+        }
+        else if (inMacroDef) { /* if we are in a macro definition 5 */
+            
+        }
         fputs(line, amFile); /* write the line to the .am file */
         fputc('\n', amFile); /* add a newline character after the line */
         free(line); /* free the line memory */
     }
-    freeFilesAndMemory(table, body, asFile, amFile, line); /* free all allocated memory and close files */
+    freeFilesAndMemory(table, asFile, amFile, line); /* free all allocated memory and close files */
     return PREPROCESSOR_SUCCESS; /* return success */
 }
 
@@ -81,11 +102,15 @@ Bool isMacroUse(char *line)
     return TRUE;
 }
 
-void freeFilesAndMemory(macroTable* table, macroBody* body, FILE* asFile, FILE* amFile, char* line)
+ErrCode getMacroName(char *line)
 {
-    if (body != NULL) {
-        freeMacroBody(body); /* free the macro body if it was created */
-    }
+     
+    return NULL_INITIAL; /* place holder */
+}
+
+
+void freeFilesAndMemory(macroTable* table, FILE* asFile, FILE* amFile, char* line)
+{
     if (table != NULL) {
         freeMacroTable(table); /* free the macro table if it was created */
     }
