@@ -4,7 +4,13 @@
 
 /* utility functions prototypes */
 char* strDup(char* src); /* string duplication */
-Bool isOperationName(char* str); /* check if the string is an operation name */
 char* mergeStrings(char* str1, char* str2); /* merge two strings */
 void cutnChar(char *str, int n); /* cut the first n characters from the string */
+
+/* keyword functions prototypes */
+Bool isOperationName(char* arg); /* check if the string is an operation name */
+Bool isRegister(char* arg); /* check if the string is a register name */
+Bool isMacroStart(char* arg); /* check if the string is a macro start */
+Bool isMacroEnd(char* arg); /* check if the string is a macro end */
+Bool isKeywords(char* arg); /* check if the string is a keyword */
 #endif
