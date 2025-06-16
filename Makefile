@@ -3,7 +3,7 @@ exeFlags = $(CC) -pedantic -ansi -Wall -g
 compileFlags =  $(exeFlags) -c
 
 run: main.o macroTable.o preprocessor.o util.o scan.o error.o
-	$(exeFlags) main.o macroTable.o preprocessor.o util.o scan.o -o run
+	$(exeFlags) main.o macroTable.o preprocessor.o util.o scan.o error.o -o run
 main.o: main.c preprocessor.h macroTable.h 
 	$(compileFlags) main.c
 macroTable.o: macroTable.c macroTable.h error.h global.h
