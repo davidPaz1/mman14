@@ -5,7 +5,8 @@
 
 int main(int argc, char const *argv[])
 {
-    printf("Starting preprocessor...\n");
+    int ec = 0; /* for gdb */
+    printf("%dStarting preprocessor...\n", ec); /* ec so warning unused variable won't appear */
     executePreprocessor("tes"); /* test with a sample file name */
     return 0;
 }

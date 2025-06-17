@@ -1,0 +1,7 @@
+start
+set $table = createMacroTable (&ec)
+call addMacro($table, "target")
+invalid macro table or macro name
+$2 = MACROTABLE_SUCCESS
+
+### 167 in tableMacro is bad
