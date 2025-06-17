@@ -26,16 +26,14 @@ a:
 	clear
 c:
 	rm -rf *.o *.am *.ob *.ent *.ext
-o:
-	rm -rf *.o
-am:
-	rm -rf *.am
 r:
+	make
 	make c
 	clear 
 	clear
 	./run
 rv:
+	make
 	make c
 	clear 
 	clear
@@ -43,6 +41,7 @@ rv:
 vr:
 	make rv
 g: 
+	make
 	make c
 	clear 
 	clear
