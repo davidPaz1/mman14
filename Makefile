@@ -42,3 +42,8 @@ rv:
 	valgrind ./run
 vr:
 	make rv
+g: 
+	make c
+	clear 
+	clear
+	gdb ./run
