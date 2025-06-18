@@ -47,25 +47,48 @@ ErrCode executePreprocessor(char *inputFileName) {
         if (errorCode != SCAN_SUCCESS) { /* check if an error occurred while reading the line */
             printErrorMsg(errorCode, "while reading line from .as file"); /* print the error message */
             freeFilesAndMemory(table, asFile, amFile, line);
-            return PREPROCESSOR_FAILURE; /* return failure if an error occurred */
+            return errorCode; /* return failure if an error occurred */
         }
 
-        if(isMacroUse(line)) { /* check if the line is a macro use line 2 */
-            
+        
+        /* identify type of line and */
+
+        if((errorCode = isMacroUse(table ,line)) != PREPROCESSOR_FAILURE) { /* check if the line is a macro use line 2 */
+            if (errorCode != PREPROCESSOR_SUCCESS) { /* if the line is not a macro use line */
+                printErrorMsg(errorCode, "while checking if line is macro use"); /* print the error message */
+                freeFilesAndMemory(table, asFile, amFile, line); /* free all allocated memory and close files */
+                return errorCode; /* return failure if an error occurred */
+            }
+            /* put lines from macro table into the .am file */
         }
-        else if (isMacroDef(line)) { /* check if the line is a macro definition line 3 */
+        else if ((errorCode = isMacroDef(line)) != PREPROCESSOR_FAILURE) { /* check if the line is a macro definition line 3 */
+            if (errorCode != PREPROCESSOR_SUCCESS) { /* if the line is not a macro definition line */
+                printErrorMsg(errorCode, "while checking if line is macro definition"); /* print the error message */
+                freeFilesAndMemory(table, asFile, amFile, line); /* free all allocated memory and close files */
+                return errorCode; /* return failure if an error occurred */
+            }
             inMacroDef = TRUE; /* set the flag to indicate that we are in a macro definition 4 */
+
+            /* set the new macro into the macro table */
         }
-        else if (isMacroEndLine(line)) { /* check if the line is a macro end line */
-            inMacroDef = FALSE; /* reset the flag to indicate that we are no longer in a macro definition */
+        else if (inMacroDef) { /* if we are in a macro definition 6 */
+            
+            /*put line in macro table*/
+
+        }
+        else if ((errorCode = isMacroEndLine(line)) != PREPROCESSOR_FAILURE) { /* check if the line is a macro end line 7 */
+            if (errorCode != PREPROCESSOR_SUCCESS) { /* if the line is not a macro end line */
+                printErrorMsg(errorCode, "while checking if line is macro end"); /* print the error message */
+                freeFilesAndMemory(table, asFile, amFile, line); /* free all allocated memory and close files */
+                return errorCode; /* return failure if an error occurred */
+            }
+            inMacroDef = FALSE; /* reset the flag to indicate that we are no longer in a macro definition 8 */
 
             /* some more code */
 
-            continue; /* skip the rest of the loop and continue to the next line 6 */
+            continue; /* skip the rest of the loop and continue to the next line */
         }
-        else if (inMacroDef) { /* if we are in a macro definition 5 */
-            
-        }
+        else
         fputs(line, amFile); /* write the line to the .am file */
         fputc('\n', amFile); /* add a newline character after the line */
         free(line); /* free the line memory */
@@ -74,34 +97,60 @@ ErrCode executePreprocessor(char *inputFileName) {
     return PREPROCESSOR_SUCCESS; /* return success */
 }
 
-Bool isMacroDef(char *line) {
-    char* firstWord = getFirstWord(line); /* get the first word of the line */
-    if( firstWord != NULL && strcmp(firstWord, "mcro") == 0) {
+ErrCode isMacroDef(char *line) {
+    ErrCode errCode = NULL_INITIAL; /* reset error code to initial state */
+    char* firstWord = getFirstWord(&line, &errCode);  /* get the first word of the line */
+    if (errCode != SCAN_SUCCESS)  /* check if an error occurred while getting the first word */
+        return errCode; /* return the error code */
+    
+    if(strcmp(firstWord, "mcro") == 0) {
         cutnChar(line, strlen(firstWord)); /* cut the first word from the line for processing */
-        return TRUE; /* if the line is "mcro", it is a macro definition line */
+        errCode = PREPROCESSOR_SUCCESS;
     }
-    return FALSE;
+    else 
+        errCode = PREPROCESSOR_FAILURE; /* if the first word is not "mcro", return failure */
+    free(firstWord);
+    return errCode; /* if the line is "mcro", it is a macro definition line */
 }
 
-Bool isMacroEndLine(char *line)
+ErrCode isMacroEndLine(char *line)
 {
-    char* firstWord = getFirstWord(line); /* get the first word of the line */
-    if( firstWord != NULL && strcmp(firstWord, "mcroend") == 0) {
-        return TRUE; /* if the line is "mcroend", it is a macro end line */
-    }
-    return FALSE;
+    ErrCode errCode = NULL_INITIAL; /* reset error code to initial state */
+    char* firstWord = getFirstWord(&line, &errCode); /* get the first word of the line */
+    if (errCode != SCAN_SUCCESS) /* check if an error occurred while getting the first word */
+        return errCode; /* return the error code */
+    
+    if(strcmp(firstWord, "mcroend") == 0) 
+        errCode = PREPROCESSOR_SUCCESS; /* if the line is "mcroend", it is a macro end line */
+    else 
+        errCode = PREPROCESSOR_FAILURE;
+    free(firstWord);
+    return errCode;
 }
 
-Bool isMacroUse(char *line)
+ErrCode isMacroUse(macroTable* table, char *line)
 {
-    /* check if the line is a macro use line */
-    return TRUE;
+    ErrCode errCode = NULL_INITIAL; /* reset error code to initial state */
+    char* firstWord = getFirstWord(&line, &errCode); /* get the first word of the line */
+    if (errCode != SCAN_SUCCESS) /* check if an error occurred while getting the first word */
+        return errCode; /* return the error code */
+
+    if (isMacroExists(table, firstWord)) 
+        errCode = PREPROCESSOR_SUCCESS;
+    else 
+        errCode = PREPROCESSOR_FAILURE;
+    
+    free(firstWord);
+    return errCode;
 }
 
-ErrCode getMacroName(char *line)
+char* getMacroName(char *line, ErrCode *errorCode) /* get the macro name from the .as file */
 {
-     
-    return NULL_INITIAL; /* place holder */
+    char* firstWord = getFirstWord(&line, errorCode); /* get the first word of the line */
+    if (*errorCode != SCAN_SUCCESS) /* check if an error occurred while getting the first word */
+        return NULL; /* return NULL if an error occurred */
+
+    return firstWord;
 }
 
 
