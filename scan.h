@@ -25,7 +25,8 @@ typedef struct scannedLine {
 
 /* mainly for preprocessing */
 char* readLine(FILE *fp, ErrCode *errorCode);
-char* getFirstWord(char *str); /* get the first word from the string */
+char* getFirstWord(char **strPtr, ErrCode *errorCode); /* get the first word from the string */
+char* cutFirstWord(char **strPtr, ErrCode *errorCode); /* cut the first word from the string */
 
 /* for first pass mainly */
 scannedLine* readLineType(FILE *fp, ErrCode *errorCode);

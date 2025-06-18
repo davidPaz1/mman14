@@ -90,42 +90,64 @@ FILE* openFile(char *filename, char *ending, char *mode, ErrCode *errorCode)
     return fp;
 }
 
-char* getFirstWord(char *str)
+char* getFirstWord(char **strPtr, ErrCode *errorCode)
 {
-    int i = 0, start = 0;
+    int i = 0;
+    char *str = *strPtr;
     char* word;
+    *errorCode = NULL_INITIAL; /* reset error code to initial state */
     while (isspace(str[i]))
         i++;
-    
-    if (str[i] == ';' || str[i] == ',') { /* if the first character is ';' or ',' */
+
+    if (str[i] == '\0') { /* if the string is empty or contains only whitespace */
+        *errorCode = END_OF_LINE;
+        return NULL; /* return NULL */
+    }
+
+    if (str[i] == ',') { /* if the first character is ';' or ',' */
         word = malloc(2); /* 1 for illegal character and 1 for '\0' */
         if (word == NULL) {
-            return NULL; /*malloc failed*/
+            *errorCode = MALLOC_ERROR;
+            return NULL; 
         }
-        word[0] = str[i]; /* set the first character to ';' */
+        word[0] = ','; /* set the first character to ',' */
         word[1] = '\0';  /* set the last character to '\0' */
         i++; /* skip the illegal character */
     }
     else {
-        start = i;
-        while (str[i] != EOF && str[i] != '\0' && str[i] != ',' && !isspace(str[i])) {
-            i++; 
+        int start = i;
+        while (str[i] != '\0' && str[i] != ',' && !isspace(str[i])) {
+            i++;
         }
 
         word = malloc(i - start + 1); /* +1 for '\0' */
-        if (word == NULL)  /*malloc failed*/
-            return NULL; 
-        
+        if (word == NULL) {
+            *errorCode = MALLOC_ERROR;
+            return NULL;
+        }
+
         strncpy(word, str + start, i - start);
         word[i - start] = '\0';
-        
-        /* Move the rest of the string to the beginning */
     }
-    
+
     while (isspace(str[i])) 
         i++;
-    
+
+    *errorCode = SCAN_SUCCESS; /* set error code to success */
     return word;
+}
+
+char *cutFirstWord(char **strPtr, ErrCode *errorCode)
+{
+    char *word;
+    *errorCode = NULL_INITIAL; /* reset error code to initial state */
+    word = getFirstWord(strPtr, errorCode);
+
+    if (*errorCode != SCAN_SUCCESS) /* if an error occurred while getting the first word */
+        return NULL;
+    
+    cutnChar(*strPtr, strlen(word)); /* cut the first word from the string */
+    return NULL;
 }
 
 lineType* determineLineType(scannedLine *sLine) /* add errorcode */
@@ -148,7 +170,7 @@ lineType* determineLineType(scannedLine *sLine) /* add errorcode */
         *type = EMPTY_LINE;
     } else if (dupLine[0] == ';') { /* if the line is a comment */
         *type = COMMENT_LINE;
-    } else if (isOperationName(getFirstWord(dupLine))) { /* if the line is an instruction */
+    /*} else  if (isOperationName(getFirstWord(dupLine))) {  if the line is an instruction */
         *type = INSTRUCTION_LINE;
     } else if (strchr(dupLine, '.') != NULL) { /* if the line is a data or string line */
         if (strstr(dupLine, ".data") != NULL || strstr(dupLine, ".extern") != NULL) {

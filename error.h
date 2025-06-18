@@ -15,11 +15,12 @@ typedef enum ErrCode {
     UNEXPECTED_NULL_INPUT = 4, /* unexpected NULL input, should never be used */
     
     /* scan errors 10 - 19 */
-    SCAN_SUCCESS = 10,  
-    LINE_TOO_LONG = 11,
-    FILE_READ_ERROR = 12, 
-    FILE_WRITE_ERROR = 13,
-    INVALID_FILE_MODE = 14, /* invalid file mode, should never be used */
+    SCAN_SUCCESS = 10,
+    END_OF_LINE = 11,
+    LINE_TOO_LONG = 12,
+    FILE_READ_ERROR = 13,
+    FILE_WRITE_ERROR = 14,
+    INVALID_FILE_MODE = 15, /* invalid file mode, should never be used */
 
     /* preprocessor errors 20 - 29 */
     PREPROCESSOR_SUCCESS = 20, /* preprocessor executed successfully */
