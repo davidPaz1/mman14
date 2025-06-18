@@ -9,10 +9,11 @@
 typedef enum ErrCode {
     /* VERY GENERAL error codes 0 - 9 */
     NULL_INITIAL = 0, /* initial state of error code, used to "forget" previous errorCode */
-    UNKNOWN_ERROR = 1, /* unknown error, should never be used */
-    MALLOC_ERROR = 2, /* memory allocation error */
-    EOF_REACHED = 3,
-
+    MALLOC_ERROR = 1, /* memory allocation error */
+    EOF_REACHED = 2, /* indicate that the EOF was reached while reading */
+    UNKNOWN_ERROR = 3, /* unknown error, should never be used */
+    UNEXPECTED_NULL_INPUT = 4, /* unexpected NULL input, should never be used */
+    
     /* scan errors 10 - 19 */
     SCAN_SUCCESS = 10,  
     LINE_TOO_LONG = 11,
@@ -27,10 +28,15 @@ typedef enum ErrCode {
     /* macro errors 30 - 39 */
     MACROTABLE_SUCCESS = 30, /* macro operation was successful */
     MACRO_NAME_EXISTS = 31, /* macro name already exists */
-    MACRO_NOT_FOUND = 32, /* macro not found */
-    MACRO_NAME_INVALID = 33 /* macro name is invalid */
+    MACRO_NOT_DEF = 32, /* macro not found */
+    MACRO_NAME_TOO_LONG = 33, /* macro name is too long */
+    MACRO_NAME_EMPTY = 34, /* macro name is empty */
+    MACRO_NAME_INVALID_CHAR = 35, /* macro name contains invalid characters */
+    MACRO_NAME_KEYWORD = 36 /* macro name is a keyword, should never be used */
 
     /* ??? 40 - 49 */
+
+
 } ErrCode;
 
 /* errorcode handling functions prototypes */

@@ -13,8 +13,7 @@ macroTable* createMacroTable(ErrCode *errorCode) {
         *errorCode = MALLOC_ERROR; /* set error code to MALLOC_ERROR */
         return NULL; /* exit if memory allocation fails */
     }
-    newTable->macroCount = 0; /* initialize the macro count to 0 */
-    newTable->head = NULL; /* initialize the head of the list to NULL */
+    newTable->macroHead = NULL; /* initialize the head of the list to NULL */
     *errorCode = MACROTABLE_SUCCESS; /* set error code to MACROTABLE_SUCCESS */
     return newTable; /* return the new table */
 }
@@ -23,18 +22,6 @@ macroNode* createMacroNode(char* macroName, ErrCode* errorCode) {
     macroNode* newMacro; /* returned macro */
     *errorCode = NULL_INITIAL; /* initialize error code to NULL_INITIAL */
 
-    if (macroName == NULL) { /*test123*/
-        fprintf(stderr, "invalid macro name\n");
-        *errorCode = UNKNOWN_ERROR;
-        return NULL; /* exit if the name is NULL */
-    }
-
-    if (!isMacroNameValid(macroName)) {
-        fprintf(stderr, "Invalid macro name: %s\n", macroName);
-        *errorCode = MACRO_NAME_INVALID;
-        return NULL; /* exit if the macro name is not valid */
-    }
-
     newMacro = malloc(sizeof(macroNode));
     if (newMacro == NULL) {
         *errorCode = MALLOC_ERROR; /* set error code to MALLOC_ERROR */
@@ -42,40 +29,35 @@ macroNode* createMacroNode(char* macroName, ErrCode* errorCode) {
     }
 
     newMacro->macroName = strDup(macroName);
-    if (newMacro->macroName == NULL) { /*test123*/
+    if (newMacro->macroName == NULL) {
         *errorCode = MALLOC_ERROR; /* set error code to MALLOC_ERROR */
         free(newMacro);
         return NULL; /* exit if memory allocation fails */
     }
 
+    *errorCode = MACROTABLE_SUCCESS; /* set error code to MACROTABLE_SUCCESS */
     newMacro->bodyHead = NULL; /* set the body head to the first line in the body */
     newMacro->bodyTail = NULL; /* set the body tail to the last line in the body */
-    newMacro->lineCount = 0; /* set the line count */
     newMacro->nextMacro = NULL; /* initialize the next macro pointer to NULL */
     return newMacro;
 }
 
-macroBody* createMacroBody(char* line) {
-    macroBody* newBody; /* returned body */
-    if (line == NULL) { /*test123*/
-        fprintf(stderr, "invalid macro line\n");
-        return NULL; /* exit if the line is NULL */
-    }
-    
-    newBody = malloc(sizeof(macroBody));
+macroBody* createMacroBody(char* line, ErrCode* errorCode) {
+    macroBody* newBody = malloc(sizeof(macroBody));  /* returned body */
+
     if (newBody == NULL) {
-        fprintf(stderr, "Memory allocation failed for macro body\n");
+        *errorCode = MALLOC_ERROR;
         return NULL; /* exit if memory allocation fails */
     }
 
     newBody->line = strDup(line); /* duplicate the line to avoid aliasing */
     if (newBody->line == NULL) {
-        fprintf(stderr, "Memory allocation failed for macro body line\n");
+        *errorCode = MALLOC_ERROR;
         free(newBody);
         return NULL;
     }
     newBody->nextLine = NULL;
-
+    *errorCode = MACROTABLE_SUCCESS; /* set error code to MACROTABLE_SUCCESS */
     return newBody;
 }
 
@@ -86,17 +68,21 @@ ErrCode addMacro(macroTable* table , char* name) {
 
     if (table == NULL || name == NULL) { /*test123*/
         fprintf(stderr, "invalid macro table or line\n");
-        return UNKNOWN_ERROR; /* exit if the table or line is NULL */
+        return UNEXPECTED_NULL_INPUT; /* exit if the table or line is NULL */
     }
+
+    errorCode = isMacroNameValid(table, name); /* check if the macro name is valid */
+    if (errorCode != MACROTABLE_SUCCESS) /* if the macro name is not valid */
+        return errorCode; /* exit if the macro name is not valid */
+    
 
     newMacro = createMacroNode(name, &errorCode);
-    if (newMacro == NULL) {
-        return errorCode; /* exit if memory allocation fails */
-    }
+    if (errorCode != MACROTABLE_SUCCESS) 
+        return errorCode; /* exit if the macro node creation failed */
+    
 
-    newMacro->nextMacro = table->head; /* insert at the beginning of the list */
-    table->head = newMacro; /* update the head of the list */
-    table->macroCount++; /* increment the macro count */
+    newMacro->nextMacro = table->macroHead; /* insert at the beginning of the list */
+    table->macroHead = newMacro; /* update the head of the list */
     return MACROTABLE_SUCCESS; /* return success */
 }
 
@@ -104,16 +90,18 @@ ErrCode addMacro(macroTable* table , char* name) {
 ErrCode addMacroLine(macroTable* table, char* line) {
     macroBody* newLine; /* new line to be added */
     macroNode* macrohead; /* the macro to which the line will be added */
+    ErrCode errorCode = NULL_INITIAL; /* initialize error code to NULL_INITIAL */
+
     if (table == NULL || line == NULL) { /*test123*/
         fprintf(stderr, "invalid macro table or line\n");
-        return UNKNOWN_ERROR; /* exit if the table or line is NULL */
+        return UNEXPECTED_NULL_INPUT; /* exit if the table or line is NULL */
     }
-    macrohead = table->head; /* get the head of the macro list */
+    macrohead = table->macroHead; /* get the head of the macro list */
     
-    newLine = createMacroBody(line); /* create a new body for the line */
-    if (newLine == NULL) {
-        return MALLOC_ERROR; /* exit if memory allocation fails */
-    }
+    newLine = createMacroBody(line, &errorCode); /* create a new body for the line */
+    if (errorCode != MACROTABLE_SUCCESS) 
+        return errorCode; /* exit if memory allocation fails */
+    
 
     if (macrohead->bodyHead == NULL) { /* if this is the first line in the macro */
         macrohead->bodyHead = newLine; /* set the head of the body */
@@ -123,7 +111,6 @@ ErrCode addMacroLine(macroTable* table, char* line) {
         macrohead->bodyTail = newLine; /* update the tail of the body */
     }
 
-    macrohead->lineCount++; /* increment the line count */
     return MACROTABLE_SUCCESS; /* return success */
 }
 
@@ -134,7 +121,7 @@ macroBody* findMacro(macroTable* table, char* macroName) {
         return NULL; /* exit if the table or macro name is NULL */
     }
     
-    current = table->head;
+    current = table->macroHead;
     while (current != NULL) {
         if (strcmp(current->macroName, macroName) == 0) {
             return current->bodyHead; /* return the body of the found macro */
@@ -145,45 +132,35 @@ macroBody* findMacro(macroTable* table, char* macroName) {
     return NULL; /* Macro not found */
 }
 
-Bool isMacroNameValid(char* macroName) {
+ErrCode isMacroNameValid(macroTable* table ,char* macroName) {
     int i; /* index for iterating through the macro name */
-    if (strlen(macroName) == 0 || strlen(macroName) > MAX_MACRO_SIZE) {
-        fprintf(stderr, "Macro name must be between 1 and 30 characters long\n");
-        return FALSE; /* exit if the macro name is not valid */
+    int len = strlen(macroName); /* length of the macro name */
+
+    if (len == 0)
+        return MACRO_NAME_EMPTY; /* exit if the macro name is empty */
+    if(len > MAX_MACRO_SIZE) 
+        return MACRO_NAME_TOO_LONG; /* exit if the macro name is too long */
+    
+    for (i = 0; i < len; i++) {
+        if (!isalnum(macroName[i]) && macroName[i] != '_')
+            return MACRO_NAME_INVALID_CHAR; /* exit if the macro name contains invalid characters */
     }
     
-    for (i = 0; i < strlen(macroName); i++) {
-        if (!isalnum(macroName[i]) && macroName[i] != '_') {
-            fprintf(stderr, "Macro name can only contain alphanumeric characters and underscores\n");
-            return FALSE; /* exit if the macro name contains invalid characters */
-        }
-    }
+    if (isKeywords(macroName))
+        return MACRO_NAME_KEYWORD; /* exit if the macro name is a keyword */
     
-    if (isKeywords(macroName)) { /*test123*/
-        fprintf(stderr, "Macro name cannot be a keyword\n");
-        return FALSE; /* exit if the macro name is a keyword */
-    }
-
-    if (isMacroExists(NULL, macroName)) { /*test123*/
-        fprintf(stderr, "Macro name already exists\n");
-        return FALSE; /* exit if the macro name already exists */
-    }
-
-    return TRUE; /* Macro name is valid */
+    if (isMacroExists(table, macroName))
+        return MACRO_NAME_EXISTS; /* exit if the macro name already exists */
+    
+    return MACROTABLE_SUCCESS; /* Macro name is valid */
 }
 
 Bool isMacroExists(macroTable* table, char* macroName) {
-    macroNode* current; /* used to iterate through the macro list */
-    if (table == NULL || macroName == NULL) { /*test123*/
-        fprintf(stderr, "invalid macro table or macro name\n");
-        return FALSE; /* exit if the table or macro name is NULL */
-    }
-    
-    current = table->head;
+
+    macroNode* current = table->macroHead; /* used to iterate through the macro list */
     while (current != NULL) {
-        if (strcmp(current->macroName, macroName) == 0) {
+        if (strcmp(current->macroName, macroName) == 0) /* check if the macro name matches */
             return TRUE; /* Macro exists */
-        }
         current = current->nextMacro;
     }
     
@@ -191,40 +168,31 @@ Bool isMacroExists(macroTable* table, char* macroName) {
 }
 
 void freeMacroTable(macroTable* table) {
-    macroNode* current; /* used to iterate through the macro nodes */
-    if (table == NULL) { /*test123*/
-        fprintf(stderr, "invalid macro table\n");
-        return;
-    }
-
-    current = table->head;
-    while (current != NULL) { /* iterate through the macro nodes and free them */
-        macroNode* next = current->nextMacro;
-        freeMacroNode(current);
-        current = next;
-    }
-    
+    freeMacroNode(table->macroHead); /* free the first macro node */
     free(table);
 }
 
-void freeMacroNode(macroNode* node) {
-    if (node == NULL) { /*test123*/
-        fprintf(stderr, "invalid macro node\n");
-        return;
+void freeMacroNode(macroNode* node) {    
+    
+    macroNode* current = node; /* used to iterate through the macro nodes */
+    if (node == NULL)
+        return; /* exit if the node is NULL */
+    
+    while (current != NULL) { /* iterate through the macro nodes and free them */
+        macroNode* next = current->nextMacro;
+        free(current->macroName); /* free the macro name */
+        freeMacroBody(current->bodyHead); /* free the body of the macro */
+        free(current); /* free the macro node itself */
+        current = next;
     }
     
-    free(node->macroName); /* free the macro name */
-    freeMacroBody(node->bodyHead); /* free the body of the macro */
-    free(node); /* free the macro node itself */
 }
 
 void freeMacroBody(macroBody* body) {
-    macroBody* current; /* used to iterate through the body lines */
-    if (body == NULL) { /*test123*/
-        fprintf(stderr, "invalid macro body\n");
+    macroBody* current = body; /* used to iterate through the body lines */
+    if (body == NULL)
         return;
-    }
-    current = body;
+    
     while (current != NULL) { /* iterate through the body lines and free them */
         macroBody* next = current->nextLine;
         free(current->line);

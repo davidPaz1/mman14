@@ -5,10 +5,12 @@ char* getErrorMessage(ErrCode code) {
     switch (code) {
         case NULL_INITIAL: /* 0 */
             return "initial state shouldn't be reached.";
-        case UNKNOWN_ERROR: /* 1*/
-            return "unknown error occurred.";
-        case MALLOC_ERROR: /* 2 */
-            return "memory allocation failed.";
+        case MALLOC_ERROR: /* 1 */
+                return "memory allocation failed.";
+        case UNKNOWN_ERROR: /* 3 */
+            return "unknown error occurred. Should never be used."; 
+        case UNEXPECTED_NULL_INPUT: /* 4 */
+            return "unexpected NULL input, should never be used.";
         
         case LINE_TOO_LONG: /* 11 */
             return "line length in file is longer than allowed (80).";
@@ -24,8 +26,16 @@ char* getErrorMessage(ErrCode code) {
         
         case MACRO_NAME_EXISTS: /* 31 */
             return "macro name already exists.";
-        case MACRO_NOT_FOUND: /* 32 */
-            return "macro not found.";
+        case MACRO_NOT_DEF: /* 32 */
+            return "tried to spread an undefined macro.";
+        case MACRO_NAME_TOO_LONG: /* 33 */
+            return "macro name is too long.";
+        case MACRO_NAME_EMPTY: /* 34 */
+            return "macro name is empty.";
+        case MACRO_NAME_INVALID_CHAR: /* 35 */
+            return "macro name contains invalid characters.";
+        case MACRO_NAME_KEYWORD: /* 36 */
+            return "macro name is a set keyword by the assembley language.";
         
         case SCAN_SUCCESS: /* 10 */
         case PREPROCESSOR_SUCCESS: /* 20 */

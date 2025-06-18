@@ -9,17 +9,15 @@ typedef struct macroBody{ /* linked list of all of the macro lines */
     struct macroBody* nextLine; /* pointer to the next line in the body of the macro */
 }macroBody;
 
-typedef struct macroNode { /* linked list of all the macros */
+typedef struct macroNode {  /* linked list of all the macros */
     char* macroName; /* macro name */
-    unsigned int lineCount; /* number of lines in the macro body */
     macroBody* bodyHead; /* pointer to the first line in the body of the macro */
-    macroBody* bodyTail; /* pointer to the last line in the body of the macro */
+    macroBody* bodyTail; /* pointer to the last line to add new lines */
     struct macroNode* nextMacro; /* pointer to the next macro in the list */
 } macroNode;
 
-typedef struct macroTable {
-    int macroCount; /* number of macros in the table */
-    macroNode* head; /* pointer to the first macro in the list */
+typedef struct macroTable { /* head of linked list of all the macros */
+    macroNode* macroHead; /* pointer to the first macro in the list */
 } macroTable;
 
 
@@ -34,8 +32,8 @@ void freeMacroTable(macroTable* table);
 
 /* "private" functions */
 macroNode* createMacroNode(char* macroName, ErrCode* errorCode);
-macroBody* createMacroBody(char* line);
-Bool isMacroNameValid(char* macroName);
+macroBody* createMacroBody(char* line, ErrCode* errorCode);
+ErrCode isMacroNameValid(macroTable* table, char* macroName);
 Bool isMacroExists(macroTable* table, char* macroName);
 void freeMacroNode(macroNode* node);
 void freeMacroBody(macroBody* body);
