@@ -54,6 +54,13 @@ ErrCode executePreprocessor(char *inputFileName) {
 
         firstToken = getFirstToken(line, &errorCode); /* get the first token from the line */
         
+        if(errorCode == TOKEN_IS_LABEL) {
+            fputs(firstToken, amFile); /* write the line to the .am file as is */
+            cutnChar(line, strlen(firstToken)); /* cut the label from the line */
+            free(firstToken); /* free the first token memory */
+            firstToken = getFirstToken(line, &errorCode);
+        }
+
         if(errorCode == END_OF_LINE){ /* if the line is empty or contains only whitespace */
             writeLineFile(amFile, line); /* write the empty line to the .am file */
             free(line);
@@ -103,6 +110,7 @@ ErrCode executePreprocessor(char *inputFileName) {
         else { /* if the line is just a regular line unrelated to macros */
             writeLineFile(amFile, line); /* write the line to the .am file */
         }
+
         free(line); /* free the line memory */
         free(firstToken); /* free the first token memory */
 

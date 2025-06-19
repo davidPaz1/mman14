@@ -2,7 +2,9 @@
 #include "error.h"
 #include "scan.h"
 #include "util.h"
+
 #define OVER_LENGTH  1 /* overlength should store \n or \r if line is under MAX_LINE_FILE_LENGTH */
+#define COMMA_LENGTH 1 /* length of the comma character */
 
 char* readLine(FILE *fp, ErrCode *errorCode) {
 
@@ -76,7 +78,7 @@ char* getFirstToken(char *str, ErrCode *errorCode)
     }
 
     if (str[i] == ',') { /* if the first character is ';' or ',' */
-        word = malloc(2); /* 1 for illegal character and 1 for '\0' */
+        word = malloc(COMMA_LENGTH + NULL_TERMINATOR); /* 1 for illegal character and 1 for '\0' */
         if (word == NULL) {
             *errorCode = MALLOC_ERROR;
             return NULL; 
@@ -124,33 +126,6 @@ char *cutFirstToken(char *str, ErrCode *errorCode)
 
     cutnChar(str, strlen(word)); /* cut the first word from the string */
     return word;
-}
-
-char* getFirstTokenIL(char *str, ErrCode *errorCode)
-{
-    char *word;
-    *errorCode = NULL_INITIAL; /* reset error code to initial state */
-    word = getFirstToken(str, errorCode);
-    if (*errorCode != TOKEN_IS_LABEL) { /* if the error code is not TOKEN_IS_LABEL */
-        return word;  /* return the word as is (could be null but with a corresponding error code) */
-    }
-    /* if the error code is TOKEN_IS_LABEL, we need to cut the label from the string */
-    cutnChar(str, strlen(word)); /* cut the first word from the string */
-    word = getFirstToken(str, errorCode); /* get the first token again without the label */
-    return word;
-}
-
-char* cutFirstTokenIL(char *str, ErrCode *errorCode)
-{
-    char *word;
-    *errorCode = NULL_INITIAL; /* reset error code to initial state */
-    word = cutFirstToken(str, errorCode);
-    if (*errorCode != TOKEN_IS_LABEL) /* if an error occurred while getting the first word */
-        return word; /* return NULL */
-
-    /* if the error code is TOKEN_IS_LABEL, we need to cut the next word in the string */
-    word = cutFirstToken(str, errorCode); /* get the first token again without the label */
-    return word; /* return the word as is (could be null but with a corresponding error code) */
 }
 
 Bool isEndOfLine(char *str)

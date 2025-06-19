@@ -27,8 +27,6 @@ typedef struct scannedLine {
 char* readLine(FILE *fp, ErrCode *errorCode);
 char* getFirstToken(char *str, ErrCode *errorCode); /* get the first token from the string */
 char* cutFirstToken(char *str, ErrCode *errorCode); /* cut the first token from the string */
-char* getFirstTokenIL(char *str, ErrCode *errorCode); /* get the first token from the string and ignore (deletes) labels */
-char* cutFirstTokenIL(char *str, ErrCode *errorCode); /* cut the first token from the string and ignore (deletes) labels */
 
 Bool isEndOfLine(char* str); /* check if the string is an end of line */
 

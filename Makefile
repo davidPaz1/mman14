@@ -39,7 +39,7 @@ r2:
 	./run test2
 rv:
 	make pre
-	valgrind ./run
+	valgrind --leak-check=full ./run
 vr:
 	make rv
 g: 

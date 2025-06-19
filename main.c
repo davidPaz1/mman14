@@ -9,12 +9,13 @@ int main(int argc, char const *argv[])
     int ec = 0; /* for gdb */
     char* inputFileName = "test1"; /* input file name */
     printf("%dStarting preprocessor...\n", ec); /* ec so warning unused variable won't appear */
-    printf("argv: %s\n", argv[1]);
-    if (argc >= 2) 
+    printf("argc: %d\n", argc);
+    if (argc >= 2) {
+        printf("argv: %s\n", argv[1]);
         inputFileName = argv[1]; /* use the provided file name */
-    
+    }
 
-    int result = executePreprocessor(argv[1]); /* test with a sample file name */
+    int result = executePreprocessor(inputFileName); /* test with a sample file name */
     printf("error %d\n", result);
     return 0;
 }
