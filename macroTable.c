@@ -114,21 +114,23 @@ ErrCode addMacroLine(macroTable* table, char* line) {
     return MACROTABLE_SUCCESS; /* return success */
 }
 
-macroBody* findMacro(macroTable* table, char* macroName) {
+macroBody* findMacro(macroTable* table, char* macroName, ErrCode* errorCode) {
     macroNode* current; /* used to iterate through the macro list */
-    if (table == NULL || macroName == NULL) {
-        fprintf(stderr, "invalid macro table or macro name\n");
+    if (table == NULL || macroName == NULL) { /*test123*/
+        *errorCode = UNEXPECTED_NULL_INPUT;
         return NULL; /* exit if the table or macro name is NULL */
     }
     
     current = table->macroHead;
     while (current != NULL) {
         if (strcmp(current->macroName, macroName) == 0) {
+            *errorCode = MACROTABLE_SUCCESS; /* set error code to success */
             return current->bodyHead; /* return the body of the found macro */
         }
         current = current->nextMacro;
     }
-    
+
+    *errorCode = UNKNOWN_ERROR; /* it should not reach here cas findMacro is called only after isMacroExists */
     return NULL; /* Macro not found */
 }
 
