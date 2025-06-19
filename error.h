@@ -21,6 +21,7 @@ typedef enum ErrCode {
     FILE_READ_ERROR = 13,
     FILE_WRITE_ERROR = 14,
     INVALID_FILE_MODE = 15, /* invalid file mode, should never be used */
+    FILE_DELETE_ERROR = 16, /* file delete error */
 
     /* preprocessor errors 20 - 29 */
     PREPROCESSOR_SUCCESS = 20, /* preprocessor executed successfully */

@@ -90,6 +90,26 @@ FILE* openFile(char *filename, char *ending, char *mode, ErrCode *errorCode)
     return fp;
 }
 
+ErrCode delFile(char *filename, char *ending)
+{
+    if (filename == NULL || ending == NULL) {
+        return UNEXPECTED_NULL_INPUT; /* return error if filename or ending is NULL */
+    }
+
+    char *fullFileName = mergeStrings(filename, ending);
+    if (fullFileName == NULL) {
+        return MALLOC_ERROR;
+    }
+
+    if (remove(fullFileName) != 0) { /* if file delete was unsuccessful */
+        free(fullFileName);
+        return FILE_DELETE_ERROR;
+    }
+
+    free(fullFileName);
+    return SCAN_SUCCESS;
+}
+
 char* getFirstWord(char **strPtr, ErrCode *errorCode)
 {
     int i = 0;

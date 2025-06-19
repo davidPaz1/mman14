@@ -27,10 +27,11 @@ typedef struct scannedLine {
 char* readLine(FILE *fp, ErrCode *errorCode);
 char* getFirstWord(char **strPtr, ErrCode *errorCode); /* get the first word from the string */
 char* cutFirstWord(char **strPtr, ErrCode *errorCode); /* cut the first word from the string */
+FILE* openFile(char* filename, char* ending , char* mode, ErrCode* errorCode);
+ErrCode delFile(char* filename, char* ending);
 
 /* for first pass mainly */
 scannedLine* readLineType(FILE *fp, ErrCode *errorCode);
 lineType* determineLineType(scannedLine *sLine); /* determine the type of the line and if it has a label */
-FILE* openFile(char* filename, char* ending , char* mode, ErrCode* errorCode);
 Bool isLabel(char* str); /* check if the string is a label */
 #endif

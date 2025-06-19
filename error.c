@@ -12,17 +12,19 @@ char* getErrorMessage(ErrCode code) {
         case UNEXPECTED_NULL_INPUT: /* 4 */
             return "unexpected NULL input, should never be used.";
         
-        case LINE_TOO_LONG: /* 11 */
+        case LINE_TOO_LONG: /* 12 */
             return "line length in file is longer than allowed (80).";
-        case FILE_READ_ERROR: /* 12 */
+        case FILE_READ_ERROR: /* 13 */
             return "file read error.";
-        case FILE_WRITE_ERROR: /* 13 */
+        case FILE_WRITE_ERROR: /* 14 */
             return "file write error.";
-        case INVALID_FILE_MODE: /* 14 */
+        case INVALID_FILE_MODE: /* 15 */
             return "file mode error, should never be used.";
+        case FILE_DELETE_ERROR: /* 16 */
+            return "file delete error.";
 
         case PREPROCESSOR_FAILURE: /* 21 */
-            return "preprocessor failed.";
+            return "preprocessor failed."; /* shuld delete this probably? */
         
         case MACRO_NAME_EXISTS: /* 31 */
             return "macro name already exists.";
