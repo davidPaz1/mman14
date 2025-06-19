@@ -6,11 +6,9 @@
 #include "macroTable.h"
 /* Preprocessor functions prototypes */
 ErrCode executePreprocessor(char *inputFileName); /* main function for the preprocessor */
-ErrCode isMacroDef(char* line); /* check if the line is a macro def line */
-ErrCode isMacroEndLine(char* line); /* check if the line is a macro end line */
-ErrCode isMacroUse(macroTable* table, char *line); /* check if the line is a macro use line */
-char* getMacroName(char *line, ErrCode *errorCode); /* get the macro name from the line */
 
+ErrCode spreadMacro(macroTable *table, char *macroName, FILE *amFile); /* spread the macro body into the .am file */
+ErrCode macroDef(macroTable* table, char* line); /* add a line to the macro body */
 
 void freeFilesAndMemory(macroTable* table, FILE* asFile, FILE* amFile, char* line); /* free the memory allocated for a macro body */
 

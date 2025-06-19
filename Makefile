@@ -26,23 +26,22 @@ a:
 	clear
 c:
 	rm -rf *.o *.am *.ob *.ent *.ext
-r:
+pre:
 	make
 	make c
 	clear 
 	clear
-	./run
+r1:
+	make pre
+	./run test1
+r2:
+	make pre
+	./run test2
 rv:
-	make
-	make c
-	clear 
-	clear
+	make pre
 	valgrind ./run
 vr:
 	make rv
 g: 
-	make
-	make c
-	clear 
-	clear
+	make pre
 	gdb ./run
