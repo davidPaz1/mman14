@@ -92,11 +92,12 @@ FILE* openFile(char *filename, char *ending, char *mode, ErrCode *errorCode)
 
 ErrCode delFile(char *filename, char *ending)
 {
+    char *fullFileName;
     if (filename == NULL || ending == NULL) {
         return UNEXPECTED_NULL_INPUT; /* return error if filename or ending is NULL */
     }
 
-    char *fullFileName = mergeStrings(filename, ending);
+    fullFileName = mergeStrings(filename, ending);
     if (fullFileName == NULL) {
         return MALLOC_ERROR;
     }
@@ -168,6 +169,17 @@ char *cutFirstWord(char **strPtr, ErrCode *errorCode)
     
     cutnChar(*strPtr, strlen(word)); /* cut the first word from the string */
     return NULL;
+}
+
+Bool isEndOfLine(char *str)
+{
+    int i = 0;
+    while (isspace(str[i])) /* skip leading whitespace */
+        i++;
+    
+    if (str[i] == '\0') /* if the string is empty or contains only whitespace */
+        return TRUE; 
+    return FALSE; /* if there are non-whitespace characters, it is not end of line */
 }
 
 lineType* determineLineType(scannedLine *sLine) /* add errorcode */

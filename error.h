@@ -7,13 +7,16 @@
 
 /* error codes are divided into categories*/
 typedef enum ErrCode {
-    /* VERY GENERAL error codes 0 - 9 */
+    /* VERY GENERAL error codes 0 - 5 */
     NULL_INITIAL = 0, /* initial state of error code, used to "forget" previous errorCode */
     MALLOC_ERROR = 1, /* memory allocation error */
     EOF_REACHED = 2, /* indicate that the EOF was reached while reading */
-    UNKNOWN_ERROR = 3, /* unknown error, should never be used */
-    UNEXPECTED_NULL_INPUT = 4, /* unexpected NULL input, should never be used */
-    
+    EXTRANEOUS_TEXT = 3, /* extraneous text after the end of the line */
+
+    /* debugging errors 6 - 9 */
+    UNKNOWN_ERROR = 6, /* unknown error, should never be used */
+    UNEXPECTED_NULL_INPUT = 7, /* unexpected NULL input, should never be used */
+
     /* scan errors 10 - 19 */
     SCAN_SUCCESS = 10,
     END_OF_LINE = 11,

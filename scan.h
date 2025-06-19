@@ -27,6 +27,7 @@ typedef struct scannedLine {
 char* readLine(FILE *fp, ErrCode *errorCode);
 char* getFirstWord(char **strPtr, ErrCode *errorCode); /* get the first word from the string */
 char* cutFirstWord(char **strPtr, ErrCode *errorCode); /* cut the first word from the string */
+Bool isEndOfLine(char* str); /* check if the string is an end of line */
 FILE* openFile(char* filename, char* ending , char* mode, ErrCode* errorCode);
 ErrCode delFile(char* filename, char* ending);
 

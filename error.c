@@ -7,10 +7,15 @@ char* getErrorMessage(ErrCode code) {
             return "initial state shouldn't be reached.";
         case MALLOC_ERROR: /* 1 */
                 return "memory allocation failed.";
-        case UNKNOWN_ERROR: /* 3 */
-            return "unknown error occurred. Should never be used."; 
-        case UNEXPECTED_NULL_INPUT: /* 4 */
+        case EXTRANEOUS_TEXT: /* 3 */
+            return "extraneous text after the end of the line, should never be used.";
+
+
+        case UNKNOWN_ERROR: /* 6 */
+            return "unknown error occurred. Should never be used.";
+        case UNEXPECTED_NULL_INPUT: /* 7 */
             return "unexpected NULL input, should never be used.";
+
         
         case LINE_TOO_LONG: /* 12 */
             return "line length in file is longer than allowed (80).";
