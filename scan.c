@@ -62,10 +62,9 @@ scannedLine* readLineType(FILE *fp, ErrCode *errorCode)
     return lineRead;
 }
 
-char* getFirstToken(char **strPtr, ErrCode *errorCode)
+char* getFirstToken(char *str, ErrCode *errorCode)
 {
     int i = 0;
-    char *str = *strPtr;
     char* word;
     *errorCode = NULL_INITIAL; /* reset error code to initial state */
     while (isspace(str[i]))
@@ -88,8 +87,12 @@ char* getFirstToken(char **strPtr, ErrCode *errorCode)
     }
     else {
         int start = i;
-        while (str[i] != '\0' && str[i] != ',' && !isspace(str[i])) {
+        while (str[i] != '\0' && str[i] != ',' && !isspace(str[i]) && str[i] != ':') { /* find the end of the word */
             i++;
+        }
+        if (str[i] == ':') { /* if the word ends with ':' */
+            i++; /* to include the ':' in the word */
+            *errorCode = TOKEN_IS_LABEL; /* set error code to TOKEN_IS_LABEL */
         }
 
         word = malloc(i - start + 1); /* +1 for '\0' */
@@ -105,21 +108,49 @@ char* getFirstToken(char **strPtr, ErrCode *errorCode)
     while (isspace(str[i])) 
         i++;
 
-    *errorCode = SCAN_SUCCESS; /* set error code to success */
+    if(*errorCode != TOKEN_IS_LABEL) /* if the error code is not TOKEN_IS_LABEL */
+        *errorCode = SCAN_SUCCESS; /* set error code to success */
     return word;
 }
 
-char *cutFirstToken(char **strPtr, ErrCode *errorCode)
+char *cutFirstToken(char *str, ErrCode *errorCode)
 {
     char *word;
     *errorCode = NULL_INITIAL; /* reset error code to initial state */
-    word = getFirstToken(strPtr, errorCode);
+    word = getFirstToken(str, errorCode);
 
-    if (*errorCode != SCAN_SUCCESS) /* if an error occurred while getting the first word */
+    if (*errorCode != SCAN_SUCCESS && *errorCode != TOKEN_IS_LABEL) /* if an error occurred while getting the first word */
         return NULL;
-    
-    cutnChar(*strPtr, strlen(word)); /* cut the first word from the string */
-    return NULL;
+
+    cutnChar(str, strlen(word)); /* cut the first word from the string */
+    return word;
+}
+
+char* getFirstTokenIL(char *str, ErrCode *errorCode)
+{
+    char *word;
+    *errorCode = NULL_INITIAL; /* reset error code to initial state */
+    word = getFirstToken(str, errorCode);
+    if (*errorCode != TOKEN_IS_LABEL) { /* if the error code is not TOKEN_IS_LABEL */
+        return word;  /* return the word as is (could be null but with a corresponding error code) */
+    }
+    /* if the error code is TOKEN_IS_LABEL, we need to cut the label from the string */
+    cutnChar(str, strlen(word)); /* cut the first word from the string */
+    word = getFirstToken(str, errorCode); /* get the first token again without the label */
+    return word;
+}
+
+char* cutFirstTokenIL(char *str, ErrCode *errorCode)
+{
+    char *word;
+    *errorCode = NULL_INITIAL; /* reset error code to initial state */
+    word = cutFirstToken(str, errorCode);
+    if (*errorCode != TOKEN_IS_LABEL) /* if an error occurred while getting the first word */
+        return word; /* return NULL */
+
+    /* if the error code is TOKEN_IS_LABEL, we need to cut the next word in the string */
+    word = cutFirstToken(str, errorCode); /* get the first token again without the label */
+    return word; /* return the word as is (could be null but with a corresponding error code) */
 }
 
 Bool isEndOfLine(char *str)

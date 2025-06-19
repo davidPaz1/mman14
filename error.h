@@ -20,11 +20,12 @@ typedef enum ErrCode {
     /* scan errors 10 - 19 */
     SCAN_SUCCESS = 10,
     END_OF_LINE = 11,
-    LINE_TOO_LONG = 12,
-    FILE_READ_ERROR = 13,
-    FILE_WRITE_ERROR = 14,
-    INVALID_FILE_MODE = 15, /* invalid file mode, should never be used */
-    FILE_DELETE_ERROR = 16, /* file delete error */
+    TOKEN_IS_LABEL = 12, /* label found in the line */
+    LINE_TOO_LONG = 13,
+    FILE_READ_ERROR = 14,
+    FILE_WRITE_ERROR = 15,
+    INVALID_FILE_MODE = 16, /* invalid file mode, should never be used */
+    FILE_DELETE_ERROR = 17, /* file delete error */
 
     /* preprocessor errors 20 - 29 */
     PREPROCESSOR_SUCCESS = 20, /* preprocessor executed successfully */

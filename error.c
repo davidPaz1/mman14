@@ -17,15 +17,15 @@ char* getErrorMessage(ErrCode code) {
             return "unexpected NULL input, should never be used.";
 
         
-        case LINE_TOO_LONG: /* 12 */
+        case LINE_TOO_LONG: /* 13 */
             return "line length in file is longer than allowed (80).";
-        case FILE_READ_ERROR: /* 13 */
+        case FILE_READ_ERROR: /* 14 */
             return "file read error.";
-        case FILE_WRITE_ERROR: /* 14 */
+        case FILE_WRITE_ERROR: /* 15 */
             return "file write error.";
-        case INVALID_FILE_MODE: /* 15 */
+        case INVALID_FILE_MODE: /* 16 */
             return "file mode error, should never be used.";
-        case FILE_DELETE_ERROR: /* 16 */
+        case FILE_DELETE_ERROR: /* 17 */
             return "file delete error.";
 
         case PREPROCESSOR_FAILURE: /* 21 */

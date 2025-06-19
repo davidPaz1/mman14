@@ -27,7 +27,19 @@ char *mergeStrings(char *start, char *end)
 
 void cutnChar(char *str, int n)
 {
-    memmove(str, str + n, strlen(str) - n + 1); /* Move the string left by n characters */
+    int spacesCount = 0, cuttingLength = n; /* length to cut from the string */
+    while (isspace(str[spacesCount])) 
+        spacesCount++;
+    
+    cuttingLength += spacesCount; /* adjust the length to cut based on leading spaces */
+
+    memmove(str, str + cuttingLength, strlen(str) - cuttingLength + 1); /* Move the string left by n characters */
+
+    cuttingLength = 0; /* reset cutting length to 0 for deleting trailing spaces */
+    while (isspace(str[cuttingLength])) 
+        cuttingLength++;
+
+    memmove(str, str + cuttingLength, strlen(str) - cuttingLength + 1); /* Move the string left by the number of leading spaces */
 }
 
 FILE* openFile(char *filename, char *ending, char *mode, ErrCode *errorCode)
