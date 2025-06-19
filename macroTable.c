@@ -116,10 +116,6 @@ ErrCode addMacroLine(macroTable* table, char* line) {
 
 macroBody* findMacro(macroTable* table, char* macroName, ErrCode* errorCode) {
     macroNode* current; /* used to iterate through the macro list */
-    if (table == NULL || macroName == NULL) { /*test123*/
-        *errorCode = UNEXPECTED_NULL_INPUT;
-        return NULL; /* exit if the table or macro name is NULL */
-    }
     
     current = table->macroHead;
     while (current != NULL) {
