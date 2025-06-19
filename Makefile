@@ -31,7 +31,7 @@ pre:
 	make c
 	clear 
 	clear
-r1:
+r:
 	make pre
 	./run test1
 r2:
