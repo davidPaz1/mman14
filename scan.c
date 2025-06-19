@@ -62,56 +62,7 @@ scannedLine* readLineType(FILE *fp, ErrCode *errorCode)
     return lineRead;
 }
 
-FILE* openFile(char *filename, char *ending, char *mode, ErrCode *errorCode)
-{
-    FILE *fp;
-    char* fullFileName = mergeStrings(filename, ending); /* merge filename and ending to create full file name */
-    *errorCode = NULL_INITIAL; /* reset error code to initial state */
-
-    if (fullFileName == NULL) {
-        *errorCode = MALLOC_ERROR;
-        return NULL;
-    }
-
-    fp = fopen(fullFileName, mode); /* open the file with the given mode */
-    if (fp == NULL) {
-        if (strcmp(mode, "r") == 0) 
-            *errorCode = FILE_READ_ERROR;
-        else if (strcmp(mode, "w") == 0) 
-            *errorCode = FILE_WRITE_ERROR;
-        else 
-            *errorCode = INVALID_FILE_MODE;
-    }
-
-    if (*errorCode == NULL_INITIAL) /* if no error occurred */
-    *errorCode = SCAN_SUCCESS; /* set error code to success */
-    
-    free(fullFileName); /* free the allocated memory for fullFileName */
-    return fp;
-}
-
-ErrCode delFile(char *filename, char *ending)
-{
-    char *fullFileName;
-    if (filename == NULL || ending == NULL) {
-        return UNEXPECTED_NULL_INPUT; /* return error if filename or ending is NULL */
-    }
-
-    fullFileName = mergeStrings(filename, ending);
-    if (fullFileName == NULL) {
-        return MALLOC_ERROR;
-    }
-
-    if (remove(fullFileName) != 0) { /* if file delete was unsuccessful */
-        free(fullFileName);
-        return FILE_DELETE_ERROR;
-    }
-
-    free(fullFileName);
-    return SCAN_SUCCESS;
-}
-
-char* getFirstWord(char **strPtr, ErrCode *errorCode)
+char* getFirstToken(char **strPtr, ErrCode *errorCode)
 {
     int i = 0;
     char *str = *strPtr;
@@ -158,11 +109,11 @@ char* getFirstWord(char **strPtr, ErrCode *errorCode)
     return word;
 }
 
-char *cutFirstWord(char **strPtr, ErrCode *errorCode)
+char *cutFirstToken(char **strPtr, ErrCode *errorCode)
 {
     char *word;
     *errorCode = NULL_INITIAL; /* reset error code to initial state */
-    word = getFirstWord(strPtr, errorCode);
+    word = getFirstToken(strPtr, errorCode);
 
     if (*errorCode != SCAN_SUCCESS) /* if an error occurred while getting the first word */
         return NULL;
@@ -202,7 +153,7 @@ lineType* determineLineType(scannedLine *sLine) /* add errorcode */
         *type = EMPTY_LINE;
     } else if (dupLine[0] == ';') { /* if the line is a comment */
         *type = COMMENT_LINE;
-    /*} else  if (isOperationName(getFirstWord(dupLine))) {  if the line is an instruction */
+    /*} else  if (isOperationName(getFirstToken(dupLine))) {  if the line is an instruction */
         *type = INSTRUCTION_LINE;
     } else if (strchr(dupLine, '.') != NULL) { /* if the line is a data or string line */
         if (strstr(dupLine, ".data") != NULL || strstr(dupLine, ".extern") != NULL) {

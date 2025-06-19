@@ -30,6 +30,59 @@ void cutnChar(char *str, int n)
     memmove(str, str + n, strlen(str) - n + 1); /* Move the string left by n characters */
 }
 
+FILE* openFile(char *filename, char *ending, char *mode, ErrCode *errorCode)
+{
+    FILE *fp;
+    char* fullFileName = mergeStrings(filename, ending); /* merge filename and ending to create full file name */
+    *errorCode = NULL_INITIAL; /* reset error code to initial state */
+
+    if (fullFileName == NULL) {
+        *errorCode = MALLOC_ERROR;
+        return NULL;
+    }
+
+    fp = fopen(fullFileName, mode); /* open the file with the given mode */
+    if (fp == NULL) {
+        if (strcmp(mode, "r") == 0) 
+            *errorCode = FILE_READ_ERROR;
+        else if (strcmp(mode, "w") == 0) 
+            *errorCode = FILE_WRITE_ERROR;
+        else 
+            *errorCode = INVALID_FILE_MODE;
+    }
+
+    if (*errorCode == NULL_INITIAL) /* if no error occurred */
+    *errorCode = SCAN_SUCCESS; /* set error code to success */
+    
+    free(fullFileName); /* free the allocated memory for fullFileName */
+    return fp;
+}
+
+void writeLineFile(FILE* fp, char* line)
+{
+    fputs(line, fp); /* write the line to the file */
+    fputc('\n', fp); /* add a newline character after the line */
+}
+
+ErrCode delFile(char *filename, char *ending)
+{
+    char *fullFileName;
+
+    fullFileName = mergeStrings(filename, ending);
+    if (fullFileName == NULL) {
+        return MALLOC_ERROR;
+    }
+
+    if (remove(fullFileName) != 0) { /* if file delete was unsuccessful */
+        free(fullFileName);
+        return FILE_DELETE_ERROR;
+    }
+
+    free(fullFileName);
+    return SCAN_SUCCESS;
+}
+
+
 Bool isOperationName(char* arg) {
 
     if (strcmp(arg, "mov") == 0 ||
