@@ -2,14 +2,16 @@ CC = gcc
 exeFlags = $(CC) -pedantic -ansi -Wall -g
 compileFlags =  $(exeFlags) -c
 
-run: main.o macroTable.o preprocessor.o util.o scan.o error.o
-	$(exeFlags) main.o macroTable.o preprocessor.o util.o scan.o error.o -o run
-main.o: main.c preprocessor.h macroTable.h 
+run: main.o macroTable.o preprocessor.o firstPass.o util.o scan.o error.o
+	$(exeFlags) main.o macroTable.o preprocessor.o firstPass.o util.o scan.o error.o -o run
+main.o: main.c preprocessor.h firstPass.h error.h global.h
 	$(compileFlags) main.c
 macroTable.o: macroTable.c macroTable.h error.h global.h
 	$(compileFlags) macroTable.c
 preprocessor.o: preprocessor.c preprocessor.h macroTable.h scan.h util.h error.h global.h
 	$(compileFlags) preprocessor.c
+firstPass.o: firstPass.c firstPass.h scan.h util.h error.h global.h
+	$(compileFlags) firstPass.c
 
 
 util.o : util.c util.h global.h

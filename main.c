@@ -1,7 +1,6 @@
 #include "global.h"
-#include "macroTable.h" /* test only */
 #include "preprocessor.h"
-#include "scan.h"
+#include "firstPass.h"
 #include "error.h"
 
 int main(int argc, char const *argv[])
@@ -17,11 +16,21 @@ int main(int argc, char const *argv[])
     }
 
     errcode = executePreprocessor(inputFileName); /* test with a sample file name */
-    if (errcode != PREPROCESSOR_SUCCESS) /* check if the preprocessor executed successfully */
+    if (errcode != PREPROCESSOR_SUCCESS) {
         printErrorMsg(errcode, "\nwhile executing preprocessor"); /* print the error message */
-    else
-        printf("\nPreprocessor executed successfully.\n"); /* print success message */
-        
+        return errcode; /* return the error code */
+    } 
+    printf("\nPreprocessor executed successfully.\n"); /* print success message */
+    printf("Starting first pass...\n");
+    errcode = executeFirstPass(inputFileName); /* execute the first pass */
+    if (errcode != FIRSTPASS_SUCCESS) {
+        printErrorMsg(errcode, "\nwhile executing first pass"); /* print the error message */
+        return errcode; /* return the error code */
+    }
+    printf("\nFirst pass executed successfully.\n"); /* print success message */
+    
+
+    printf("Exiting program...\n"); /* print exit message */
     return 0;
 }
 

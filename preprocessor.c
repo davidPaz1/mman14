@@ -4,9 +4,6 @@
 #include "error.h"
 #include "macroTable.h"
 #include "preprocessor.h"
-/* .as -> .am -> .ob , .ext , .ent*/
-/*page 15 or 31 for algorithm for preprocessing */
-
 
 ErrCode executePreprocessor(char *inputFileName) {
     FILE *asFile, *amFile;
@@ -17,14 +14,13 @@ ErrCode executePreprocessor(char *inputFileName) {
 
     /* Open the .as file for reading and .am file for writing */
     asFile = openFile(inputFileName, ".as", "r", &errorCode);
-    if (errorCode != SCAN_SUCCESS) {
-        preprocessorFreeMemory(NULL, NULL, NULL, NULL); /* clean up and exit the preprocessor */
+    if (errorCode != SCAN_SUCCESS) 
         return errorCode; /* return the error code */
-    }
+    
 
     amFile = openFile(inputFileName, ".am", "w", &errorCode);
     if (errorCode != SCAN_SUCCESS) {
-        preprocessorFreeMemory(NULL, asFile, NULL, NULL); /* clean up and exit the preprocessor */
+        fclose(asFile);
         return errorCode; /* return the error code */
     }
 

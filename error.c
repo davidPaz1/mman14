@@ -3,6 +3,8 @@
 
 char* getErrorMessage(ErrCode code) {
     switch (code) {
+
+        /* VERY GENERAL error codes 0 - 5 */
         case NULL_INITIAL: /* 0 */
             return "initial state shouldn't be reached.";
         case MALLOC_ERROR: /* 1 */
@@ -10,13 +12,13 @@ char* getErrorMessage(ErrCode code) {
         case EXTRANEOUS_TEXT: /* 3 */
             return "extraneous text after the end of the line, should never be used.";
 
-
+        /* debugging errors 6 - 9 */
         case UNKNOWN_ERROR: /* 6 */
             return "unknown error occurred. Should never be used.";
         case UNEXPECTED_NULL_INPUT: /* 7 */
             return "unexpected NULL input, should never be used.";
 
-        
+        /* scan errors 10 - 19 */
         case LINE_TOO_LONG: /* 13 */
             return "line length in file is longer than allowed (80).";
         case FILE_READ_ERROR: /* 14 */
@@ -28,9 +30,7 @@ char* getErrorMessage(ErrCode code) {
         case FILE_DELETE_ERROR: /* 17 */
             return "file delete error.";
 
-        case PREPROCESSOR_FAILURE: /* 21 */
-            return "preprocessor failed."; /* shuld delete this probably? */
-        
+        /* macroTable errors 30 - 39 */
         case MACRO_NAME_EXISTS: /* 31 */
             return "macro name already exists.";
         case UNMATCHED_MACRO_END: /* 32 */
@@ -43,11 +43,12 @@ char* getErrorMessage(ErrCode code) {
             return "macro name contains invalid characters.";
         case MACRO_NAME_KEYWORD: /* 36 */
             return "macro name is a set keyword by the assembley language.";
-        
-        case SCAN_SUCCESS: /* 10 */
-        case PREPROCESSOR_SUCCESS: /* 20 */
-        case MACROTABLE_SUCCESS: /* 30 */
-            return "operation successful, but you shouldn't reach this point.";
+
+        /* firstPass errors 40 - 49 */
+        case FIRSTPASS_FAILURE: /* 41 */
+            return "first pass failed.";
+
+        /* it should never reach here */
         default:
             return "unrecognized error code - shouldn't reach this point.";
     }

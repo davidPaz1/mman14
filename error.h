@@ -29,19 +29,19 @@ typedef enum ErrCode {
 
     /* preprocessor errors 20 - 29 */
     PREPROCESSOR_SUCCESS = 20, /* preprocessor executed successfully */
-    PREPROCESSOR_FAILURE = 21, /* preprocessor error, should never be used */
 
-    /* macro errors 30 - 39 */
+    /* macroTable errors 30 - 39 */
     MACROTABLE_SUCCESS = 30, /* macro operation was successful */
     MACRO_NAME_EXISTS = 31, /* macro name already exists */
     UNMATCHED_MACRO_END = 32, /* macro not found */
     MACRO_NAME_TOO_LONG = 33, /* macro name is too long */
     MACRO_NAME_EMPTY = 34, /* macro name is empty */
     MACRO_NAME_INVALID_CHAR = 35, /* macro name contains invalid characters */
-    MACRO_NAME_KEYWORD = 36 /* macro name is a keyword, should never be used */
+    MACRO_NAME_KEYWORD = 36, /* macro name is a keyword, should never be used */
 
-    /* ??? 40 - 49 */
-
+    /* firstPass errors 40 - 49 */
+    FIRSTPASS_SUCCESS = 40, /* first pass was successful */
+    FIRSTPASS_FAILURE = 41 /* first pass error, should never be used */
 
 } ErrCode;
 
