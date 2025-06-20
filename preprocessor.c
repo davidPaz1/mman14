@@ -9,7 +9,6 @@
 
 
 ErrCode executePreprocessor(char *inputFileName) {
-    int count = 0; /* for debugging purposes */
     FILE *asFile, *amFile;
     char *line, *firstToken; /* line to read from the .as file and first token of the line */
     ErrCode errorCode = NULL_INITIAL; /* Initialize error code */
@@ -37,7 +36,6 @@ ErrCode executePreprocessor(char *inputFileName) {
     }
     
     while (errorCode != EOF_REACHED) {
-        printf("Reading line %d\n", ++count); /* debug print */
         line = readLine(asFile, &errorCode); /* read a line from the .as file 1 */
         if (errorCode == EOF_REACHED)
             break; /* end of file reached, exit the loop */
@@ -72,7 +70,6 @@ ErrCode executePreprocessor(char *inputFileName) {
         /* identify type of line and */
 
         if(isMacroExists(table, firstToken)) { /* check if the line is a macro use line 2 */
-            printf("Spreading macro: %s\n", firstToken); /* debug print */
             errorCode = spreadMacro(table, firstToken, amFile); /* spread the macro body into the .am file */
             if (errorCode != MACROTABLE_SUCCESS) { /* check if the macro was spread successfully */
                 PreprocessorErrorExit(table, asFile, amFile, line, inputFileName); /* clean up and exit the preprocessor */
@@ -91,7 +88,12 @@ ErrCode executePreprocessor(char *inputFileName) {
             
         }
         else if (strcmp(firstToken, "mcroend") == 0) { /* check if the line is a macro end line 7 */
-           inMacroDef = FALSE; /* reset the flag to indicate that we are no longer in a macro definition 8 */
+            if (!inMacroDef) { /* if we are not in a macro definition */
+                PreprocessorErrorExit(table, asFile, amFile, line, inputFileName); /* clean up and exit the preprocessor */
+                free(firstToken); /* free the first token memory */
+                return UNMATCHED_MACRO_END; /* return failure if an error occurred */
+            }
+            inMacroDef = FALSE; /* reset the flag to indicate that we are no longer in a macro definition 8 */
         }
         else if (inMacroDef) { /* if we are in a macro definition 6 */
             errorCode = addMacroLine(table, line); /* add the line to the macro body */
@@ -101,7 +103,7 @@ ErrCode executePreprocessor(char *inputFileName) {
             }
         }
         else { /* if the line is just a regular line unrelated to macros */
-            fputs(firstToken, amFile); /* write the line to the .am file */
+            fputs(line, amFile); /* write the line to the .am file */
             fputc('\n', amFile); /* add a newline character after the line */
         }
 

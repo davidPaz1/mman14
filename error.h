@@ -34,7 +34,7 @@ typedef enum ErrCode {
     /* macro errors 30 - 39 */
     MACROTABLE_SUCCESS = 30, /* macro operation was successful */
     MACRO_NAME_EXISTS = 31, /* macro name already exists */
-    MACRO_NOT_DEF = 32, /* macro not found */
+    UNMATCHED_MACRO_END = 32, /* macro not found */
     MACRO_NAME_TOO_LONG = 33, /* macro name is too long */
     MACRO_NAME_EMPTY = 34, /* macro name is empty */
     MACRO_NAME_INVALID_CHAR = 35, /* macro name contains invalid characters */

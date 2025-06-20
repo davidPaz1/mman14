@@ -33,8 +33,8 @@ char* getErrorMessage(ErrCode code) {
         
         case MACRO_NAME_EXISTS: /* 31 */
             return "macro name already exists.";
-        case MACRO_NOT_DEF: /* 32 */
-            return "tried to spread an undefined macro.";
+        case UNMATCHED_MACRO_END: /* 32 */
+            return "had \"macroend\" without having an opening macro definition.";
         case MACRO_NAME_TOO_LONG: /* 33 */
             return "macro name is too long.";
         case MACRO_NAME_EMPTY: /* 34 */

@@ -18,9 +18,9 @@ int main(int argc, char const *argv[])
 
     errcode = executePreprocessor(inputFileName); /* test with a sample file name */
     if (errcode != PREPROCESSOR_SUCCESS) /* check if the preprocessor executed successfully */
-        printErrorMsg(errcode, "while executing preprocessor"); /* print the error message */
+        printErrorMsg(errcode, "\nwhile executing preprocessor"); /* print the error message */
     else
-        printf("Preprocessor executed successfully.\n"); /* print success message */
+        printf("\nPreprocessor executed successfully.\n"); /* print success message */
         
     return 0;
 }

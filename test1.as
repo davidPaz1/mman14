@@ -25,9 +25,7 @@ TRY: a_mc
     inc K
     mcroend
 AGAIN:
-    tes_T
-    a_mc
-    tes_T
+
 STR: .string “abcdef”
 LENGTH: .data 6,-9,15
 K: .data 22
