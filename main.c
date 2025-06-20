@@ -2,21 +2,26 @@
 #include "macroTable.h" /* test only */
 #include "preprocessor.h"
 #include "scan.h"
-
+#include "error.h"
 
 int main(int argc, char const *argv[])
 {
     int ec = 0; /* for gdb */
+    ErrCode errcode = NULL_INITIAL; /* initialize error code to NULL_INITIAL */
     char* inputFileName = "test1"; /* input file name */
     printf("%dStarting preprocessor...\n", ec); /* ec so warning unused variable won't appear */
     printf("argc: %d\n", argc);
     if (argc >= 2) {
         printf("argv: %s\n", argv[1]);
-        inputFileName = argv[1]; /* use the provided file name */
+        inputFileName = (char*) argv[1]; /* use the provided file name */
     }
 
-    int result = executePreprocessor(inputFileName); /* test with a sample file name */
-    printf("error %d\n", result);
+    errcode = executePreprocessor(inputFileName); /* test with a sample file name */
+    if (errcode != PREPROCESSOR_SUCCESS) /* check if the preprocessor executed successfully */
+        printErrorMsg(errcode, "while executing preprocessor"); /* print the error message */
+    else
+        printf("Preprocessor executed successfully.\n"); /* print success message */
+        
     return 0;
 }
 

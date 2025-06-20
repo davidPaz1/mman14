@@ -70,12 +70,6 @@ FILE* openFile(char *filename, char *ending, char *mode, ErrCode *errorCode)
     return fp;
 }
 
-void writeLineFile(FILE* fp, char* line)
-{
-    fputs(line, fp); /* write the line to the file */
-    fputc('\n', fp); /* add a newline character after the line */
-}
-
 ErrCode delFile(char *filename, char *ending)
 {
     char *fullFileName;

@@ -23,25 +23,32 @@ error.o : error.c error.h global.h
 a:
 	rm -rf *.o *.am *.ob *.ent *.ext *.exe run
 	clear
-	clear
 c:
 	rm -rf *.o *.am *.ob *.ent *.ext
+o:
+	rm -rf *.o
 pre:
 	make
 	make c
 	clear 
-	clear
 r:
 	make pre
+	clear
 	./run test1
 r2:
 	make pre
+	clear
 	./run test2
 rv:
 	make pre
+	clear
 	valgrind --leak-check=full ./run
 vr:
 	make rv
 g: 
 	make pre
 	gdb ./run
+e:
+	make a
+	clear
+	make -s
