@@ -40,7 +40,10 @@ ErrCode executeFirstPass(char *inputFileName)
             continue; /* skip to the next line */
         }
         
-
+        if(FALSE){ /* used so unused variable warning won't appear */
+            DC = IC + inSymbolDef; 
+            return DC;
+        }
 
         firstPassFreeStr(line, firstToken);
     }

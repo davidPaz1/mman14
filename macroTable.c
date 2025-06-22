@@ -139,7 +139,10 @@ ErrCode isMacroNameValid(macroTable* table ,char* macroName) {
     if(len > MAX_MACRO_LENGTH) 
         return MACRO_NAME_TOO_LONG; /* exit if the macro name is too long */
     
-    for (i = 0; i < len; i++) {
+    if (!isalpha(macroName[0]))
+        return MACRO_NAME_INVALID_CHAR; /* exit if the first character is not a letter */
+
+    for (i = 1; i < len; i++) {
         if (!isalnum(macroName[i]) && macroName[i] != '_')
             return MACRO_NAME_INVALID_CHAR; /* exit if the macro name contains invalid characters */
     }
