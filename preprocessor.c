@@ -43,7 +43,9 @@ ErrCode executePreprocessor(char *inputFileName) {
 
         firstToken = getFirstToken(line, &errorCode); /* get the first token from the line */
         
-        if(errorCode == TOKEN_IS_LABEL) {
+        /* note preprocessor doesnt check if token is a valid label, it just checks if it is a label 
+        and if it is - it writes it to the .am file */
+        if(isLabel(firstToken)) { /* check if the first token is a label */
             fputs(firstToken, amFile); /* write the label to the .am file as it is */
             fputc(' ', amFile); /* add a space character after the label */
             cutnChar(line, strlen(firstToken)); /* cut the label from the line */

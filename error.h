@@ -20,7 +20,6 @@ typedef enum ErrCode {
     /* scan errors 10 - 29 */
     SCAN_SUCCESS = 10,
     END_OF_LINE = 11,
-    TOKEN_IS_LABEL = 12, /* label found in the line */
     LINE_TOO_LONG = 13,
     FILE_READ_ERROR = 14,
     FILE_WRITE_ERROR = 15,
