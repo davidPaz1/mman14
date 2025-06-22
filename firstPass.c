@@ -39,9 +39,13 @@ ErrCode executeFirstPass(char *inputFileName)
             firstPassFreeStr(line, firstToken); /* free the memory allocated for the line and token */
             continue; /* skip to the next line */
         }
+        
 
+
+        firstPassFreeStr(line, firstToken);
     }
 
+    firstPassFreeStr(line, firstToken);
     return FIRSTPASS_SUCCESS; 
 }
  

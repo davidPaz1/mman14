@@ -126,11 +126,13 @@ Bool isRegister(char* arg) {
 }
 
 Bool isDirective(char* arg) {
+
     if (strcmp(arg, ".data") == 0 ||
         strcmp(arg, ".string") == 0 ||
         strcmp(arg, ".entry") == 0 ||
         strcmp(arg, ".extern") == 0)
         return TRUE;
+        
     return FALSE;
 }
 

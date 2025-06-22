@@ -15,6 +15,7 @@ ErrCode delFile(char* filename, char* ending);
 /* keyword functions prototypes */
 Bool isOperationName(char* arg); /* check if the string is an operation name */
 Bool isRegister(char* arg); /* check if the string is a register name */
+Bool isDirective(char* arg); /* check if the string is a directive */
 Bool isMacroStart(char* arg); /* check if the string is a macro start */
 Bool isMacroEnd(char* arg); /* check if the string is a macro end */
 Bool isKeywords(char* arg); /* check if the string is a keyword */

@@ -136,7 +136,7 @@ ErrCode isMacroNameValid(macroTable* table ,char* macroName) {
 
     if (len == 0)
         return MACRO_NAME_EMPTY; /* exit if the macro name is empty */
-    if(len > MAX_MACRO_SIZE) 
+    if(len > MAX_MACRO_LENGTH) 
         return MACRO_NAME_TOO_LONG; /* exit if the macro name is too long */
     
     for (i = 0; i < len; i++) {

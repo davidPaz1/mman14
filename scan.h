@@ -1,8 +1,12 @@
 #ifndef SCAN_H
 #define SCAN_H
+
 #include "global.h"
 #include "error.h"
 
+#define OVER_LENGTH  1 /* overlength should store \n or \r if line is under MAX_LINE_FILE_LENGTH */
+#define COMMA_LENGTH 1 /* length of the comma character ',' */
+#define COLON_LENGTH 1 /* length of the colon character ':' */
 
 typedef enum lineType {
     EMPTY_LINE = 0, /* empty line */
@@ -29,6 +33,7 @@ char* getFirstToken(char *str, ErrCode *errorCode); /* get the first token from 
 char* cutFirstToken(char *str, ErrCode *errorCode); /* cut the first token from the string */
 
 Bool isEndOfLine(char* str); /* check if the string is an end of line */
+Bool isValidLabel(char *label);
 
 /* for first pass mainly */
 scannedLine* readLineType(FILE *fp, ErrCode *errorCode);

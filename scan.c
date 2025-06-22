@@ -3,8 +3,6 @@
 #include "scan.h"
 #include "util.h"
 
-#define OVER_LENGTH  1 /* overlength should store \n or \r if line is under MAX_LINE_FILE_LENGTH */
-#define COMMA_LENGTH 1 /* length of the comma character */
 
 char* readLine(FILE *fp, ErrCode *errorCode) {
 
@@ -138,6 +136,23 @@ Bool isEndOfLine(char *str)
         return TRUE; 
     return FALSE; /* if there are non-whitespace characters, it is not end of line */
 }
+
+Bool isValidLabel(char *label)
+{
+    int i, len = strlen(label); /* start from 1 to skip the first character */
+
+    if (len <= 1 || len > (MAX_LABEL_LENGTH + COLON_LENGTH)) /* check if the label length is valid */
+        return FALSE;
+    if (!isalpha(label[0])) /* check if the first character is a valid letter */
+        return FALSE;
+
+    for (i = 1; i < len; i++) {
+        if (!isalnum(label[i])) /* check for valid characters */
+            return FALSE;
+    }
+    return TRUE;
+}
+
 
 lineType* determineLineType(scannedLine *sLine) /* add errorcode */
 {
