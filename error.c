@@ -19,6 +19,8 @@ char* getErrorMessage(ErrCode code) {
             return "unexpected NULL input, should never be used.";
 
         /* scan errors 10 - 29 */
+        case UNKNOWN_LINE_TYPE: /* 12 */
+            return "unknown line type found, should be one of the four types (instruction, directive, comment, empty).";
         case LINE_TOO_LONG: /* 13 */
             return "line length in file is longer than allowed (80).";
         case FILE_READ_ERROR: /* 14 */
@@ -39,6 +41,8 @@ char* getErrorMessage(ErrCode code) {
             return "label does not have a name, should not be empty.";
         case LABEL_TEXT_AFTER_COLON: /* 23 */
             return "text found after label colon, should not have any text after the colon.";
+        case INVALID_DIRECTIVE: /* 24 */
+            return "invalid directive, should be one of the valid directives (.data, .string, .entry, .extern).";
 
         /* macroTable errors 30 - 39 */
         case MACRO_NAME_EXISTS: /* 31 */

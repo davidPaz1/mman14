@@ -24,7 +24,7 @@ typedef enum boolean {
     TRUE = 1
 } Bool;
 
-/* opcodes */
+/* may be used idk */
 typedef enum opCode {
     mov = 0,
     cmp,
@@ -44,6 +44,14 @@ typedef enum opCode {
     stop,
     invalid = -1
 } opCode;
+
+typedef enum directiveLineType {
+    DATA_LINE = 0, /* data line */
+    STRING_LINE,   /* string line */
+    ENTRY_LINE,    /* entry line */
+    EXTERN_LINE    /* extern line */
+} directiveLineType;
+/* stop */
 
 /* registers */
 typedef enum registers{

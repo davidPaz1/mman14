@@ -20,6 +20,7 @@ typedef enum ErrCode {
     /* scan errors 10 - 29 */
     SCAN_SUCCESS = 10,
     END_OF_LINE = 11,
+    UNKNOWN_LINE_TYPE = 12, /* unknown line type */
     LINE_TOO_LONG = 13,
     FILE_READ_ERROR = 14,
     FILE_WRITE_ERROR = 15,
@@ -30,6 +31,7 @@ typedef enum ErrCode {
     LABEL_TOO_LONG = 21, /* label is too long */
     LABEL_EMPTY = 22, /* label is empty */
     LABEL_TEXT_AFTER_COLON = 23, /* text found after label colon */
+    INVALID_DIRECTIVE = 24, /* invalid directive */
 
     /* macroTable errors 30 - 39 */
     MACROTABLE_SUCCESS = 30, /* macro operation was successful */

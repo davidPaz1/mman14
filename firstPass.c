@@ -11,9 +11,9 @@
 
 ErrCode executeFirstPass(char *inputFileName)
 {
+    int lineNumber = 0; /* line number in the .as file [debug]*/
     int DC = 0; /* data counter */
     int IC = 100; /* instruction counter */
-    char *line, *firstToken; /* line to read from the .as file and first token of the line */
     ErrCode errorCode = NULL_INITIAL; /* initialize error code to NULL_INITIAL */
     FILE *amFile = NULL; /* file pointer for the assembly file */
     Bool inSymbolDef = FALSE; /* flag to indicate if we are in a symbol definition line */
@@ -25,6 +25,8 @@ ErrCode executeFirstPass(char *inputFileName)
     /* table setup? */
     
     while (errorCode != EOF_REACHED) {
+        char *line, *firstToken; /* line to read from the .as file and first token of the line */
+        printf("Reading line %d\n", ++lineNumber); /* debug print to show the current line number */
         line = readLine(amFile, &errorCode); /* read a line from the .as file 1 */
         if (errorCode == EOF_REACHED)
             break; /* end of file reached, exit the loop */
@@ -46,9 +48,9 @@ ErrCode executeFirstPass(char *inputFileName)
         }
 
         firstPassFreeStr(line, firstToken);
-    }
+    } /* end of while loop */
 
-    firstPassFreeStr(line, firstToken);
+    fclose(amFile); /* close the .as file */
     return FIRSTPASS_SUCCESS; 
 }
  
@@ -69,10 +71,10 @@ void firstPassFreeMemory(FILE* amFile, char* line, char* token)
 
 void firstPassFreeStr(char* line, char* token)
 {
-    if (line != NULL) {
+    if (line != NULL) 
         free(line);
-    }
-    if (token != NULL) {
+    
+    if (token != NULL) 
         free(token);
-    }
+    
 }

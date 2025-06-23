@@ -44,7 +44,7 @@ r2:
 rv:
 	make pre
 	clear
-	valgrind --leak-check=full ./run
+	valgrind --leak-check=full --show-leak-kinds=all --track-origins=yes ./run
 vr:
 	make rv
 g: 
