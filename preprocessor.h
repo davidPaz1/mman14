@@ -5,7 +5,7 @@
 #include "scan.h"
 #include "macroTable.h"
 /* Preprocessor functions prototypes */
-ErrCode executePreprocessor(char *inputFileName); /* main function for the preprocessor */
+ErrCode executePreprocessor(char *inputFileName, macroTable *macroNames); /* main function for the preprocessor */
 
 ErrCode spreadMacro(macroTable *table, char *macroName, FILE *amFile); /* spread the macro body into the .am file */
 ErrCode macroDef(macroTable* table, char* line); /* add a line to the macro body */

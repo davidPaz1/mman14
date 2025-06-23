@@ -5,7 +5,7 @@
 #include "macroTable.h"
 #include "preprocessor.h"
 
-ErrCode executePreprocessor(char *inputFileName) {
+ErrCode executePreprocessor(char *inputFileName, macroTable *macroNames) {
     FILE *asFile, *amFile;
     char *line, *firstToken; /* line to read from the .as file and first token of the line */
     ErrCode errorCode = NULL_INITIAL; /* Initialize error code */

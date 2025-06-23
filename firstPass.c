@@ -9,7 +9,7 @@
 /* 17 has an explanation for the first pass */
 /*page 19 or 31 for algorithm for preprocessing */
 
-ErrCode executeFirstPass(char *inputFileName)
+ErrCode executeFirstPass(char *inputFileName, int *DCF, int *ICF, macroTable macroNames)
 {
     int lineNumber = 0; /* line number in the .as file [debug]*/
     int DC = 0; /* data counter */
@@ -25,48 +25,59 @@ ErrCode executeFirstPass(char *inputFileName)
     /* table setup? */
     
     while (errorCode != EOF_REACHED) {
-        char *line, *firstToken; /* line to read from the .as file and first token of the line */
-        printf("Reading line %d\n", ++lineNumber); /* debug print to show the current line number */
-        line = readLine(amFile, &errorCode); /* read a line from the .as file 1 */
+        char *line, *firstToken, *token = NULL; /* line to read from the .as file and first token of the line */
+        parsedLine *pLine; /* parsed line structure to hold the line and its type */
+        int L; /* will hold the num of words that the instruction line translates to in machine code*/
+        /*printf("Reading line %d\n", ++lineNumber);  debug print to show the current line number */
+
+        pLine = readLineType(amFile, &errorCode); /* read a line from the .as file 1 */
+        line = pLine->restOfLine; /* get the line from the parsedLine structure (easier to read) */
+        firstToken = pLine->firstToken; /* get the first token from the parsedLine structure */
         if (errorCode == EOF_REACHED)
             break; /* end of file reached, exit the loop */
             
         if (errorCode != SCAN_SUCCESS) { /* check if an error occurred while reading the line */
-            firstPassErrorExit(amFile, line, NULL); /* clean up and exit the first pass */
+            firstPassErrorExit(amFile, pLine); /* clean up and exit the first pass */
             return errorCode; /* return failure if an error occurred */
         }
 
-        firstToken = getFirstToken(line, &errorCode); /* get the first token from the line */
-        if(errorCode == END_OF_LINE){ /* if the line is empty or contains only whitespace */
-            firstPassFreeStr(line, firstToken); /* free the memory allocated for the line and token */
-            continue; /* skip to the next line */
+        if(pLine->label != NULL){
+            errorCode = isValidLabel(pLine->label, &macroNames);
+            if (errorCode != SCAN_SUCCESS) { /* check if the label is valid */
+                firstPassErrorExit(amFile, pLine); /* clean up and exit the first pass */
+                return errorCode; /* return failure if an error occurred */
+            }
         }
         
         if(FALSE){ /* used so unused variable warning won't appear */
-            DC = IC + inSymbolDef; 
-            return DC;
+            /* dummy calculations to avoid unused variable warning */
+            int a = (int)(*line + *firstToken + *token);
+            L = IC + inSymbolDef + DC + lineNumber; 
+            return L + a; /* dummy return to avoid unused variable warning */
         }
 
-        firstPassFreeStr(line, firstToken);
+        freeScannedLine(pLine);
     } /* end of while loop */
 
     fclose(amFile); /* close the .as file */
+    *DCF = DC; /* set the final data counter */
+    *ICF = IC; /* set the final instruction counter */
     return FIRSTPASS_SUCCESS; 
 }
  
 
-void firstPassErrorExit(FILE* amFile, char* line, char* token)
+void firstPassErrorExit(FILE* amFile, parsedLine* pLine)
 {
     /* add any additional cleanup code here if needed */
-    firstPassFreeMemory(amFile, line, token); /* free the memory allocated from the first pass */
+    firstPassFreeMemory(amFile, pLine); /* free the memory allocated from the first pass */
 }
 
 
-void firstPassFreeMemory(FILE* amFile, char* line, char* token)
+void firstPassFreeMemory(FILE* amFile, parsedLine* pline)
 {
     if (amFile != NULL)
         fclose(amFile);
-    firstPassFreeStr(line, token); /* free the memory allocated for the line and token */
+    freeScannedLine(pline); /* free the parsed line structure */
 }
 
 void firstPassFreeStr(char* line, char* token)

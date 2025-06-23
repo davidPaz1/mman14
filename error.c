@@ -41,7 +41,9 @@ char* getErrorMessage(ErrCode code) {
             return "label does not have a name, should not be empty.";
         case LABEL_TEXT_AFTER_COLON: /* 23 */
             return "text found after label colon, should not have any text after the colon.";
-        case INVALID_DIRECTIVE: /* 24 */
+        case LABEL_SAME_AS_MACRO: /* 24 */
+            return "label and a macro name cannot be the same.";
+        case INVALID_DIRECTIVE: /* 25 */
             return "invalid directive, should be one of the valid directives (.data, .string, .entry, .extern).";
 
         /* macroTable errors 30 - 39 */

@@ -3,27 +3,47 @@
 #include "firstPass.h"
 #include "error.h"
 #include "scan.h"
+#include "macroTable.h"
 
 int main(int argc, char const *argv[])
 {
     ErrCode errcode = NULL_INITIAL; /* initialize error code to NULL_INITIAL */
     char* inputFileName = "test1"; /* input file name */
+    int DCF = 0, ICF = 0;
+    macroTable macroNames; /* macro table to store macro names */
+
+    FILE *fp = fopen("test1.as", "r"); /* file pointer for the input file */
+    parsedLine *pline = readLineType(fp, &errcode); /* read the first line from the input file */
+    fclose(fp); /* close the file pointer */
+    printf("error code: %d\n", errcode); /* print the error code */
+    if (pline == NULL) { /* if the line was not read successfully */
+        printErrorMsg(errcode, "\nwhile reading the first line"); /* print the error message */
+        return errcode; /* return the error code */
+    }
+    /*printParsedLine(pline);  print the parsed line */
+
+    freeScannedLine(pline); /* free the memory allocated for the parsed line */
+
+    if(TRUE)
+        return 0; /* if we are testing the readLineType function, exit here */
     
     printf("argc: %d\n", argc);
     if (argc >= 2) {
         printf("argv: %s\n", argv[1]);
         inputFileName = (char*) argv[1]; /* use the provided file name */
     }
+    
     printf("Input file name: %s\n", inputFileName); /* print the input file name */
     printf("Starting preprocessor...\n"); /* print start message */
-    errcode = executePreprocessor(inputFileName); /* test with a sample file name */
+    errcode = executePreprocessor(inputFileName, &macroNames); /* test with a sample file name */
     if (errcode != PREPROCESSOR_SUCCESS) {
         printErrorMsg(errcode, "\nwhile executing preprocessor"); /* print the error message */
         return errcode; /* return the error code */
     } 
     printf("\nPreprocessor executed successfully.\n"); /* print success message */
+    
     printf("Starting first pass...\n");
-    errcode = executeFirstPass(inputFileName); /* execute the first pass */
+    errcode = executeFirstPass(inputFileName, &DCF, &ICF, macroNames); /* execute the first pass */
     if (errcode != FIRSTPASS_SUCCESS) {
         printErrorMsg(errcode, "\nwhile executing first pass"); /* print the error message */
         return errcode; /* return the error code */

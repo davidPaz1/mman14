@@ -54,3 +54,4 @@ e:
 	make a
 	clear
 	make -s
+	rm -rf *.o *.am *.ob *.ent *.ext *.exe run

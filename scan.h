@@ -3,6 +3,7 @@
 
 #include "global.h"
 #include "error.h"
+#include "macroTable.h"
 
 #define OVER_LENGTH  1 /* overlength should store \n or \r if line is under MAX_LINE_FILE_LENGTH */
 #define COMMA_LENGTH 1 /* length of the comma character ',' */
@@ -30,7 +31,7 @@ char* getFirstToken(char *str, ErrCode *errorCode); /* get the first token from 
 char* cutFirstToken(char *str, ErrCode *errorCode); /* cut the first token from the string */
 
 Bool isEndOfLine(char* str); /* check if the string is an end of line */
-ErrCode isValidLabel(char *label);
+ErrCode isValidLabel(char *label, macroTable *table); /* check if the label is valid */
 Bool isLabel(char* str);
 
 /* for first pass mainly */

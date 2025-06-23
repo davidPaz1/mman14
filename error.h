@@ -31,7 +31,8 @@ typedef enum ErrCode {
     LABEL_TOO_LONG = 21, /* label is too long */
     LABEL_EMPTY = 22, /* label is empty */
     LABEL_TEXT_AFTER_COLON = 23, /* text found after label colon */
-    INVALID_DIRECTIVE = 24, /* invalid directive */
+    LABEL_SAME_AS_MACRO = 24, /* label is the same as a macro name, should never be used */
+    INVALID_DIRECTIVE = 25, /* invalid directive */
 
     /* macroTable errors 30 - 39 */
     MACROTABLE_SUCCESS = 30, /* macro operation was successful */

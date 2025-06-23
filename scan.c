@@ -2,7 +2,7 @@
 #include "error.h"
 #include "scan.h"
 #include "util.h"
-
+#include "macroTable.h"
 
 char* readLine(FILE *fp, ErrCode *errorCode) {
 
@@ -154,10 +154,6 @@ ErrCode determineLineType(parsedLine *pline)
     /* note we still need to check for errors of getFirstToken() but we will do that after isLabel() call*/
 
     if (isLabel(token)) { /* check if the first token is a label */
-        if ((errorCode = isValidLabel(token)) != SCAN_SUCCESS) { /* check if the label is valid */
-            free(token);
-            return errorCode; /* return the error code if the label is invalid */
-        }
         pline->label = token;
         token = cutFirstToken(line, &errorCode); /* get the next token after the label */
     }
@@ -165,8 +161,10 @@ ErrCode determineLineType(parsedLine *pline)
         pline->label = NULL; /* set the label to NULL */
     
     /* here we check for errors of getFirstToken() (may be the first token may be the second)*/
-    if (errorCode != SCAN_SUCCESS) 
+    if (errorCode != SCAN_SUCCESS) {
+        free(token); /* free the allocated memory for the token */
         return errorCode;
+    }
     
     pline->firstToken = token; /* set the first token to the operation name */
 
@@ -197,7 +195,7 @@ Bool isLabel(char *str)
     return TRUE; /* if ':' is found, it is a label */
 }
 
-ErrCode isValidLabel(char *label)
+ErrCode isValidLabel(char *label, macroTable *table)
 {
     int i, len = strlen(label); /* start from 1 to skip the first character */
 
@@ -219,6 +217,9 @@ ErrCode isValidLabel(char *label)
             return LABEL_INVALID_CHAR; /* if char isnt alphanumeric or ':' its invalid */
         }
     }
+
+    if(isMacroExists(table, label)) /* check if the label is a macro name */
+        return LABEL_SAME_AS_MACRO; /* label cannot be a macro name */
 
     /* note: we do not check the last character cas it is ':' (we only call isValidLabel() if there is
      a colon and if we didn't find any other ':' in the range 1 to len-1 it must be in len) */
@@ -244,5 +245,25 @@ void freeScannedLine(parsedLine *pline) {
         free(pline->restOfLine);
     if (pline->label != NULL) 
         free(pline->label);
+    if (pline->firstToken != NULL)
+        free(pline->firstToken);
     free(pline); /* free the parsedLine structure itself */
+}
+
+void printParsedLine(parsedLine *pline) {
+    if (pline == NULL) {
+        printf("Parsed line is NULL\n");
+        return; /* if the parsedLine is NULL, do nothing */
+    }
+
+    printf("Rest of line: %s\n", pline->restOfLine);
+    if (pline->restOfLine != NULL) 
+    {
+        printf("Rest of line len is %d\n", strlen(pline->restOfLine));
+    }
+    
+    
+    printf("Label: %s\n", pline->label);
+    printf("First token: %s\n", pline->firstToken);
+    printf("Type of line: %d\n", pline->typesOfLine);
 }
