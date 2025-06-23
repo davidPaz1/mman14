@@ -33,7 +33,6 @@ void freeMacroTable(macroTable* table);
 /* "private" functions */
 macroNode* createMacroNode(char* macroName, ErrCode* errorCode);
 macroBody* createMacroBody(char* line, ErrCode* errorCode);
-ErrCode isMacroNameValid(macroTable* table, char* macroName);
 Bool isMacroExists(macroTable* table, char* macroName);
 void freeMacroNode(macroNode* node);
 void freeMacroBody(macroBody* body);

@@ -6,10 +6,10 @@
         "string.h": "c",
         "global.h": "c",
         "util.h": "c",
-        "scan.h": "c",
         "error.h": "c",
         "preprocessor.h": "c",
         "macrotable.h": "c",
-        "firstpass.h": "c"
+        "firstpass.h": "c",
+        "lexer.h": "c"
     }
 }

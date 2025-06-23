@@ -1,9 +1,9 @@
-#include "global.h"
-#include "scan.h"
-#include "util.h"
-#include "error.h"
-#include "macroTable.h"
 #include "preprocessor.h"
+#include "global.h"
+#include "error.h"
+#include "lexer.h" /* for isLabel */
+#include "util.h"
+#include "macroTable.h"
 
 ErrCode executePreprocessor(char *inputFileName, macroTable *macroNames) {
     FILE *asFile, *amFile;

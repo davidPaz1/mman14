@@ -1,6 +1,109 @@
 #include "global.h"
 #include "util.h"
 
+/* scanning functions */
+char* readLine(FILE *fp, ErrCode *errorCode) {
+
+    /* overlength should store \n or \r if line is under MAX_LINE_FILE_LENGTH */
+    char *line = malloc(MAX_LINE_FILE_LENGTH + OVER_LENGTH  + NULL_TERMINATOR);
+    char next; 
+    *errorCode = NULL_INITIAL; /* reset error code to initial state */
+    if (line == NULL) {
+        *errorCode = MALLOC_ERROR;
+        return NULL; /* malloc failed */
+    }
+
+    /* overlength should store \n or \r if line is under MAX_LINE_FILE_LENGTH */
+    if (fgets(line, MAX_LINE_FILE_LENGTH + OVER_LENGTH  + NULL_TERMINATOR, fp) == NULL) {
+        free(line);
+        if (feof(fp))
+            *errorCode = EOF_REACHED;
+        else 
+            *errorCode = FILE_READ_ERROR;
+        return NULL; /* end of file or error */
+    }
+
+    next = fgetc(fp); /* peek on the next character */
+    if (next != EOF)  /* if the next character is not EOF, it means the line is longer than MAX_LINE_FILE_LENGTH */
+        ungetc(next, fp); /* put back the next character to the input stream */
+    
+    if (strchr(line, '\n') == NULL && strchr(line, '\r') == NULL && next != EOF) {
+        char c; /* discard the rest of the line from the input stream */
+        while ((c = fgetc(fp)) != '\n' && c != EOF);
+        *errorCode = LINE_TOO_LONG;
+        free(line);
+        return NULL; /* line is too long, return NULL */
+    }
+    else {
+        line[strcspn(line, "\r\n")] = '\0'; /* remove the newline or carriage return character from the end of the line */
+        if ( strlen(line) == MAX_LINE_FILE_LENGTH)  /* if the line is exactly MAX_LINE_FILE_LENGTH characters long, it has a remaining '\n' */
+            (void) fgetc(fp);  /* discard the unused character '\n' from the input stream */
+        *errorCode = SCAN_SUCCESS; /* set error code to success */
+    }
+    return line;
+}
+
+char* getFirstToken(char *str, ErrCode *errorCode)
+{
+    int i = 0;
+    char* word;
+    *errorCode = NULL_INITIAL; /* reset error code to initial state */
+
+    while (isspace(str[i]))
+        i++;
+
+    if (str[i] == '\0') { /* if the string is empty or contains only whitespace */
+        *errorCode = END_OF_LINE;
+        return NULL;
+    }
+
+    if (str[i] == ',') { /* if the first character is ';' or ',' */
+        word = malloc(COMMA_LENGTH + NULL_TERMINATOR); /* 1 for illegal character and 1 for '\0' */
+        if (word == NULL) {
+            *errorCode = MALLOC_ERROR;
+            return NULL; 
+        }
+        word[0] = ','; /* set the first character to ',' */
+        word[1] = '\0';  /* set the last character to '\0' */
+        i++; /* skip the illegal character */
+    }
+    else {
+        int start = i;
+        while (str[i] != '\0' && str[i] != ',' && !isspace(str[i]))  /* find the end of the word */
+            i++;
+
+        word = malloc(i - start + 1); /* +1 for '\0' */
+        if (word == NULL) {
+            *errorCode = MALLOC_ERROR;
+            return NULL;
+        }
+
+        strncpy(word, str + start, i - start);
+        word[i - start] = '\0';
+    }
+
+    while (isspace(str[i])) 
+        i++;
+
+    *errorCode = SCAN_SUCCESS; /* set error code to success */
+    return word;
+}
+
+char *cutFirstToken(char *str, ErrCode *errorCode)
+{
+    char *word;
+    *errorCode = NULL_INITIAL; /* reset error code to initial state */
+    word = getFirstToken(str, errorCode);
+
+    if (*errorCode != SCAN_SUCCESS) /* if an error occurred while getting the first word */
+        return NULL;
+
+    cutnChar(str, strlen(word)); /* cut the first word from the string */
+    return word;
+}
+
+/* string manipulation functions */
+
 char* strDup(char* src) {
     char* dest = malloc(strlen(src) + NULL_TERMINATOR);
     if (dest != NULL) 
@@ -41,6 +144,8 @@ void cutnChar(char *str, int n)
 
     memmove(str, str + cuttingLength, strlen(str) - cuttingLength + 1); /* Move the string left by the number of leading spaces */
 }
+
+/* file management functions */
 
 FILE* openFile(char *filename, char *ending, char *mode, ErrCode *errorCode)
 {
@@ -86,75 +191,4 @@ ErrCode delFile(char *filename, char *ending)
 
     free(fullFileName);
     return SCAN_SUCCESS;
-}
-
-
-Bool isOperationName(char* arg) {
-
-    if (strcmp(arg, "mov") == 0 ||
-        strcmp(arg, "cmp") == 0 ||
-        strcmp(arg, "add") == 0 ||
-        strcmp(arg, "sub") == 0 ||
-        strcmp(arg, "lea") == 0 ||
-        strcmp(arg, "clr") == 0 ||
-        strcmp(arg, "not") == 0 ||
-        strcmp(arg, "inc") == 0 ||
-        strcmp(arg, "dec") == 0 ||
-        strcmp(arg, "jmp") == 0 ||
-        strcmp(arg, "bne") == 0 ||
-        strcmp(arg, "jsr") == 0 ||
-        strcmp(arg, "red") == 0 ||
-        strcmp(arg, "prn") == 0 ||
-        strcmp(arg, "rts") == 0 ||
-        strcmp(arg, "stop") == 0)
-        return TRUE;
-    else 
-        return FALSE;
-}
-
-Bool isRegister(char* arg) {
-    if (strcmp(arg, "r0") == 0 ||
-        strcmp(arg, "r1") == 0 ||
-        strcmp(arg, "r2") == 0 ||
-        strcmp(arg, "r3") == 0 ||
-        strcmp(arg, "r4") == 0 ||
-        strcmp(arg, "r5") == 0 ||
-        strcmp(arg, "r6") == 0 ||
-        strcmp(arg, "r7") == 0)
-        return TRUE;
-    return FALSE;
-}
-
-Bool isDirective(char* arg) {
-
-    if (strcmp(arg, ".data") == 0 ||
-        strcmp(arg, ".string") == 0 ||
-        strcmp(arg, ".entry") == 0 ||
-        strcmp(arg, ".extern") == 0)
-        return TRUE;
-        
-    return FALSE;
-}
-
-Bool isMacroStart(char* arg) {
-    if (strcmp(arg, "mcro") == 0)
-        return TRUE;
-    return FALSE;
-}
-
-Bool isMacroEnd(char* arg) {
-    if (strcmp(arg, "mcroend") == 0)
-        return TRUE;
-    return FALSE;
-}
-
-Bool isKeywords(char *arg)
-{
-    if (isOperationName(arg) ||
-        isRegister(arg) ||
-        isDirective(arg) ||
-        isMacroStart(arg) ||
-        isMacroEnd(arg))
-        return TRUE;
-    return FALSE;
 }

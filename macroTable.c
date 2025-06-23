@@ -1,7 +1,8 @@
+#include "macroTable.h"
 #include "global.h"
 #include "error.h"
-#include "macroTable.h"
-#include "util.h"
+#include "lexer.h" /* for isMacroNameValid */
+#include "util.h" /* for strDup */
 
 /* MacroTable functions that operate on the MacroTable struct (linked list)*/
 macroTable* createMacroTable(ErrCode *errorCode) {
@@ -130,32 +131,6 @@ macroBody* findMacro(macroTable* table, char* macroName, ErrCode* errorCode) {
     return NULL; /* Macro not found */
 }
 
-ErrCode isMacroNameValid(macroTable* table ,char* macroName) {
-    int i; /* index for iterating through the macro name */
-    int len = strlen(macroName); /* length of the macro name */
-
-    if (len == 0)
-        return MACRO_NAME_EMPTY; /* exit if the macro name is empty */
-    if(len > MAX_MACRO_LENGTH) 
-        return MACRO_NAME_TOO_LONG; /* exit if the macro name is too long */
-    
-    if (!isalpha(macroName[0]))
-        return MACRO_NAME_INVALID_CHAR; /* exit if the first character is not a letter */
-
-    for (i = 1; i < len; i++) {
-        if (!isalnum(macroName[i]) && macroName[i] != '_')
-            return MACRO_NAME_INVALID_CHAR; /* exit if the macro name contains invalid characters */
-    }
-    
-    if (isKeywords(macroName))
-        return MACRO_NAME_KEYWORD; /* exit if the macro name is a keyword */
-    
-    if (isMacroExists(table, macroName))
-        return MACRO_NAME_EXISTS; /* exit if the macro name already exists */
-    
-    return MACROTABLE_SUCCESS; /* Macro name is valid */
-}
-
 Bool isMacroExists(macroTable* table, char* macroName) {
 
     macroNode* current = table->macroHead; /* used to iterate through the macro list */
@@ -167,6 +142,7 @@ Bool isMacroExists(macroTable* table, char* macroName) {
     
     return FALSE; /* Macro does not exist */
 }
+
 
 void freeMacroTable(macroTable* table) {
     freeMacroNode(table->macroHead); /* free the first macro node */

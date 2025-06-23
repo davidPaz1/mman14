@@ -1,9 +1,9 @@
-#include "global.h"
-#include "scan.h"
-#include "util.h"
-#include "error.h"
-#include "macroTable.h"
 #include "firstPass.h"
+#include "global.h"
+#include "error.h"
+#include "lexer.h"
+#include "util.h"
+#include "macroTable.h"
 
 /* .am -> .ob , .ext , .ent*/
 /* 17 has an explanation for the first pass */

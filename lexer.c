@@ -1,108 +1,8 @@
+#include "lexer.h"
 #include "global.h"
 #include "error.h"
-#include "scan.h"
 #include "util.h"
 #include "macroTable.h"
-
-char* readLine(FILE *fp, ErrCode *errorCode) {
-
-    /* overlength should store \n or \r if line is under MAX_LINE_FILE_LENGTH */
-    char *line = malloc(MAX_LINE_FILE_LENGTH + OVER_LENGTH  + NULL_TERMINATOR);
-    char next; 
-    *errorCode = NULL_INITIAL; /* reset error code to initial state */
-    if (line == NULL) {
-        *errorCode = MALLOC_ERROR;
-        return NULL; /* malloc failed */
-    }
-
-    /* overlength should store \n or \r if line is under MAX_LINE_FILE_LENGTH */
-    if (fgets(line, MAX_LINE_FILE_LENGTH + OVER_LENGTH  + NULL_TERMINATOR, fp) == NULL) {
-        free(line);
-        if (feof(fp))
-            *errorCode = EOF_REACHED;
-        else 
-            *errorCode = FILE_READ_ERROR;
-        return NULL; /* end of file or error */
-    }
-
-    next = fgetc(fp); /* peek on the next character */
-    if (next != EOF)  /* if the next character is not EOF, it means the line is longer than MAX_LINE_FILE_LENGTH */
-        ungetc(next, fp); /* put back the next character to the input stream */
-    
-    if (strchr(line, '\n') == NULL && strchr(line, '\r') == NULL && next != EOF) {
-        char c; /* discard the rest of the line from the input stream */
-        while ((c = fgetc(fp)) != '\n' && c != EOF);
-        *errorCode = LINE_TOO_LONG;
-        free(line);
-        return NULL; /* line is too long, return NULL */
-    }
-    else {
-        line[strcspn(line, "\r\n")] = '\0'; /* remove the newline or carriage return character from the end of the line */
-        if ( strlen(line) == MAX_LINE_FILE_LENGTH)  /* if the line is exactly MAX_LINE_FILE_LENGTH characters long, it has a remaining '\n' */
-            (void) fgetc(fp);  /* discard the unused character '\n' from the input stream */
-        *errorCode = SCAN_SUCCESS; /* set error code to success */
-    }
-    return line;
-}
-
-char* getFirstToken(char *str, ErrCode *errorCode)
-{
-    int i = 0;
-    char* word;
-    *errorCode = NULL_INITIAL; /* reset error code to initial state */
-
-    while (isspace(str[i]))
-        i++;
-
-    if (str[i] == '\0') { /* if the string is empty or contains only whitespace */
-        *errorCode = END_OF_LINE;
-        return NULL;
-    }
-
-    if (str[i] == ',') { /* if the first character is ';' or ',' */
-        word = malloc(COMMA_LENGTH + NULL_TERMINATOR); /* 1 for illegal character and 1 for '\0' */
-        if (word == NULL) {
-            *errorCode = MALLOC_ERROR;
-            return NULL; 
-        }
-        word[0] = ','; /* set the first character to ',' */
-        word[1] = '\0';  /* set the last character to '\0' */
-        i++; /* skip the illegal character */
-    }
-    else {
-        int start = i;
-        while (str[i] != '\0' && str[i] != ',' && !isspace(str[i]))  /* find the end of the word */
-            i++;
-
-        word = malloc(i - start + 1); /* +1 for '\0' */
-        if (word == NULL) {
-            *errorCode = MALLOC_ERROR;
-            return NULL;
-        }
-
-        strncpy(word, str + start, i - start);
-        word[i - start] = '\0';
-    }
-
-    while (isspace(str[i])) 
-        i++;
-
-    *errorCode = SCAN_SUCCESS; /* set error code to success */
-    return word;
-}
-
-char *cutFirstToken(char *str, ErrCode *errorCode)
-{
-    char *word;
-    *errorCode = NULL_INITIAL; /* reset error code to initial state */
-    word = getFirstToken(str, errorCode);
-
-    if (*errorCode != SCAN_SUCCESS) /* if an error occurred while getting the first word */
-        return NULL;
-
-    cutnChar(str, strlen(word)); /* cut the first word from the string */
-    return word;
-}
 
 parsedLine* readLineType(FILE *fp, ErrCode *errorCode)
 {
@@ -182,6 +82,120 @@ ErrCode determineLineType(parsedLine *pline)
     return SCAN_SUCCESS; 
 }
 
+void freeScannedLine(parsedLine *pline) {
+    if (pline == NULL) 
+        return; /* if the parsedLine is NULL, do nothing */
+
+    if (pline->restOfLine != NULL) 
+        free(pline->restOfLine);
+    if (pline->label != NULL) 
+        free(pline->label);
+    if (pline->firstToken != NULL)
+        free(pline->firstToken);
+    free(pline); /* free the parsedLine structure itself */
+}
+
+void printParsedLine(parsedLine *pline) {
+    if (pline == NULL) {
+        printf("Parsed line is NULL\n");
+        return; /* if the parsedLine is NULL, do nothing */
+    }
+
+    printf("Rest of line: %s\n", pline->restOfLine);
+    if (pline->restOfLine != NULL) 
+    {
+        printf("Rest of line len is %d\n", strlen(pline->restOfLine));
+    }
+    
+    
+    printf("Label: %s\n", pline->label);
+    printf("First token: %s\n", pline->firstToken);
+    printf("Type of line: %d\n", pline->typesOfLine);
+}
+
+/* is X functions: */
+
+Bool isEndOfLine(char *str)
+{
+    int i = 0;
+    while (isspace(str[i])) /* skip leading whitespace */
+        i++;
+    
+    if (str[i] == '\0') /* if the string is empty or contains only whitespace */
+        return TRUE; 
+    return FALSE; /* if there are non-whitespace characters, it is not end of line */
+}
+
+Bool isOperationName(char* arg) {
+
+    if (strcmp(arg, "mov") == 0 ||
+        strcmp(arg, "cmp") == 0 ||
+        strcmp(arg, "add") == 0 ||
+        strcmp(arg, "sub") == 0 ||
+        strcmp(arg, "lea") == 0 ||
+        strcmp(arg, "clr") == 0 ||
+        strcmp(arg, "not") == 0 ||
+        strcmp(arg, "inc") == 0 ||
+        strcmp(arg, "dec") == 0 ||
+        strcmp(arg, "jmp") == 0 ||
+        strcmp(arg, "bne") == 0 ||
+        strcmp(arg, "jsr") == 0 ||
+        strcmp(arg, "red") == 0 ||
+        strcmp(arg, "prn") == 0 ||
+        strcmp(arg, "rts") == 0 ||
+        strcmp(arg, "stop") == 0)
+        return TRUE;
+    else 
+        return FALSE;
+}
+
+Bool isRegister(char* arg) {
+    if (strcmp(arg, "r0") == 0 ||
+        strcmp(arg, "r1") == 0 ||
+        strcmp(arg, "r2") == 0 ||
+        strcmp(arg, "r3") == 0 ||
+        strcmp(arg, "r4") == 0 ||
+        strcmp(arg, "r5") == 0 ||
+        strcmp(arg, "r6") == 0 ||
+        strcmp(arg, "r7") == 0)
+        return TRUE;
+    return FALSE;
+}
+
+Bool isDirective(char* arg) {
+
+    if (strcmp(arg, ".data") == 0 ||
+        strcmp(arg, ".string") == 0 ||
+        strcmp(arg, ".entry") == 0 ||
+        strcmp(arg, ".extern") == 0)
+        return TRUE;
+        
+    return FALSE;
+}
+
+Bool isMacroStart(char* arg) {
+    if (strcmp(arg, "mcro") == 0)
+        return TRUE;
+    return FALSE;
+}
+
+Bool isMacroEnd(char* arg) {
+    if (strcmp(arg, "mcroend") == 0)
+        return TRUE;
+    return FALSE;
+}
+
+Bool isKeywords(char *arg)
+{
+    if (isOperationName(arg) ||
+        isRegister(arg) ||
+        isDirective(arg) ||
+        isMacroStart(arg) ||
+        isMacroEnd(arg))
+        return TRUE;
+    return FALSE;
+}
+
 Bool isLabel(char *str)
 {
     char *labelEnd;
@@ -226,44 +240,28 @@ ErrCode isValidLabel(char *label, macroTable *table)
     return SCAN_SUCCESS; /* valid label */
 }
 
-Bool isEndOfLine(char *str)
-{
-    int i = 0;
-    while (isspace(str[i])) /* skip leading whitespace */
-        i++;
+ErrCode isMacroNameValid(macroTable* table ,char* macroName) {
+    int i; /* index for iterating through the macro name */
+    int len = strlen(macroName); /* length of the macro name */
+
+    if (len == 0)
+        return MACRO_NAME_EMPTY; /* exit if the macro name is empty */
+    if(len > MAX_MACRO_LENGTH) 
+        return MACRO_NAME_TOO_LONG; /* exit if the macro name is too long */
     
-    if (str[i] == '\0') /* if the string is empty or contains only whitespace */
-        return TRUE; 
-    return FALSE; /* if there are non-whitespace characters, it is not end of line */
-}
+    if (!isalpha(macroName[0]))
+        return MACRO_NAME_INVALID_CHAR; /* exit if the first character is not a letter */
 
-void freeScannedLine(parsedLine *pline) {
-    if (pline == NULL) 
-        return; /* if the parsedLine is NULL, do nothing */
-
-    if (pline->restOfLine != NULL) 
-        free(pline->restOfLine);
-    if (pline->label != NULL) 
-        free(pline->label);
-    if (pline->firstToken != NULL)
-        free(pline->firstToken);
-    free(pline); /* free the parsedLine structure itself */
-}
-
-void printParsedLine(parsedLine *pline) {
-    if (pline == NULL) {
-        printf("Parsed line is NULL\n");
-        return; /* if the parsedLine is NULL, do nothing */
-    }
-
-    printf("Rest of line: %s\n", pline->restOfLine);
-    if (pline->restOfLine != NULL) 
-    {
-        printf("Rest of line len is %d\n", strlen(pline->restOfLine));
+    for (i = 1; i < len; i++) {
+        if (!isalnum(macroName[i]) && macroName[i] != '_')
+            return MACRO_NAME_INVALID_CHAR; /* exit if the macro name contains invalid characters */
     }
     
+    if (isKeywords(macroName))
+        return MACRO_NAME_KEYWORD; /* exit if the macro name is a keyword */
     
-    printf("Label: %s\n", pline->label);
-    printf("First token: %s\n", pline->firstToken);
-    printf("Type of line: %d\n", pline->typesOfLine);
+    if (isMacroExists(table, macroName))
+        return MACRO_NAME_EXISTS; /* exit if the macro name already exists */
+    
+    return MACROTABLE_SUCCESS; /* Macro name is valid */
 }

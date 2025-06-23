@@ -2,7 +2,7 @@
 #include "preprocessor.h"
 #include "firstPass.h"
 #include "error.h"
-#include "scan.h"
+#include "lexer.h"
 #include "macroTable.h"
 
 int main(int argc, char const *argv[])
@@ -24,8 +24,7 @@ int main(int argc, char const *argv[])
 
     freeScannedLine(pline); /* free the memory allocated for the parsed line */
 
-    if(TRUE)
-        return 0; /* if we are testing the readLineType function, exit here */
+
     
     printf("argc: %d\n", argc);
     if (argc >= 2) {

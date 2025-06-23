@@ -2,7 +2,7 @@
 #define FIRSTPASS_H
 #include "global.h"
 #include "error.h"
-#include "scan.h"
+#include "lexer.h"
 #include "macroTable.h"
 
 /* Preprocessor functions prototypes */
