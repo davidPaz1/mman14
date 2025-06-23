@@ -1,4 +1,4 @@
-#include "macroTable.h"
+#include "tables.h"
 #include "global.h"
 #include "error.h"
 #include "lexer.h" /* for isMacroNameValid */

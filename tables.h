@@ -1,5 +1,5 @@
-#ifndef MACRO_TABLE_H
-#define MACRO_TABLE_H
+#ifndef TABLES_H
+#define TABLES_H
 
 #include "global.h"
 #include "error.h"

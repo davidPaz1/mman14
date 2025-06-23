@@ -2,21 +2,21 @@ CC = gcc
 exeFlags = $(CC) -pedantic -ansi -Wall -g
 compileFlags =  $(exeFlags) -c
 
-run: main.o macroTable.o preprocessor.o firstPass.o util.o lexer.o error.o
-	$(exeFlags) main.o macroTable.o preprocessor.o firstPass.o util.o lexer.o error.o -o run
+run: main.o tables.o preprocessor.o firstPass.o util.o lexer.o error.o
+	$(exeFlags) main.o tables.o preprocessor.o firstPass.o util.o lexer.o error.o -o run
 main.o: main.c preprocessor.h firstPass.h error.h global.h
 	$(compileFlags) main.c
-macroTable.o: macroTable.c macroTable.h global.h error.h lexer.h util.h
-	$(compileFlags) macroTable.c
-preprocessor.o: preprocessor.c preprocessor.h global.h error.h lexer.h util.h macroTable.h
+tables.o: tables.c tables.h global.h error.h lexer.h util.h
+	$(compileFlags) tables.c
+preprocessor.o: preprocessor.c preprocessor.h global.h error.h lexer.h util.h tables.h
 	$(compileFlags) preprocessor.c
-firstPass.o: firstPass.c firstPass.h global.h error.h lexer.h util.h macroTable.h 
+firstPass.o: firstPass.c firstPass.h global.h error.h lexer.h util.h tables.h 
 	$(compileFlags) firstPass.c
 
 
 util.o : util.c util.h global.h
 	$(compileFlags) util.c
-lexer.o : lexer.c lexer.h global.h error.h  util.h macroTable.h
+lexer.o : lexer.c lexer.h global.h error.h  util.h tables.h
 	$(compileFlags) lexer.c
 error.o : error.c error.h global.h
 	$(compileFlags) error.c

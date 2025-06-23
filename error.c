@@ -46,7 +46,7 @@ char* getErrorMessage(ErrCode code) {
         case INVALID_DIRECTIVE: /* 25 */
             return "invalid directive, should be one of the valid directives (.data, .string, .entry, .extern).";
 
-        /* macroTable errors 30 - 39 */
+        /* tables errors 30 - 49 */
         case MACRO_NAME_EXISTS: /* 31 */
             return "macro name already exists.";
         case UNMATCHED_MACRO_END: /* 32 */
@@ -62,7 +62,6 @@ char* getErrorMessage(ErrCode code) {
         case MACRO_NAME_KEYWORD: /* 37 */   
             return "macro name is a set keyword by the assembly language.";
 
-        /* symbolTable errors 40 - 49 */
         case SYMBOLTABLE_SUCCESS: /* 40 */
             return "symbol table operation was successful.";
         case SYMBOL_NAME_EXISTS: /* 41 */

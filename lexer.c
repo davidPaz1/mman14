@@ -2,7 +2,7 @@
 #include "global.h"
 #include "error.h"
 #include "util.h"
-#include "macroTable.h"
+#include "tables.h"
 
 parsedLine* readLineType(FILE *fp, ErrCode *errorCode)
 {

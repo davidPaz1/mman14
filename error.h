@@ -34,7 +34,7 @@ typedef enum ErrCode {
     LABEL_SAME_AS_MACRO = 24, /* label is the same as a macro name, should never be used */
     INVALID_DIRECTIVE = 25, /* invalid directive */
 
-    /* macroTable errors 30 - 39 */
+    /* tables errors 30 - 49 */
     MACROTABLE_SUCCESS = 30, /* macro operation was successful */
     MACRO_NAME_EXISTS = 31, /* macro name already exists */
     UNMATCHED_MACRO_END = 32, /* macro not found */
@@ -44,7 +44,6 @@ typedef enum ErrCode {
     MACRO_NAME_INVALID_CHAR = 36, /* macro name contains invalid characters */
     MACRO_NAME_KEYWORD = 37, /* macro name is a keyword, should never be used */
 
-    /* symbolTable errors 40 - 49 */
     SYMBOLTABLE_SUCCESS = 40, /* symbol table operation was successful */
     SYMBOL_NAME_EXISTS = 41, /* symbol name already exists */
 

@@ -3,7 +3,7 @@
 #include "firstPass.h"
 #include "error.h"
 #include "lexer.h"
-#include "macroTable.h"
+#include "tables.h"
 
 int main(int argc, char const *argv[])
 {

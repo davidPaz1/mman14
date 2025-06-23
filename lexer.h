@@ -3,7 +3,7 @@
 
 #include "global.h"
 #include "error.h"
-#include "macroTable.h"
+#include "tables.h"
 
 #define COLON_LENGTH 1 /* length of the colon character ':' */
 

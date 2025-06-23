@@ -3,7 +3,7 @@
 #include "error.h"
 #include "lexer.h" /* for isLabel */
 #include "util.h"
-#include "macroTable.h"
+#include "tables.h"
 
 ErrCode executePreprocessor(char *inputFileName, macroTable *macroNames) {
     FILE *asFile, *amFile;

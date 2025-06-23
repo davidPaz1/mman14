@@ -3,7 +3,7 @@
 #include "global.h"
 #include "error.h"
 #include "lexer.h"
-#include "macroTable.h"
+#include "tables.h"
 
 /* Preprocessor functions prototypes */
 ErrCode executeFirstPass(char *inputFileName, int *DCF, int *ICF, macroTable macroNames); /* main function for the preprocessor */
