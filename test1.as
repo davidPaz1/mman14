@@ -24,7 +24,6 @@ TRY: a_mc
     sub r1, r4
     inc K
     mcroend
-AGAIN:
 
 STR: .string “abcdef”
 LENGTH: .data 6,-9,15

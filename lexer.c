@@ -4,7 +4,7 @@
 #include "util.h"
 #include "tables.h"
 
-parsedLine* readLineType(FILE *fp, ErrCode *errorCode)
+parsedLine* readParsedLine(FILE *fp, ErrCode *errorCode)
 {
     parsedLine *lineRead;
     *errorCode = NULL_INITIAL; /* reset error code to initial state */
@@ -16,13 +16,14 @@ parsedLine* readLineType(FILE *fp, ErrCode *errorCode)
     }
 
     lineRead->restOfLine = readLine(fp, errorCode); /* we will delete the parsed parts from this line */
-    if (*errorCode != SCAN_SUCCESS) { /* if an error occurred while reading the line */
+    if (*errorCode != UTIL_SUCCESS) { /* if an error occurred while reading the line */
         free(lineRead); /* free the allocated memory for the parsedLine */
         return NULL; /* return NULL */
     }
     
     /* if an error occurred while determining the line type */
-    if ((*errorCode = determineLineType(lineRead)) != SCAN_SUCCESS){
+    *errorCode = determineLineType(lineRead); /* determine the type of the line */
+    if (*errorCode != LEXER_SUCCESS) {
         freeScannedLine(lineRead); /* free the allocated memory for the parsedLine */
         return NULL; 
     }
@@ -38,16 +39,13 @@ ErrCode determineLineType(parsedLine *pline)
     line = pline->restOfLine; /* get the line from the parsedLine structure (easier to read) */
     pline->firstToken = NULL; /* initialize the first token to NULL */
     pline->label = NULL; /* initialize the label to NULL */
-
-    if (isEndOfLine(line)) { /* check if the line is empty or contains only whitespace */
-        pline->typesOfLine = EMPTY_LINE; /* set the type of line to EMPTY_LINE */
-        return SCAN_SUCCESS; /* return success */
-    }
-
-    if (line[0] == ';') { /* if the line is a comment */
-        pline->typesOfLine = COMMENT_LINE;
-        return SCAN_SUCCESS; /* return success */
-    }
+    pline->typesOfLine = UNSET_LINE; /* initialize the type of line to UNSET_LINE */
+    
+    if (isEndOfLine(line)) 
+        return EMPTY_LINE_TYPE; /* if the line is empty, return EMPTY_LINE_TYPE */
+    
+    if (line[0] == ';') 
+        return COMMENT_LINE_TYPE; /* if the line is a comment, return COMMENT_LINE_TYPE */
 
     token = cutFirstToken(line, &errorCode); /* get the first token from the line */
 
@@ -61,25 +59,25 @@ ErrCode determineLineType(parsedLine *pline)
         pline->label = NULL; /* set the label to NULL */
     
     /* here we check for errors of getFirstToken() (may be the first token may be the second)*/
-    if (errorCode != SCAN_SUCCESS) {
+    if (errorCode != UTIL_SUCCESS) {
         free(token); /* free the allocated memory for the token */
         return errorCode;
     }
     
     pline->firstToken = token; /* set the first token to the operation name */
 
+    /* we dont need to free token as it is now part of the parsedLine structure */
     if (isOperationName(token))   /* if the line is an instruction */
         pline->typesOfLine = INSTRUCTION_LINE;
     else if (isDirective(token)) 
         pline->typesOfLine = DIRECTIVE_LINE; /* if the line is a directive */
-    else if (token[0] == '.') { /* if the line contains a dot, it is unknown directive */
-            free(token);
-            return INVALID_DIRECTIVE; /* return error code for invalid directive */
-        }
-    else /* if the line is not an instruction or a directive */
+    else if (token[0] == '.') /* if the line contains a dot, it is unknown directive */
+        return INVALID_DIRECTIVE; /* return error code for invalid directive */
+    else {/* if the line is not an instruction or a directive */
+        printParsedLine(pline); /* print the parsed line for debugging purposes */
         return UNKNOWN_LINE_TYPE; /* return error code for unknown line type */
-
-    return SCAN_SUCCESS; 
+    }
+    return LEXER_SUCCESS; 
 }
 
 void freeScannedLine(parsedLine *pline) {
@@ -101,15 +99,15 @@ void printParsedLine(parsedLine *pline) {
         return; /* if the parsedLine is NULL, do nothing */
     }
 
-    printf("Rest of line: %s\n", pline->restOfLine);
+    printf("Rest of line:%s\n", pline->restOfLine);
     if (pline->restOfLine != NULL) 
     {
         printf("Rest of line len is %d\n", strlen(pline->restOfLine));
     }
     
     
-    printf("Label: %s\n", pline->label);
-    printf("First token: %s\n", pline->firstToken);
+    printf("Label:%s\n", pline->label);
+    printf("First token:%s\n", pline->firstToken);
     printf("Type of line: %d\n", pline->typesOfLine);
 }
 
@@ -166,6 +164,7 @@ Bool isDirective(char* arg) {
 
     if (strcmp(arg, ".data") == 0 ||
         strcmp(arg, ".string") == 0 ||
+        strcmp(arg, ".mat") == 0 ||
         strcmp(arg, ".entry") == 0 ||
         strcmp(arg, ".extern") == 0)
         return TRUE;
@@ -237,7 +236,7 @@ ErrCode isValidLabel(char *label, macroTable *table)
 
     /* note: we do not check the last character cas it is ':' (we only call isValidLabel() if there is
      a colon and if we didn't find any other ':' in the range 1 to len-1 it must be in len) */
-    return SCAN_SUCCESS; /* valid label */
+    return LEXER_SUCCESS; /* valid label */
 }
 
 ErrCode isMacroNameValid(macroTable* table ,char* macroName) {

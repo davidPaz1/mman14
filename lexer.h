@@ -8,10 +8,10 @@
 #define COLON_LENGTH 1 /* length of the colon character ':' */
 
 typedef enum lineType {
-    EMPTY_LINE = 0, /* empty line */
-    COMMENT_LINE,   /* comment line */
-    INSTRUCTION_LINE, /* instruction line */
-    DIRECTIVE_LINE /* directive line */
+    /* empty line and comment line are set as an errorCode so i could return an empty struct */
+    INSTRUCTION_LINE = 0, /* instruction line */
+    DIRECTIVE_LINE, /* directive line */
+    UNSET_LINE = -1 /* unset line type, used for error handling */
 } lineType;
 
 typedef struct parsedLine {
@@ -23,7 +23,7 @@ typedef struct parsedLine {
 
 
 /* for first pass mainly */
-parsedLine* readLineType(FILE *fp, ErrCode *errorCode);
+parsedLine* readParsedLine(FILE *fp, ErrCode *errorCode);
 ErrCode determineLineType(parsedLine *pLine); /* determine the type of the line and if it has a label */
 void freeScannedLine(parsedLine *pLine); /* free the memory allocated for the parsedLine structure */
 void printParsedLine(parsedLine *pline); /* print the parsed line for debugging purposes */

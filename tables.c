@@ -145,6 +145,8 @@ Bool isMacroExists(macroTable* table, char* macroName) {
 
 
 void freeMacroTable(macroTable* table) {
+    if (table == NULL) /* check if the table is NULL */
+        return; /* exit if the table is NULL */
     freeMacroNode(table->macroHead); /* free the first macro node */
     free(table);
 }

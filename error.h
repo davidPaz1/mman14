@@ -17,8 +17,8 @@ typedef enum ErrCode {
     UNKNOWN_ERROR = 6, /* unknown error, should never be used */
     UNEXPECTED_NULL_INPUT = 7, /* unexpected NULL input, should never be used */
 
-    /* scan errors 10 - 29 */
-    SCAN_SUCCESS = 10,
+    /* util errors 10 - 29 */
+    UTIL_SUCCESS = 10,
     END_OF_LINE = 11,
     UNKNOWN_LINE_TYPE = 12, /* unknown line type */
     LINE_TOO_LONG = 13,
@@ -26,33 +26,38 @@ typedef enum ErrCode {
     FILE_WRITE_ERROR = 15,
     INVALID_FILE_MODE = 16, /* invalid file mode, should never be used */
     FILE_DELETE_ERROR = 17, /* file delete error */
-    LABEL_INVALID_START_CHAR = 18, /* invalid start character */
-    LABEL_INVALID_CHAR = 19, /* invalid character in the line */
-    LABEL_TOO_LONG = 21, /* label is too long */
-    LABEL_EMPTY = 22, /* label is empty */
-    LABEL_TEXT_AFTER_COLON = 23, /* text found after label colon */
-    LABEL_SAME_AS_MACRO = 24, /* label is the same as a macro name, should never be used */
-    INVALID_DIRECTIVE = 25, /* invalid directive */
 
-    /* tables errors 30 - 49 */
-    MACROTABLE_SUCCESS = 30, /* macro operation was successful */
-    MACRO_NAME_EXISTS = 31, /* macro name already exists */
-    UNMATCHED_MACRO_END = 32, /* macro not found */
-    MACRO_NAME_TOO_LONG = 33, /* macro name is too long */
-    MACRO_NAME_EMPTY = 34, /* macro name is empty */
-    MACRO_NAME_INVALID_START_CHAR = 35, /* macro name starts with an invalid character */
-    MACRO_NAME_INVALID_CHAR = 36, /* macro name contains invalid characters */
-    MACRO_NAME_KEYWORD = 37, /* macro name is a keyword, should never be used */
+    /* lexer errors 20 - 39 */
+    LEXER_SUCCESS = 20, /* scanning was successful */
+    EMPTY_LINE_TYPE = 21, /* empty line */
+    COMMENT_LINE_TYPE = 22, /* comment line */
+    LABEL_INVALID_START_CHAR = 23, /* invalid start character */
+    LABEL_INVALID_CHAR = 24, /* invalid character in the line */
+    LABEL_TOO_LONG = 25, /* label is too long */
+    LABEL_EMPTY = 26, /* label is empty */
+    LABEL_TEXT_AFTER_COLON = 27, /* text found after label colon */
+    LABEL_SAME_AS_MACRO = 28, /* label is the same as a macro name, should never be used */
+    INVALID_DIRECTIVE = 29, /* invalid directive */
 
-    SYMBOLTABLE_SUCCESS = 40, /* symbol table operation was successful */
-    SYMBOL_NAME_EXISTS = 41, /* symbol name already exists */
+    /* tables errors 40 - 59 */
+    MACROTABLE_SUCCESS = 40, /* macro operation was successful */
+    MACRO_NAME_EXISTS = 41, /* macro name already exists */
+    UNMATCHED_MACRO_END = 42, /* macro not found */
+    MACRO_NAME_TOO_LONG = 43, /* macro name is too long */
+    MACRO_NAME_EMPTY = 44, /* macro name is empty */
+    MACRO_NAME_INVALID_START_CHAR = 45, /* macro name starts with an invalid character */
+    MACRO_NAME_INVALID_CHAR = 46, /* macro name contains invalid characters */
+    MACRO_NAME_KEYWORD = 47, /* macro name is a keyword, should never be used */
 
-    /* preprocessor errors 50 - 59 */
-    PREPROCESSOR_SUCCESS = 50, /* preprocessor executed successfully */
+    SYMBOLTABLE_SUCCESS = 50, /* symbol table operation was successful */
+    SYMBOL_NAME_EXISTS = 51, /* symbol name already exists */
 
-    /* firstPass errors 60 - 69 */
-    FIRSTPASS_SUCCESS = 60, /* first pass was successful */
-    FIRSTPASS_FAILURE = 61 /* first pass error, should never be used */
+    /* preprocessor errors 60 - 69 */
+    PREPROCESSOR_SUCCESS = 60, /* preprocessor executed successfully */
+
+    /* firstPass errors 70 - 79 */
+    FIRSTPASS_SUCCESS = 70, /* first pass was successful */
+    FIRSTPASS_FAILURE = 71 /* first pass error, should never be used */
 
 } ErrCode;
 

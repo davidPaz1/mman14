@@ -18,7 +18,7 @@ char* getErrorMessage(ErrCode code) {
         case UNEXPECTED_NULL_INPUT: /* 7 */
             return "unexpected NULL input, should never be used.";
 
-        /* scan errors 10 - 29 */
+        /* util errors 10 - 29 */
         case UNKNOWN_LINE_TYPE: /* 12 */
             return "unknown line type found, should be one of the four types (instruction, directive, comment, empty).";
         case LINE_TOO_LONG: /* 13 */
@@ -31,45 +31,47 @@ char* getErrorMessage(ErrCode code) {
             return "file mode error, should never be used.";
         case FILE_DELETE_ERROR: /* 17 */
             return "file delete error.";
-        case LABEL_INVALID_START_CHAR: /* 18 */
+
+        /* lexer errors 20 - 39 */
+        case LABEL_INVALID_START_CHAR: /* 23 */
             return "label starts with an invalid character, should start with a letter.";
-        case LABEL_INVALID_CHAR: /* 19 */
+        case LABEL_INVALID_CHAR: /* 24 */
             return "label contains invalid characters, should only contain letters and digits.";
-        case LABEL_TOO_LONG: /* 21 */
+        case LABEL_TOO_LONG: /* 25 */
             return "label is too long, should be less than 30 characters.";
-        case LABEL_EMPTY: /* 22 */
+        case LABEL_EMPTY: /* 26 */
             return "label does not have a name, should not be empty.";
-        case LABEL_TEXT_AFTER_COLON: /* 23 */
+        case LABEL_TEXT_AFTER_COLON: /* 27 */
             return "text found after label colon, should not have any text after the colon.";
-        case LABEL_SAME_AS_MACRO: /* 24 */
+        case LABEL_SAME_AS_MACRO: /* 28 */
             return "label and a macro name cannot be the same.";
-        case INVALID_DIRECTIVE: /* 25 */
+        case INVALID_DIRECTIVE: /* 29 */
             return "invalid directive, should be one of the valid directives (.data, .string, .entry, .extern).";
 
-        /* tables errors 30 - 49 */
-        case MACRO_NAME_EXISTS: /* 31 */
+        /* tables errors 40 - 59 */
+        case MACRO_NAME_EXISTS: /* 41 */
             return "macro name already exists.";
-        case UNMATCHED_MACRO_END: /* 32 */
+        case UNMATCHED_MACRO_END: /* 42 */
             return "had \"macroend\" without having an opening macro definition.";
-        case MACRO_NAME_TOO_LONG: /* 33 */
+        case MACRO_NAME_TOO_LONG: /* 43 */
             return "macro name is too long.";
-        case MACRO_NAME_EMPTY: /* 34 */
+        case MACRO_NAME_EMPTY: /* 44 */
             return "macro name is empty.";
-        case MACRO_NAME_INVALID_START_CHAR: /* 35 */
+        case MACRO_NAME_INVALID_START_CHAR: /* 45 */
             return "macro name starts with an invalid character, should start with a letter.";
-        case MACRO_NAME_INVALID_CHAR: /* 36 */
+        case MACRO_NAME_INVALID_CHAR: /* 46 */
             return "macro name contains invalid characters.";
-        case MACRO_NAME_KEYWORD: /* 37 */   
+        case MACRO_NAME_KEYWORD: /* 47 */
             return "macro name is a set keyword by the assembly language.";
 
-        case SYMBOLTABLE_SUCCESS: /* 40 */
+        case SYMBOLTABLE_SUCCESS: /* 50 */
             return "symbol table operation was successful.";
-        case SYMBOL_NAME_EXISTS: /* 41 */
+        case SYMBOL_NAME_EXISTS: /* 51 */
             return "symbol name already exists.";
 
-        
+
         /* firstPass errors 60 - 69 */
-        case FIRSTPASS_FAILURE: /* 61 */
+        case FIRSTPASS_FAILURE: /* 71 */
             return "first pass failed.";
 
         /* it should never reach here */

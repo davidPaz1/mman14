@@ -8,7 +8,7 @@
         "util.h": "c",
         "error.h": "c",
         "preprocessor.h": "c",
-        "macrotable.h": "c",
+        "tables.h": "c",
         "firstpass.h": "c",
         "lexer.h": "c"
     }

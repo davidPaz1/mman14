@@ -14,12 +14,12 @@ ErrCode executePreprocessor(char *inputFileName, macroTable *macroNames) {
 
     /* Open the .as file for reading and .am file for writing */
     asFile = openFile(inputFileName, ".as", "r", &errorCode);
-    if (errorCode != SCAN_SUCCESS) 
+    if (errorCode != UTIL_SUCCESS) 
         return errorCode; /* return the error code */
     
 
     amFile = openFile(inputFileName, ".am", "w", &errorCode);
-    if (errorCode != SCAN_SUCCESS) {
+    if (errorCode != UTIL_SUCCESS) {
         fclose(asFile);
         return errorCode; /* return the error code */
     }
@@ -35,8 +35,8 @@ ErrCode executePreprocessor(char *inputFileName, macroTable *macroNames) {
         line = readLine(asFile, &errorCode); /* read a line from the .as file 1 */
         if (errorCode == EOF_REACHED)
             break; /* end of file reached, exit the loop */
-            
-        if (errorCode != SCAN_SUCCESS) { /* check if an error occurred while reading the line */
+
+        if (errorCode != UTIL_SUCCESS) { /* check if an error occurred while reading the line */
             PreprocessorErrorExit(table, asFile, amFile, line, inputFileName); /* clean up and exit the preprocessor */
             return errorCode; /* return failure if an error occurred */
         }
@@ -61,7 +61,7 @@ ErrCode executePreprocessor(char *inputFileName, macroTable *macroNames) {
             continue; /* skip to the next line */
         }
         
-        if (errorCode != SCAN_SUCCESS) { /* check if an error occurred while getting the first token */
+        if (errorCode != UTIL_SUCCESS) { /* check if an error occurred while getting the first token */
             PreprocessorErrorExit(table, asFile, amFile, line, inputFileName); /* clean up and exit the preprocessor */
             return errorCode; /* return failure if an error occurred */
         }
@@ -110,7 +110,9 @@ ErrCode executePreprocessor(char *inputFileName, macroTable *macroNames) {
 
     } /* end of while loop */
 
-    preprocessorFreeMemory(table, asFile, amFile, line); /* free all allocated memory and close files */
+    preprocessorFreeMemory(NULL, asFile, amFile, line); /* free all allocated memory and close files */
+    *macroNames = *table;
+    free(table); /* free the macro table memory */
     return PREPROCESSOR_SUCCESS; /* return success */
 }
 
@@ -140,7 +142,7 @@ ErrCode macroDef(macroTable* table, char* line) /* add a line to the macro body 
 {
     ErrCode errorCode = NULL_INITIAL; /* initialize error code to NULL_INITIAL */
     char* macroName = cutFirstToken(line, &errorCode); /* get the macro name from the line */
-    if (errorCode != SCAN_SUCCESS) { /* check if an error occurred while getting the macro name */
+    if (errorCode != UTIL_SUCCESS) { /* check if an error occurred while getting the macro name */
         return errorCode; /* return failure if an error occurred */
     }
 
@@ -162,7 +164,7 @@ void PreprocessorErrorExit(macroTable *table, FILE *asFile, FILE *amFile, char *
 {
     if (fileName != NULL) { /* check if the file name is NULL */
         ErrCode errorCode = delFile(fileName, ".am"); /* delete the .am file if it exists */
-        if (errorCode != SCAN_SUCCESS) { /* check if the file was deleted successfully */
+        if (errorCode != UTIL_SUCCESS) { /* check if the file was deleted successfully */
             char errorContext[MAX_ERROR_MSG_LENGTH] = ""; /* buffer for error context */
             sprintf(errorContext, "while deleting file %s.am", fileName); /* set the error context */
             printErrorMsg(errorCode, errorContext); /* print the error message */

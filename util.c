@@ -1,5 +1,5 @@
-#include "global.h"
 #include "util.h"
+#include "global.h"
 
 /* scanning functions */
 char* readLine(FILE *fp, ErrCode *errorCode) {
@@ -38,7 +38,7 @@ char* readLine(FILE *fp, ErrCode *errorCode) {
         line[strcspn(line, "\r\n")] = '\0'; /* remove the newline or carriage return character from the end of the line */
         if ( strlen(line) == MAX_LINE_FILE_LENGTH)  /* if the line is exactly MAX_LINE_FILE_LENGTH characters long, it has a remaining '\n' */
             (void) fgetc(fp);  /* discard the unused character '\n' from the input stream */
-        *errorCode = SCAN_SUCCESS; /* set error code to success */
+        *errorCode = UTIL_SUCCESS; /* set error code to success */
     }
     return line;
 }
@@ -85,7 +85,7 @@ char* getFirstToken(char *str, ErrCode *errorCode)
     while (isspace(str[i])) 
         i++;
 
-    *errorCode = SCAN_SUCCESS; /* set error code to success */
+    *errorCode = UTIL_SUCCESS; /* set error code to success */
     return word;
 }
 
@@ -95,7 +95,7 @@ char *cutFirstToken(char *str, ErrCode *errorCode)
     *errorCode = NULL_INITIAL; /* reset error code to initial state */
     word = getFirstToken(str, errorCode);
 
-    if (*errorCode != SCAN_SUCCESS) /* if an error occurred while getting the first word */
+    if (*errorCode != UTIL_SUCCESS) /* if an error occurred while getting the first word */
         return NULL;
 
     cutnChar(str, strlen(word)); /* cut the first word from the string */
@@ -169,7 +169,7 @@ FILE* openFile(char *filename, char *ending, char *mode, ErrCode *errorCode)
     }
 
     if (*errorCode == NULL_INITIAL) /* if no error occurred */
-    *errorCode = SCAN_SUCCESS; /* set error code to success */
+    *errorCode = UTIL_SUCCESS; /* set error code to success */
     
     free(fullFileName); /* free the allocated memory for fullFileName */
     return fp;
@@ -190,5 +190,5 @@ ErrCode delFile(char *filename, char *ending)
     }
 
     free(fullFileName);
-    return SCAN_SUCCESS;
+    return UTIL_SUCCESS;
 }
