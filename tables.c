@@ -5,7 +5,7 @@
 #include "util.h" /* for strDup */
 
 /* MacroTable functions that operate on the MacroTable struct (linked list)*/
-macroTable* createMacroTable(ErrCode *errorCode) {
+macroTable* createMacroTable(ErrCode* errorCode) {
     macroTable* newTable; /* returned table */
     *errorCode = NULL_INITIAL; /* initialize error code to NULL_INITIAL */
 
@@ -45,6 +45,7 @@ macroNode* createMacroNode(char* macroName, ErrCode* errorCode) {
 
 macroBody* createMacroBody(char* line, ErrCode* errorCode) {
     macroBody* newBody = malloc(sizeof(macroBody));  /* returned body */
+    *errorCode = NULL_INITIAL; /* initialize error code to NULL_INITIAL */
 
     if (newBody == NULL) {
         *errorCode = MALLOC_ERROR;
@@ -87,7 +88,6 @@ ErrCode addMacro(macroTable* table , char* name) {
     return MACROTABLE_SUCCESS; /* return success */
 }
 
-/* add to the last entered macro the new line*/
 ErrCode addMacroLine(macroTable* table, char* line) {
     macroBody* newLine; /* new line to be added */
     macroNode* macrohead; /* the macro to which the line will be added */
@@ -117,7 +117,8 @@ ErrCode addMacroLine(macroTable* table, char* line) {
 
 macroBody* findMacro(macroTable* table, char* macroName, ErrCode* errorCode) {
     macroNode* current; /* used to iterate through the macro list */
-    
+    *errorCode = NULL_INITIAL; /* initialize error code to NULL_INITIAL */
+
     current = table->macroHead;
     while (current != NULL) {
         if (strcmp(current->macroName, macroName) == 0) {
@@ -127,7 +128,7 @@ macroBody* findMacro(macroTable* table, char* macroName, ErrCode* errorCode) {
         current = current->nextMacro;
     }
 
-    *errorCode = UNKNOWN_ERROR; /* it should not reach here cas findMacro is called only after isMacroExists */
+    *errorCode = UNKNOWN_ERROR; /* it should not reach here because findMacro is called only after isMacroExists */
     return NULL; /* Macro not found */
 }
 

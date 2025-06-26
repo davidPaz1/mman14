@@ -90,3 +90,63 @@ void printErrorMsg(ErrCode code, char *context)
     if(context == NULL) /* if context is NULL it is due to malloc failure */
         fprintf(stderr, "Error %s\n", getErrorMessage(MALLOC_ERROR));
 }
+
+void createErrorList(ErrorList *list)
+{
+    list->count = 0;
+    list->head = NULL;
+    list->tail = NULL;
+}
+
+int addError(ErrorList *list, ErrCode code, unsigned int line, Bool isFatal)
+{
+
+    ErrorNode *newNode = malloc(sizeof(ErrorNode));
+    if (newNode == NULL) {
+        printErrorMsg(MALLOC_ERROR, "Failed to allocate memory for error node");
+        return -1; /* return -1 if memory allocation fails */
+    }
+
+    newNode->code = code;
+    newNode->line = line;
+    newNode->next = NULL;
+
+    if (list->head == NULL) { /* if the list is empty */
+        list->head = newNode;
+        list->tail = newNode;
+    } else { /* if the list is not empty */
+        list->tail->next = newNode; /* link the new node to the end of the list */
+        list->tail = newNode; /* update the tail to the new node */
+    }
+    
+    list->count++; /* increment the count of errors */
+    if (isFatal) 
+        list->fatalError = TRUE; /* set fatal error flag if isFatal is TRUE */
+
+    return 0; /* return 0 on success */
+}
+
+void printErrors(const ErrorList *list, char *filename, char *stage) {
+    ErrorNode *curr = list->head;
+    fprintf(stderr, "there were %d errors in file %s during the %s:\n", list->count, filename, stage);
+    while (curr != NULL) {
+        fprintf(stderr, "line %u: %s\n", curr->line, getErrorMessage(curr->code));
+        curr = curr->next;
+    }
+}
+
+void freeErrorsList(ErrorList *list) {
+    if (list == NULL)
+        return;
+    
+    ErrorNode *curr = list->head;
+    while (curr != NULL) {
+        ErrorNode *temp = curr;
+        curr = curr->next;
+        free(temp);
+    }
+    list->head = NULL;
+    list->tail = NULL;
+    list->count = 0;
+    free(list);
+}
