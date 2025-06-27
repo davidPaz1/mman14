@@ -8,6 +8,7 @@ char* readLine(FILE *fp, ErrCode *errorCode) {
     char *line = malloc(MAX_LINE_FILE_LENGTH + OVER_LENGTH  + NULL_TERMINATOR);
     char next; 
     *errorCode = NULL_INITIAL; /* reset error code to initial state */
+
     if (line == NULL) {
         *errorCode = MALLOC_ERROR;
         return NULL; /* malloc failed */
