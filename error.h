@@ -61,27 +61,8 @@ typedef enum ErrCode {
 
 } ErrCode;
 
-typedef struct ErrorNode {
-    ErrCode code;
-    unsigned int line;              
-    struct ErrorNode *next;
-} ErrorNode;
-
-typedef struct ErrorList {
-    unsigned int count;
-    Bool fatalError; /* indicates if there is a fatal error in the list like malloc failure */
-    struct ErrorNode* head;
-    struct ErrorNode* tail;
-} ErrorList;
-
 /* errorcode handling functions prototypes */
 char* getErrorMessage(ErrCode error); /* print error message based on error code */
 void printErrorMsg(ErrCode code, char *context); /* print error message based on error code */
-
-
-void createErrorList(ErrorList *list); /* initialize the error list */
-int addError(ErrorList *list, ErrCode code, unsigned int line, Bool isFatal); /* add error to the list */
-void printErrors(const ErrorList *list, char *filename, char *stage); /* print all errors in the list */
-void freeErrorsList(ErrorList *list); /* free the error list */
 
 #endif
