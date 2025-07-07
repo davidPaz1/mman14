@@ -7,7 +7,7 @@ LOOP: jmp END
     mcro a_mc
     mov M1[r3][r3],r3
     bne LOOP
-    mcroend
+    mcroend  ad
 
     sub r1, r4
     inc K
