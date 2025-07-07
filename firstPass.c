@@ -19,25 +19,25 @@ ErrCode executeFirstPass(char *inputFileName, int *DCF, int *ICF, macroTable* ma
     Bool inSymbolDef = FALSE; /* flag to indicate if we are in a symbol definition line */
 
     amFile = openFile(inputFileName, ".am", "r", &errorCode);
-    if (errorCode != UTIL_SUCCESS) 
+    if (errorCode != UTIL_SUCCESS_S) 
         return errorCode; /* return the error code */
 
     /* table setup? */
     
-    while (errorCode != EOF_REACHED) {
+    while (errorCode != EOF_REACHED_S) {
         char *restOfLine, *firstToken, *token = NULL; /* line to read from the .as file and first token of the line */
         parsedLine *pLine; /* parsed line structure to hold the line and its type */
         int L; /* will hold the num of words that the instruction line translates to in machine code*/
         printf("Reading line %d\n", ++lineNumber);  /* debug print to show the current line number */
 
         pLine = readParsedLine(amFile, &errorCode); /* read a line from the .as file 1 */
-        if (errorCode == EOF_REACHED)
+        if (errorCode == EOF_REACHED_S)
             break; /* end of file reached, exit the loop */
         
-        if (errorCode == EMPTY_LINE_TYPE || errorCode == COMMENT_LINE_TYPE)
+        if (errorCode == EMPTY_LINE_TYPE_S || errorCode == COMMENT_LINE_TYPE_S)
             continue; /* skip to the next line */
         
-        if (errorCode != LEXER_SUCCESS) { /* check if an error occurred while reading the line */
+        if (errorCode != LEXER_SUCCESS_S) { /* check if an error occurred while reading the line */
             firstPassErrorExit(amFile, pLine); /* clean up and exit the first pass */
             return errorCode; /* return failure if an error occurred */
         }
@@ -47,7 +47,7 @@ ErrCode executeFirstPass(char *inputFileName, int *DCF, int *ICF, macroTable* ma
 
         if(pLine->label != NULL){ /* if the line has a label */
             errorCode = isValidLabel(pLine->label, macroNames); /* check if the label is valid */
-            if (errorCode != LEXER_SUCCESS) { /* if the label is not valid */
+            if (errorCode != LEXER_SUCCESS_S) { /* if the label is not valid */
                 firstPassErrorExit(amFile, pLine); /* clean up and exit the first pass */
                 return errorCode; /* return failure if an error occurred */
             }
@@ -66,7 +66,7 @@ ErrCode executeFirstPass(char *inputFileName, int *DCF, int *ICF, macroTable* ma
     fclose(amFile); /* close the .as file */
     *DCF = DC; /* set the final data counter */
     *ICF = IC; /* set the final instruction counter */
-    return FIRSTPASS_SUCCESS; 
+    return FIRSTPASS_SUCCESS_S; 
 }
  
 

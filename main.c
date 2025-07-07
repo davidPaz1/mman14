@@ -21,7 +21,7 @@ int main(int argc, char const *argv[])
     printf("Input file name: %s\n", inputFileName); /* print the input file name */
     printf("Starting preprocessor...\n"); /* print start message */
     errcode = executePreprocessor(inputFileName, macroNames); /* test with a sample file name */
-    if (errcode != PREPROCESSOR_SUCCESS) {
+    if (errcode != PREPROCESSOR_SUCCESS_S) {
         printErrorMsg(errcode, "\nwhile executing preprocessor"); /* print the error message */
         return 0; /* return the error code */
     } 
@@ -29,7 +29,7 @@ int main(int argc, char const *argv[])
     
     printf("Starting first pass...\n");
     errcode = executeFirstPass(inputFileName, &DCF, &ICF, macroNames); /* execute the first pass */
-    if (errcode != FIRSTPASS_SUCCESS) {
+    if (errcode != FIRSTPASS_SUCCESS_S) {
         printErrorMsg(errcode, "\nwhile executing first pass"); /* print the error message */
         return 0; /* return the error code */
     }

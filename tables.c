@@ -11,11 +11,11 @@ macroTable* createMacroTable(ErrCode* errorCode) {
 
     newTable = malloc(sizeof(macroTable)); /* allocate memory for the table */
     if (newTable == NULL) {
-        *errorCode = MALLOC_ERROR; /* set error code to MALLOC_ERROR */
+        *errorCode = MALLOC_ERROR_F; /* set error code to MALLOC_ERROR */
         return NULL; /* exit if memory allocation fails */
     }
     newTable->macroHead = NULL; /* initialize the head of the list to NULL */
-    *errorCode = MACROTABLE_SUCCESS; /* set error code to MACROTABLE_SUCCESS */
+    *errorCode = MACROTABLE_SUCCESS_S; /* set error code to MACROTABLE_SUCCESS */
     return newTable; /* return the new table */
 }
 
@@ -25,18 +25,18 @@ macroNode* createMacroNode(char* macroName, ErrCode* errorCode) {
 
     newMacro = malloc(sizeof(macroNode));
     if (newMacro == NULL) {
-        *errorCode = MALLOC_ERROR; /* set error code to MALLOC_ERROR */
+        *errorCode = MALLOC_ERROR_F; /* set error code to MALLOC_ERROR */
         return NULL; /* exit if memory allocation fails */
     }
 
     newMacro->macroName = strDup(macroName);
     if (newMacro->macroName == NULL) {
-        *errorCode = MALLOC_ERROR; /* set error code to MALLOC_ERROR */
+        *errorCode = MALLOC_ERROR_F; /* set error code to MALLOC_ERROR */
         free(newMacro);
         return NULL; /* exit if memory allocation fails */
     }
 
-    *errorCode = MACROTABLE_SUCCESS; /* set error code to MACROTABLE_SUCCESS */
+    *errorCode = MACROTABLE_SUCCESS_S; /* set error code to MACROTABLE_SUCCESS */
     newMacro->bodyHead = NULL; /* set the body head to the first line in the body */
     newMacro->bodyTail = NULL; /* set the body tail to the last line in the body */
     newMacro->nextMacro = NULL; /* initialize the next macro pointer to NULL */
@@ -48,18 +48,18 @@ macroBody* createMacroBody(char* line, ErrCode* errorCode) {
     *errorCode = NULL_INITIAL; /* initialize error code to NULL_INITIAL */
 
     if (newBody == NULL) {
-        *errorCode = MALLOC_ERROR;
+        *errorCode = MALLOC_ERROR_F;
         return NULL; /* exit if memory allocation fails */
     }
 
     newBody->line = strDup(line); /* duplicate the line to avoid aliasing */
     if (newBody->line == NULL) {
-        *errorCode = MALLOC_ERROR;
+        *errorCode = MALLOC_ERROR_F;
         free(newBody);
         return NULL;
     }
     newBody->nextLine = NULL;
-    *errorCode = MACROTABLE_SUCCESS; /* set error code to MACROTABLE_SUCCESS */
+    *errorCode = MACROTABLE_SUCCESS_S; /* set error code to MACROTABLE_SUCCESS */
     return newBody;
 }
 
@@ -70,22 +70,22 @@ ErrCode addMacro(macroTable* table , char* name) {
 
     if (table == NULL || name == NULL) { /*test123*/
         fprintf(stderr, "invalid macro table or line\n");
-        return UNEXPECTED_NULL_INPUT; /* exit if the table or line is NULL */
+        return UNEXPECTED_NULL_INPUT_F; /* exit if the table or line is NULL */
     }
 
     errorCode = isMacroNameValid(table, name); /* check if the macro name is valid */
-    if (errorCode != MACROTABLE_SUCCESS) /* if the macro name is not valid */
+    if (errorCode != MACROTABLE_SUCCESS_S) /* if the macro name is not valid */
         return errorCode; /* exit if the macro name is not valid */
     
 
     newMacro = createMacroNode(name, &errorCode);
-    if (errorCode != MACROTABLE_SUCCESS) 
+    if (errorCode != MACROTABLE_SUCCESS_S) 
         return errorCode; /* exit if the macro node creation failed */
     
 
     newMacro->nextMacro = table->macroHead; /* insert at the beginning of the list */
     table->macroHead = newMacro; /* update the head of the list */
-    return MACROTABLE_SUCCESS; /* return success */
+    return MACROTABLE_SUCCESS_S; /* return success */
 }
 
 ErrCode addMacroLine(macroTable* table, char* line) {
@@ -95,12 +95,12 @@ ErrCode addMacroLine(macroTable* table, char* line) {
 
     if (table == NULL || line == NULL) { /*test123*/
         fprintf(stderr, "invalid macro table or line\n");
-        return UNEXPECTED_NULL_INPUT; /* exit if the table or line is NULL */
+        return UNEXPECTED_NULL_INPUT_F; /* exit if the table or line is NULL */
     }
     headNode = table->macroHead; /* get the head of the macro list */
     
     newLine = createMacroBody(line, &errorCode); /* create a new body for the line */
-    if (errorCode != MACROTABLE_SUCCESS) 
+    if (errorCode != MACROTABLE_SUCCESS_S) 
         return errorCode; /* exit if memory allocation fails */
     
 
@@ -112,7 +112,7 @@ ErrCode addMacroLine(macroTable* table, char* line) {
         headNode->bodyTail = newLine; /* update the tail of the body */
     }
 
-    return MACROTABLE_SUCCESS; /* return success */
+    return MACROTABLE_SUCCESS_S; /* return success */
 }
 
 macroBody* findMacro(macroTable* table, char* macroName, ErrCode* errorCode) {
@@ -122,7 +122,7 @@ macroBody* findMacro(macroTable* table, char* macroName, ErrCode* errorCode) {
     current = table->macroHead;
     while (current != NULL) {
         if (strcmp(current->macroName, macroName) == 0) {
-            *errorCode = MACROTABLE_SUCCESS; /* set error code to success */
+            *errorCode = MACROTABLE_SUCCESS_S; /* set error code to success */
             return current->bodyHead; /* return the body of the found macro */
         }
         current = current->nextMacro;

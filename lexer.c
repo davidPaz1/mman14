@@ -11,19 +11,19 @@ parsedLine* readParsedLine(FILE *fp, ErrCode *errorCode)
 
     lineRead = malloc(sizeof(parsedLine));
     if (lineRead == NULL) {
-        *errorCode = MALLOC_ERROR;
+        *errorCode = MALLOC_ERROR_F;
         return NULL;
     }
 
     lineRead->restOfLine = readLine(fp, errorCode); /* we will delete the parsed parts from this line */
-    if (*errorCode != UTIL_SUCCESS) { /* if an error occurred while reading the line */
+    if (*errorCode != UTIL_SUCCESS_S) { /* if an error occurred while reading the line */
         free(lineRead); /* free the allocated memory for the parsedLine */
         return NULL; /* return NULL */
     }
     
     /* if an error occurred while determining the line type */
     *errorCode = determineLineType(lineRead); /* determine the type of the line */
-    if (*errorCode != LEXER_SUCCESS) {
+    if (*errorCode != LEXER_SUCCESS_S) {
         freeScannedLine(lineRead); /* free the allocated memory for the parsedLine */
         return NULL; 
     }
@@ -42,10 +42,10 @@ ErrCode determineLineType(parsedLine *pline)
     pline->typesOfLine = UNSET_LINE; /* initialize the type of line to UNSET_LINE */
     
     if (isEndOfLine(line)) 
-        return EMPTY_LINE_TYPE; /* if the line is empty, return EMPTY_LINE_TYPE */
+        return EMPTY_LINE_TYPE_S; /* if the line is empty, return EMPTY_LINE_TYPE */
     
     if (line[0] == ';') 
-        return COMMENT_LINE_TYPE; /* if the line is a comment, return COMMENT_LINE_TYPE */
+        return COMMENT_LINE_TYPE_S; /* if the line is a comment, return COMMENT_LINE_TYPE */
 
     token = cutFirstToken(line, &errorCode); /* get the first token from the line */
 
@@ -59,7 +59,7 @@ ErrCode determineLineType(parsedLine *pline)
         pline->label = NULL; /* set the label to NULL */
     
     /* here we check for errors of getFirstToken() (may be the first token may be the second)*/
-    if (errorCode != UTIL_SUCCESS) {
+    if (errorCode != UTIL_SUCCESS_S) {
         free(token); /* free the allocated memory for the token */
         return errorCode;
     }
@@ -72,12 +72,12 @@ ErrCode determineLineType(parsedLine *pline)
     else if (isDirective(token)) 
         pline->typesOfLine = DIRECTIVE_LINE; /* if the line is a directive */
     else if (token[0] == '.') /* if the line contains a dot, it is unknown directive */
-        return INVALID_DIRECTIVE; /* return error code for invalid directive */
+        return INVALID_DIRECTIVE_E; /* return error code for invalid directive */
     else {/* if the line is not an instruction or a directive */
         printParsedLine(pline); /* print the parsed line for debugging purposes */
-        return UNKNOWN_LINE_TYPE; /* return error code for unknown line type */
+        return UNKNOWN_LINE_TYPE_E; /* return error code for unknown line type */
     }
-    return LEXER_SUCCESS; 
+    return LEXER_SUCCESS_S; 
 }
 
 void freeScannedLine(parsedLine *pline) {
@@ -213,30 +213,33 @@ ErrCode isValidLabel(char *label, macroTable *table)
     int i, len = strlen(label); /* start from 1 to skip the first character */
 
     if (len == COLON_LENGTH) /* check if the label is empty (only contains ':') */
-        return LABEL_EMPTY; /* label is too short */
+        return LABEL_EMPTY_E; /* label is too short */
 
     if (len > (MAX_LABEL_LENGTH + COLON_LENGTH)) /* check if the label length is valid */
-        return LABEL_TOO_LONG; /* label is too long */
+        return LABEL_TOO_LONG_E; /* label is too long */
 
     if (!isalpha(label[0])) /* check if the first character is a valid letter */
-        return LABEL_INVALID_START_CHAR; /* label must start with a letter */
+        return LABEL_INVALID_START_CHAR_E; /* label must start with a letter */
+
+    if(isKeywords(label)) /* check if the label is a keyword */
+        return LABEL_NAME_IS_KEYWORD_E; /* label cannot be a keyword */
 
     for (i = 1; i < len - 1; i++) {
         if (!isalnum(label[i])){ /* check if the character is letter or digit */
 
             if (label[i] == ':') /* if the character is ':' */
-                return LABEL_TEXT_AFTER_COLON; /* label cannot have text after the colon */
+                return LABEL_TEXT_AFTER_COLON_E; /* label cannot have text after the colon */
 
-            return LABEL_INVALID_CHAR; /* if char isnt alphanumeric or ':' its invalid */
+            return LABEL_INVALID_CHAR_E; /* if char isnt alphanumeric or ':' its invalid */
         }
     }
 
     if(isMacroExists(table, label)) /* check if the label is a macro name */
-        return LABEL_SAME_AS_MACRO; /* label cannot be a macro name */
+        return LABEL_SAME_AS_MACRO_E; /* label cannot be a macro name */
 
     /* note: we do not check the last character cas it is ':' (we only call isValidLabel() if there is
      a colon and if we didn't find any other ':' in the range 1 to len-1 it must be in len) */
-    return LEXER_SUCCESS; /* valid label */
+    return LEXER_SUCCESS_S; /* valid label */
 }
 
 ErrCode isMacroNameValid(macroTable* table ,char* macroName) {
@@ -244,23 +247,23 @@ ErrCode isMacroNameValid(macroTable* table ,char* macroName) {
     int len = strlen(macroName); /* length of the macro name */
 
     if (len == 0)
-        return MACRO_NAME_EMPTY; /* exit if the macro name is empty */
+        return MACRO_NAME_EMPTY_E; /* exit if the macro name is empty */
     if(len > MAX_MACRO_LENGTH) 
-        return MACRO_NAME_TOO_LONG; /* exit if the macro name is too long */
+        return MACRO_NAME_TOO_LONG_E; /* exit if the macro name is too long */
     
     if (!isalpha(macroName[0]))
-        return MACRO_NAME_INVALID_CHAR; /* exit if the first character is not a letter */
+        return MACRO_INVALID_CHAR_E; /* exit if the first character is not a letter */
 
     for (i = 1; i < len; i++) {
         if (!isalnum(macroName[i]) && macroName[i] != '_')
-            return MACRO_NAME_INVALID_CHAR; /* exit if the macro name contains invalid characters */
+            return MACRO_INVALID_CHAR_E; /* exit if the macro name contains invalid characters */
     }
     
     if (isKeywords(macroName))
-        return MACRO_NAME_KEYWORD; /* exit if the macro name is a keyword */
+        return MACRO_NAME_IS_KEYWORD_E; /* exit if the macro name is a keyword */
     
     if (isMacroExists(table, macroName))
-        return MACRO_NAME_EXISTS; /* exit if the macro name already exists */
+        return MACRO_NAME_EXISTS_E; /* exit if the macro name already exists */
     
-    return MACROTABLE_SUCCESS; /* Macro name is valid */
+    return MACROTABLE_SUCCESS_S; /* Macro name is valid */
 }

@@ -7,71 +7,71 @@ char* getErrorMessage(ErrCode code) {
         /* VERY GENERAL error codes 0 - 5 */
         case NULL_INITIAL: /* 0 */
             return "initial state shouldn't be reached.";
-        case MALLOC_ERROR: /* 1 */
+        case MALLOC_ERROR_F: /* 1 */
                 return "memory allocation failed.";
-        case EXTRANEOUS_TEXT: /* 3 */
+        case EXTRANEOUS_TEXT_E: /* 3 */
             return "extraneous text after the end of the line, should never be used.";
 
         /* debugging errors 6 - 9 */
         case UNKNOWN_ERROR: /* 6 */
             return "unknown error occurred. Should never be used.";
-        case UNEXPECTED_NULL_INPUT: /* 7 */
+        case UNEXPECTED_NULL_INPUT_F: /* 7 */
             return "unexpected NULL input, should never be used.";
 
         /* util errors 10 - 29 */
-        case UNKNOWN_LINE_TYPE: /* 12 */
+        case UNKNOWN_LINE_TYPE_E: /* 12 */
             return "unknown line type found, should be one of the four types (instruction, directive, comment, empty).";
-        case LINE_TOO_LONG: /* 13 */
+        case LINE_TOO_LONG_E: /* 13 */
             return "line length in file is longer than allowed (80).";
-        case FILE_READ_ERROR: /* 14 */
+        case FILE_READ_ERROR_F: /* 14 */
             return "file read error.";
-        case FILE_WRITE_ERROR: /* 15 */
+        case FILE_WRITE_ERROR_F: /* 15 */
             return "file write error.";
-        case INVALID_FILE_MODE: /* 16 */
+        case INVALID_FILE_MODE_F: /* 16 */
             return "file mode error, should never be used.";
-        case FILE_DELETE_ERROR: /* 17 */
+        case FILE_DELETE_ERROR_F: /* 17 */
             return "file delete error.";
 
         /* lexer errors 20 - 39 */
-        case LABEL_INVALID_START_CHAR: /* 23 */
+        case LABEL_INVALID_START_CHAR_E: /* 23 */
             return "label starts with an invalid character, should start with a letter.";
-        case LABEL_INVALID_CHAR: /* 24 */
+        case LABEL_INVALID_CHAR_E: /* 24 */
             return "label contains invalid characters, should only contain letters and digits.";
-        case LABEL_TOO_LONG: /* 25 */
+        case LABEL_TOO_LONG_E: /* 25 */
             return "label is too long, should be less than 30 characters.";
-        case LABEL_EMPTY: /* 26 */
+        case LABEL_EMPTY_E: /* 26 */
             return "label does not have a name, should not be empty.";
-        case LABEL_TEXT_AFTER_COLON: /* 27 */
+        case LABEL_TEXT_AFTER_COLON_E: /* 27 */
             return "text found after label colon, should not have any text after the colon.";
-        case LABEL_SAME_AS_MACRO: /* 28 */
+        case LABEL_SAME_AS_MACRO_E: /* 28 */
             return "label and a macro name cannot be the same.";
-        case INVALID_DIRECTIVE: /* 29 */
+        case INVALID_DIRECTIVE_E: /* 29 */
             return "invalid directive, should be one of the valid directives (.data, .string, .entry, .extern).";
 
         /* tables errors 40 - 59 */
-        case MACRO_NAME_EXISTS: /* 41 */
+        case MACRO_NAME_EXISTS_E: /* 41 */
             return "macro name already exists.";
-        case UNMATCHED_MACRO_END: /* 42 */
+        case UNMATCHED_MACRO_END_E: /* 42 */
             return "had \"macroend\" without having an opening macro definition.";
-        case MACRO_NAME_TOO_LONG: /* 43 */
+        case MACRO_NAME_TOO_LONG_E: /* 43 */
             return "macro name is too long.";
-        case MACRO_NAME_EMPTY: /* 44 */
+        case MACRO_NAME_EMPTY_E: /* 44 */
             return "macro name is empty.";
-        case MACRO_NAME_INVALID_START_CHAR: /* 45 */
+        case MACRO_INVALID_START_CHAR_E: /* 45 */
             return "macro name starts with an invalid character, should start with a letter.";
-        case MACRO_NAME_INVALID_CHAR: /* 46 */
+        case MACRO_INVALID_CHAR_E: /* 46 */
             return "macro name contains invalid characters.";
-        case MACRO_NAME_KEYWORD: /* 47 */
+        case MACRO_NAME_IS_KEYWORD_E: /* 47 */
             return "macro name is a set keyword by the assembly language.";
 
-        case SYMBOLTABLE_SUCCESS: /* 50 */
+        case SYMBOLTABLE_SUCCESS_S: /* 50 */
             return "symbol table operation was successful.";
-        case SYMBOL_NAME_EXISTS: /* 51 */
+        case SYMBOL_NAME_EXISTS_E: /* 51 */
             return "symbol name already exists.";
 
 
         /* firstPass errors 60 - 69 */
-        case FIRSTPASS_FAILURE: /* 71 */
+        case FIRSTPASS_FAILURE_S: /* 71 */
             return "first pass failed.";
 
         /* it should never reach here */
@@ -83,17 +83,14 @@ char* getErrorMessage(ErrCode code) {
 Bool isFatalErr(ErrCode code) {
     switch (code) {
         /* These are clearly fatal errors */
-        case MALLOC_ERROR:
-        case FILE_READ_ERROR:
-        case FILE_WRITE_ERROR:
-        case FILE_DELETE_ERROR:
-        case UNKNOWN_ERROR:
-        case UNEXPECTED_NULL_INPUT:
-        case INVALID_FILE_MODE:
-        case MACRO_NAME_KEYWORD:
-        case LABEL_SAME_AS_MACRO:
-        case FIRSTPASS_FAILURE:
-        case PREPROCESSOR_FAILURE:
+        case UNKNOWN_ERROR: /* is for debugging purposes, should not be used in production */
+        case NULL_INITIAL: /* is for debugging purposes, should not be used in production */
+        case MALLOC_ERROR_F:
+        case FILE_READ_ERROR_F:
+        case FILE_WRITE_ERROR_F:
+        case FILE_DELETE_ERROR_F:
+        case INVALID_FILE_MODE_F:
+        case UNEXPECTED_NULL_INPUT_F:
             return TRUE;
         default:
             return FALSE; /* all other errors are not fatal */
@@ -108,22 +105,27 @@ void printErrorMsg(ErrCode code, char *context)
     else
         fprintf(stderr, "Error %s because %s\n", context, getErrorMessage(code));
     if(context == NULL) /* if context is NULL it is due to malloc failure */
-        fprintf(stderr, "Error %s\n", getErrorMessage(MALLOC_ERROR));
+        fprintf(stderr, "Error %s\n", getErrorMessage(MALLOC_ERROR_F));
 }
 
-void createErrorList(ErrorList *list)
+void createErrorList(ErrorList *list, char *filename)
 {
     list->count = 0;
+    list->fatalError = FALSE; /* initialize fatal error flag to FALSE */
+    list->filename = filename;
+    list->stage = NULL; /* initialize stage to NULL */
     list->head = NULL;
     list->tail = NULL;
 }
 
 int addError(ErrorList *list, ErrCode code, unsigned int line, Bool isFatal)
 {
-
     ErrorNode *newNode = malloc(sizeof(ErrorNode));
     if (newNode == NULL) {
-        printErrorMsg(MALLOC_ERROR, "Failed to allocate memory for error node");
+        list->fatalError = TRUE; /* set fatal error flag if memory allocation fails */
+        list->count++; /* increment the count of errors */
+        printErrors(list, "unknown"); /* print errors with unknown filename */
+        printErrorMsg(MALLOC_ERROR_F, "Failed to allocate memory for error node");
         return -1; /* return -1 if memory allocation fails */
     }
 
@@ -146,9 +148,9 @@ int addError(ErrorList *list, ErrCode code, unsigned int line, Bool isFatal)
     return 0; /* return 0 on success */
 }
 
-void printErrors(ErrorList *list, char *filename, char *stage) {
+void printErrors(ErrorList *list, char *filename) {
     ErrorNode *curr = list->head;
-    fprintf(stderr, "there were %d errors in file %s during the %s:\n", list->count, filename, stage);
+    fprintf(stderr, "there were %d errors in file %s during the %s:\n", list->count, filename, list->stage);
     while (curr != NULL) {
         fprintf(stderr, "line %u: %s\n", curr->line, getErrorMessage(curr->code));
         curr = curr->next;
@@ -156,10 +158,11 @@ void printErrors(ErrorList *list, char *filename, char *stage) {
 }
 
 void freeErrorsList(ErrorList *list) {
+    ErrorNode* curr;
     if (list == NULL)
         return;
     
-    ErrorNode *curr = list->head;
+    curr = list->head;
     while (curr != NULL) {
         ErrorNode *temp = curr;
         curr = curr->next;
@@ -167,6 +170,7 @@ void freeErrorsList(ErrorList *list) {
     }
     list->head = NULL;
     list->tail = NULL;
-    list->count = 0;
+    list->stage = NULL; /* we don't need to free the stage string because it is a constant string */
+    list->filename = NULL; /* we don't need to free the filename string because it is a argv[i] string */
     free(list);
 }

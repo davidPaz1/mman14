@@ -10,7 +10,7 @@ char* readLine(FILE *fp, ErrCode *errorCode) {
     *errorCode = NULL_INITIAL; /* reset error code to initial state */
 
     if (line == NULL) {
-        *errorCode = MALLOC_ERROR;
+        *errorCode = MALLOC_ERROR_F;
         return NULL; /* malloc failed */
     }
 
@@ -18,9 +18,9 @@ char* readLine(FILE *fp, ErrCode *errorCode) {
     if (fgets(line, MAX_LINE_FILE_LENGTH + OVER_LENGTH  + NULL_TERMINATOR, fp) == NULL) {
         free(line);
         if (feof(fp))
-            *errorCode = EOF_REACHED;
+            *errorCode = EOF_REACHED_S;
         else 
-            *errorCode = FILE_READ_ERROR;
+            *errorCode = FILE_READ_ERROR_F;
         return NULL; /* end of file or error */
     }
 
@@ -31,7 +31,7 @@ char* readLine(FILE *fp, ErrCode *errorCode) {
     if (strchr(line, '\n') == NULL && strchr(line, '\r') == NULL && next != EOF) {
         char c; /* discard the rest of the line from the input stream */
         while ((c = fgetc(fp)) != '\n' && c != EOF);
-        *errorCode = LINE_TOO_LONG;
+        *errorCode = LINE_TOO_LONG_E;
         free(line);
         return NULL; /* line is too long, return NULL */
     }
@@ -39,7 +39,7 @@ char* readLine(FILE *fp, ErrCode *errorCode) {
         line[strcspn(line, "\r\n")] = '\0'; /* remove the newline or carriage return character from the end of the line */
         if ( strlen(line) == MAX_LINE_FILE_LENGTH)  /* if the line is exactly MAX_LINE_FILE_LENGTH characters long, it has a remaining '\n' */
             (void) fgetc(fp);  /* discard the unused character '\n' from the input stream */
-        *errorCode = UTIL_SUCCESS; /* set error code to success */
+        *errorCode = UTIL_SUCCESS_S; /* set error code to success */
     }
     return line;
 }
@@ -54,14 +54,14 @@ char* getFirstToken(char *str, ErrCode *errorCode)
         i++;
 
     if (str[i] == '\0') { /* if the string is empty or contains only whitespace */
-        *errorCode = END_OF_LINE;
+        *errorCode = END_OF_LINE_S;
         return NULL;
     }
 
     if (str[i] == ',') { /* if the first character is ';' or ',' */
         word = malloc(COMMA_LENGTH + NULL_TERMINATOR); /* 1 for illegal character and 1 for '\0' */
         if (word == NULL) {
-            *errorCode = MALLOC_ERROR;
+            *errorCode = MALLOC_ERROR_F;
             return NULL; 
         }
         word[0] = ','; /* set the first character to ',' */
@@ -75,7 +75,7 @@ char* getFirstToken(char *str, ErrCode *errorCode)
 
         word = malloc(i - start + 1); /* +1 for '\0' */
         if (word == NULL) {
-            *errorCode = MALLOC_ERROR;
+            *errorCode = MALLOC_ERROR_F;
             return NULL;
         }
 
@@ -86,7 +86,7 @@ char* getFirstToken(char *str, ErrCode *errorCode)
     while (isspace(str[i])) 
         i++;
 
-    *errorCode = UTIL_SUCCESS; /* set error code to success */
+    *errorCode = UTIL_SUCCESS_S; /* set error code to success */
     return word;
 }
 
@@ -96,7 +96,7 @@ char *cutFirstToken(char *str, ErrCode *errorCode)
     *errorCode = NULL_INITIAL; /* reset error code to initial state */
     word = getFirstToken(str, errorCode);
 
-    if (*errorCode != UTIL_SUCCESS) /* if an error occurred while getting the first word */
+    if (*errorCode != UTIL_SUCCESS_S) /* if an error occurred while getting the first word */
         return NULL;
 
     cutnChar(str, strlen(word)); /* cut the first word from the string */
@@ -155,22 +155,22 @@ FILE* openFile(char *filename, char *ending, char *mode, ErrCode *errorCode)
     *errorCode = NULL_INITIAL; /* reset error code to initial state */
 
     if (fullFileName == NULL) {
-        *errorCode = MALLOC_ERROR;
+        *errorCode = MALLOC_ERROR_F;
         return NULL;
     }
 
     fp = fopen(fullFileName, mode); /* open the file with the given mode */
     if (fp == NULL) {
         if (strcmp(mode, "r") == 0) 
-            *errorCode = FILE_READ_ERROR;
+            *errorCode = FILE_READ_ERROR_F;
         else if (strcmp(mode, "w") == 0) 
-            *errorCode = FILE_WRITE_ERROR;
+            *errorCode = FILE_WRITE_ERROR_F;
         else 
-            *errorCode = INVALID_FILE_MODE;
+            *errorCode = INVALID_FILE_MODE_F;
     }
 
     if (*errorCode == NULL_INITIAL) /* if no error occurred */
-    *errorCode = UTIL_SUCCESS; /* set error code to success */
+    *errorCode = UTIL_SUCCESS_S; /* set error code to success */
     
     free(fullFileName); /* free the allocated memory for fullFileName */
     return fp;
@@ -182,14 +182,14 @@ ErrCode delFile(char *filename, char *ending)
 
     fullFileName = mergeStrings(filename, ending);
     if (fullFileName == NULL) {
-        return MALLOC_ERROR;
+        return MALLOC_ERROR_F;
     }
 
     if (remove(fullFileName) != 0) { /* if file delete was unsuccessful */
         free(fullFileName);
-        return FILE_DELETE_ERROR;
+        return FILE_DELETE_ERROR_F;
     }
 
     free(fullFileName);
-    return UTIL_SUCCESS;
+    return UTIL_SUCCESS_S;
 }
