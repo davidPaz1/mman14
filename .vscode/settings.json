@@ -10,7 +10,8 @@
         "preprocessor.h": "c",
         "tables.h": "c",
         "firstpass.h": "c",
-        "lexer.h": "c"
+        "lexer.h": "c",
+        "cstdlib": "c"
     },
     "cSpell.words": [
         "cutn",
