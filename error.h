@@ -9,7 +9,7 @@
 typedef enum ErrCode {
     /* VERY GENERAL error codes 0 - 5 */
     NULL_INITIAL = 0, /* initial state of error code, used to "forget" previous errorCode */
-    MALLOC_ERROR = 1, /* memory allocation error */
+    MALLOC_ERROR = 1, /* memory allocation Ferror */
     EOF_REACHED = 2, /* indicate that the EOF was reached while reading */
     EXTRANEOUS_TEXT = 3, /* extraneous text after the end of the line */
 
@@ -54,6 +54,7 @@ typedef enum ErrCode {
 
     /* preprocessor errors 60 - 69 */
     PREPROCESSOR_SUCCESS = 60, /* preprocessor executed successfully */
+    PREPROCESSOR_FAILURE = 61, /* preprocessor failed */
 
     /* firstPass errors 70 - 79 */
     FIRSTPASS_SUCCESS = 70, /* first pass was successful */
@@ -76,12 +77,13 @@ typedef struct ErrorList {
 
 /* errorcode handling functions prototypes */
 char* getErrorMessage(ErrCode error); /* print error message based on error code */
+Bool isFatalErr(ErrCode code);
 void printErrorMsg(ErrCode code, char *context); /* print error message based on error code */
 
-
+/* error list handling functions prototypes */
 void createErrorList(ErrorList *list); /* initialize the error list */
 int addError(ErrorList *list, ErrCode code, unsigned int line, Bool isFatal); /* add error to the list */
-void printErrors(const ErrorList *list, char *filename, char *stage); /* print all errors in the list */
+void printErrors(ErrorList *list, char *filename, char *stage); /* print all errors in the list */
 void freeErrorsList(ErrorList *list); /* free the error list */
 
 #endif

@@ -80,6 +80,26 @@ char* getErrorMessage(ErrCode code) {
     }
 }
 
+Bool isFatalErr(ErrCode code) {
+    switch (code) {
+        /* These are clearly fatal errors */
+        case MALLOC_ERROR:
+        case FILE_READ_ERROR:
+        case FILE_WRITE_ERROR:
+        case FILE_DELETE_ERROR:
+        case UNKNOWN_ERROR:
+        case UNEXPECTED_NULL_INPUT:
+        case INVALID_FILE_MODE:
+        case MACRO_NAME_KEYWORD:
+        case LABEL_SAME_AS_MACRO:
+        case FIRSTPASS_FAILURE:
+        case PREPROCESSOR_FAILURE:
+            return TRUE;
+        default:
+            return FALSE; /* all other errors are not fatal */
+    }        
+}
+
 void printErrorMsg(ErrCode code, char *context)
 {
     fprintf(stderr, "Ecode: %d - ", code);
@@ -126,7 +146,7 @@ int addError(ErrorList *list, ErrCode code, unsigned int line, Bool isFatal)
     return 0; /* return 0 on success */
 }
 
-void printErrors(const ErrorList *list, char *filename, char *stage) {
+void printErrors(ErrorList *list, char *filename, char *stage) {
     ErrorNode *curr = list->head;
     fprintf(stderr, "there were %d errors in file %s during the %s:\n", list->count, filename, stage);
     while (curr != NULL) {

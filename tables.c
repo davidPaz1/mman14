@@ -90,26 +90,26 @@ ErrCode addMacro(macroTable* table , char* name) {
 
 ErrCode addMacroLine(macroTable* table, char* line) {
     macroBody* newLine; /* new line to be added */
-    macroNode* macrohead; /* the macro to which the line will be added */
+    macroNode* headNode; /* the macro to which the line will be added */
     ErrCode errorCode = NULL_INITIAL; /* initialize error code to NULL_INITIAL */
 
     if (table == NULL || line == NULL) { /*test123*/
         fprintf(stderr, "invalid macro table or line\n");
         return UNEXPECTED_NULL_INPUT; /* exit if the table or line is NULL */
     }
-    macrohead = table->macroHead; /* get the head of the macro list */
+    headNode = table->macroHead; /* get the head of the macro list */
     
     newLine = createMacroBody(line, &errorCode); /* create a new body for the line */
     if (errorCode != MACROTABLE_SUCCESS) 
         return errorCode; /* exit if memory allocation fails */
     
 
-    if (macrohead->bodyHead == NULL) { /* if this is the first line in the macro */
-        macrohead->bodyHead = newLine; /* set the head of the body */
-        macrohead->bodyTail = newLine; /* set the tail of the body */
+    if (headNode->bodyHead == NULL) { /* if this is the first line in the macro */
+        headNode->bodyHead = newLine; /* set the head of the body */
+        headNode->bodyTail = newLine; /* set the tail of the body */
     } else {
-        macrohead->bodyTail->nextLine = newLine; /* link the new line to the end of the body */
-        macrohead->bodyTail = newLine; /* update the tail of the body */
+        headNode->bodyTail->nextLine = newLine; /* link the new line to the end of the body */
+        headNode->bodyTail = newLine; /* update the tail of the body */
     }
 
     return MACROTABLE_SUCCESS; /* return success */

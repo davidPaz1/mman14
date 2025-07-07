@@ -11,5 +11,12 @@
         "tables.h": "c",
         "firstpass.h": "c",
         "lexer.h": "c"
-    }
+    },
+    "cSpell.words": [
+        "cutn",
+        "doesnt",
+        "macrohead",
+        "mcro",
+        "mcroend"
+    ]
 }

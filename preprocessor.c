@@ -11,6 +11,8 @@ ErrCode executePreprocessor(char *inputFileName, macroTable *macroNames) {
     ErrCode errorCode = NULL_INITIAL; /* Initialize error code */
     macroTable* table; /* the table of all the macros found */
     Bool inMacroDef = FALSE; /* flag to indicate if the current line is a macro definition line */
+    unsigned int errorCount = 0, lineCount = 0; /* counter for errors and line numbers */
+
 
     /* Open the .as file for reading and .am file for writing */
     asFile = openFile(inputFileName, ".as", "r", &errorCode);
@@ -32,6 +34,7 @@ ErrCode executePreprocessor(char *inputFileName, macroTable *macroNames) {
     }
     
     while (errorCode != EOF_REACHED) {
+        lineCount++; /* increment the line count */
         line = readLine(asFile, &errorCode); /* read a line from the .as file 1 */
         if (errorCode == EOF_REACHED)
             break; /* end of file reached, exit the loop */
@@ -109,6 +112,10 @@ ErrCode executePreprocessor(char *inputFileName, macroTable *macroNames) {
         free(firstToken); /* free the first token memory */
 
     } /* end of while loop */
+
+    if(errorCount > 0){ /* if there were any errors during the preprocessing */
+        
+    }
 
     preprocessorFreeMemory(NULL, asFile, amFile, line); /* free all allocated memory and close files */
     *macroNames = *table;
