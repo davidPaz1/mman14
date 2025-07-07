@@ -23,8 +23,8 @@ typedef enum ErrCode {
     /* util errors 10 - 29 */
     UTIL_SUCCESS_S = 10,
     END_OF_LINE_S = 11,
-    /* plssss i will need anothe err code for util file*/
-    LINE_TOO_LONG_E = 13,
+    LINE_TOO_LONG_E = 12,
+    INPUT_FILE_UNREADABLE_F = 13,
     FILE_READ_ERROR_F = 14,
     FILE_WRITE_ERROR_F = 15,
     INVALID_FILE_MODE_F = 16, /* invalid file mode */
@@ -32,9 +32,9 @@ typedef enum ErrCode {
     
     /* lexer errors 20 - 39 */
     LEXER_SUCCESS_S = 20, /* scanning was successful */
-    UNKNOWN_LINE_TYPE_E = 21, /* unknown line type */
+    COMMENT_LINE_TYPE_S = 21, /* comment line */
     EMPTY_LINE_TYPE_S = 22, /* empty line */
-    COMMENT_LINE_TYPE_S = 23, /* comment line */
+    UNKNOWN_LINE_TYPE_E = 23, /* unknown line type */
     LABEL_INVALID_START_CHAR_E = 24, /* invalid start character */
     LABEL_INVALID_CHAR_E = 25, /* invalid character in the line */
     LABEL_TOO_LONG_E = 26, /* label is too long */
@@ -74,7 +74,7 @@ typedef struct ErrorNode {
 } ErrorNode;
 
 typedef struct ErrorList {
-    unsigned int count;
+    unsigned int count; /* the number of errors in the list */
     char* stage; /* the stage that the error(s) occurred in, e.g. "preprocessor", "first pass" */
     char* filename; /* the name of the file where the error(s) occurred */
     Bool fatalError; /* indicates if there is a fatal error in the list like malloc failure */
@@ -90,7 +90,7 @@ void printErrorMsg(ErrCode code, char *context); /* print error message based on
 /* error list handling functions prototypes */
 void createErrorList(ErrorList *list, char *filename); /* initialize the error list */
 int addError(ErrorList *list, ErrCode code, unsigned int line, Bool isFatal); /* add error to the list */
-void printErrors(ErrorList *list, char *filename); /* print all errors in the list */
+void printErrors(ErrorList *list, unsigned int incCount); /* print all errors in the list */
 void freeErrorsList(ErrorList *list); /* free the error list */
 
 #endif

@@ -4,7 +4,7 @@ compileFlags =  $(exeFlags) -c
 
 run: main.o tables.o preprocessor.o firstPass.o util.o lexer.o error.o
 	$(exeFlags) main.o tables.o preprocessor.o firstPass.o util.o lexer.o error.o -o run
-main.o: main.c preprocessor.h firstPass.h error.h global.h
+main.o: main.c preprocessor.h firstPass.h error.h global.h lexer.h tables.h util.h
 	$(compileFlags) main.c
 tables.o: tables.c tables.h global.h error.h lexer.h util.h
 	$(compileFlags) tables.c

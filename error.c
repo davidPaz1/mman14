@@ -19,33 +19,38 @@ char* getErrorMessage(ErrCode code) {
             return "unexpected NULL input, should never be used.";
 
         /* util errors 10 - 29 */
-        case UNKNOWN_LINE_TYPE_E: /* 12 */
-            return "unknown line type found, should be one of the four types (instruction, directive, comment, empty).";
-        case LINE_TOO_LONG_E: /* 13 */
-            return "line length in file is longer than allowed (80).";
+
+        case LINE_TOO_LONG_E: /* 12 */
+                return "line length in file is longer than allowed (80).";
+        case INPUT_FILE_UNREADABLE_F: /* 13 */
+            return "could not read input file, make sure it exists and is readable.";
         case FILE_READ_ERROR_F: /* 14 */
-            return "file read error.";
+            return "could not read from file, make sure it exists and is readable.";
         case FILE_WRITE_ERROR_F: /* 15 */
             return "file write error.";
         case INVALID_FILE_MODE_F: /* 16 */
             return "file mode error, should never be used.";
         case FILE_DELETE_ERROR_F: /* 17 */
-            return "file delete error.";
+            return "could not delete file pls ignore the half built files.";
 
         /* lexer errors 20 - 39 */
-        case LABEL_INVALID_START_CHAR_E: /* 23 */
+        case UNKNOWN_LINE_TYPE_E: /* 23 */
+            return "unknown line type found, should be one of the four types (instruction, directive, comment, empty).";
+        case LABEL_INVALID_START_CHAR_E: /* 24 */
             return "label starts with an invalid character, should start with a letter.";
-        case LABEL_INVALID_CHAR_E: /* 24 */
+        case LABEL_INVALID_CHAR_E: /* 25 */
             return "label contains invalid characters, should only contain letters and digits.";
-        case LABEL_TOO_LONG_E: /* 25 */
+        case LABEL_TOO_LONG_E: /* 26 */
             return "label is too long, should be less than 30 characters.";
-        case LABEL_EMPTY_E: /* 26 */
+        case LABEL_EMPTY_E: /* 27 */
             return "label does not have a name, should not be empty.";
-        case LABEL_TEXT_AFTER_COLON_E: /* 27 */
+        case LABEL_TEXT_AFTER_COLON_E: /* 28 */
             return "text found after label colon, should not have any text after the colon.";
-        case LABEL_SAME_AS_MACRO_E: /* 28 */
+        case LABEL_SAME_AS_MACRO_E: /* 29 */
             return "label and a macro name cannot be the same.";
-        case INVALID_DIRECTIVE_E: /* 29 */
+        case LABEL_NAME_IS_KEYWORD_E: /* 30 */
+            return "label name is a keyword, should not be a keyword.";
+        case INVALID_DIRECTIVE_E: /* 31 */
             return "invalid directive, should be one of the valid directives (.data, .string, .entry, .extern).";
 
         /* tables errors 40 - 59 */
@@ -86,6 +91,7 @@ Bool isFatalErr(ErrCode code) {
         case UNKNOWN_ERROR: /* is for debugging purposes, should not be used in production */
         case NULL_INITIAL: /* is for debugging purposes, should not be used in production */
         case MALLOC_ERROR_F:
+        case INPUT_FILE_UNREADABLE_F:
         case FILE_READ_ERROR_F:
         case FILE_WRITE_ERROR_F:
         case FILE_DELETE_ERROR_F:
@@ -124,7 +130,7 @@ int addError(ErrorList *list, ErrCode code, unsigned int line, Bool isFatal)
     if (newNode == NULL) {
         list->fatalError = TRUE; /* set fatal error flag if memory allocation fails */
         list->count++; /* increment the count of errors */
-        printErrors(list, "unknown"); /* print errors with unknown filename */
+        printErrors(list, 1); /* print errors with unknown filename */
         printErrorMsg(MALLOC_ERROR_F, "Failed to allocate memory for error node");
         return -1; /* return -1 if memory allocation fails */
     }
@@ -148,9 +154,10 @@ int addError(ErrorList *list, ErrCode code, unsigned int line, Bool isFatal)
     return 0; /* return 0 on success */
 }
 
-void printErrors(ErrorList *list, char *filename) {
+void printErrors(ErrorList *list, unsigned int incCount) {
     ErrorNode *curr = list->head;
-    fprintf(stderr, "there were %d errors in file %s during the %s:\n", list->count, filename, list->stage);
+    list->count += incCount; /* increment the count of errors by incCount (will be used mainly for malloc failures) */
+    fprintf(stderr, "there were %d errors in file %s during the %s:\n", list->count, list->filename, list->stage);
     while (curr != NULL) {
         fprintf(stderr, "line %u: %s\n", curr->line, getErrorMessage(curr->code));
         curr = curr->next;
