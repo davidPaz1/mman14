@@ -4,6 +4,9 @@
 #include "util.h"
 #include "tables.h"
 
+/* readParsedLine - reads a line from the file and returns a parsedLine structure
+ * errorCode:  END_OF_LINE_S , MALLOC_ERROR_F, UTIL_SUCCESS_S
+ */
 parsedLine* readParsedLine(FILE *fp, ErrCode *errorCode)
 {
     parsedLine *lineRead;
@@ -31,6 +34,7 @@ parsedLine* readParsedLine(FILE *fp, ErrCode *errorCode)
     return lineRead;
 }
 
+/* errorCode:  END_OF_LINE_S , MALLOC_ERROR_F, LEXER_SUCCESS_S */
 ErrCode determineLineType(parsedLine *pline) 
 {
     char *token, *line;
@@ -113,7 +117,7 @@ void printParsedLine(parsedLine *pline) {
 
 /* is X functions: */
 
-Bool isEndOfLine(char *str)
+Bool isEndOfLine(const char *str)
 {
     int i = 0;
     while (isspace(str[i])) /* skip leading whitespace */
@@ -124,7 +128,7 @@ Bool isEndOfLine(char *str)
     return FALSE; /* if there are non-whitespace characters, it is not end of line */
 }
 
-Bool isOperationName(char* arg) {
+Bool isOperationName(const char* arg) {
 
     if (strcmp(arg, "mov") == 0 ||
         strcmp(arg, "cmp") == 0 ||
@@ -147,7 +151,7 @@ Bool isOperationName(char* arg) {
         return FALSE;
 }
 
-Bool isRegister(char* arg) {
+Bool isRegister(const char* arg) {
     if (strcmp(arg, "r0") == 0 ||
         strcmp(arg, "r1") == 0 ||
         strcmp(arg, "r2") == 0 ||
@@ -160,7 +164,7 @@ Bool isRegister(char* arg) {
     return FALSE;
 }
 
-Bool isDirective(char* arg) {
+Bool isDirective(const char* arg) {
 
     if (strcmp(arg, ".data") == 0 ||
         strcmp(arg, ".string") == 0 ||
@@ -172,19 +176,19 @@ Bool isDirective(char* arg) {
     return FALSE;
 }
 
-Bool isMacroStart(char* arg) {
+Bool isMacroStart(const char* arg) {
     if (strcmp(arg, "mcro") == 0)
         return TRUE;
     return FALSE;
 }
 
-Bool isMacroEnd(char* arg) {
+Bool isMacroEnd(const char* arg) {
     if (strcmp(arg, "mcroend") == 0)
         return TRUE;
     return FALSE;
 }
 
-Bool isKeywords(char *arg)
+Bool isKeywords(const char *arg)
 {
     if (isOperationName(arg) ||
         isRegister(arg) ||
@@ -195,7 +199,7 @@ Bool isKeywords(char *arg)
     return FALSE;
 }
 
-Bool isLabel(char *str)
+Bool isLabel(const char *str)
 {
     char *labelEnd;
     
@@ -208,7 +212,7 @@ Bool isLabel(char *str)
     return TRUE; /* if ':' is found, it is a label */
 }
 
-ErrCode isValidLabel(char *label, macroTable *table)
+ErrCode isValidLabel(macroTable *table, const char *label)
 {
     int i, len = strlen(label); /* start from 1 to skip the first character */
 
@@ -242,7 +246,7 @@ ErrCode isValidLabel(char *label, macroTable *table)
     return LEXER_SUCCESS_S; /* valid label */
 }
 
-ErrCode isMacroNameValid(macroTable* table ,char* macroName) {
+ErrCode isMacroNameValid(macroTable* table , const char* macroName) {
     int i; /* index for iterating through the macro name */
     int len = strlen(macroName); /* length of the macro name */
 

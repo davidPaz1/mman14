@@ -2,6 +2,14 @@
 #include "global.h"
 
 /* scanning functions */
+
+/**
+ * readLine - reads a line from the file and returns it as a string.
+ * if the line is longer than MAX_LINE_FILE_LENGTH, it will return NULL and set errorCode to LINE_TOO_LONG_E.
+ * if memory allocation fails, returns NULL and sets errorCode to MALLOC_ERROR_F.
+ * if end of file is reached, returns NULL and sets errorCode to EOF_REACHED_S.
+ * errorCode:  EOF_REACHED_S , FILE_READ_ERROR_F , LINE_TOO_LONG_E , FILE_READ_ERROR_F, UTIL_SUCCESS_S
+ */
 char* readLine(FILE *fp, ErrCode *errorCode) {
 
     /* overlength should store \n or \r if line is under MAX_LINE_FILE_LENGTH */
@@ -44,10 +52,17 @@ char* readLine(FILE *fp, ErrCode *errorCode) {
     return line;
 }
 
-char* getFirstToken(char *str, ErrCode *errorCode)
+/**
+ * getFirstToken - returns the first token of a string, skipping leading spaces
+ * and handling illegal characters (',') by returning them as a single character string.
+ * if the string is empty or contains only whitespace, returns NULL and sets errorCode to END_OF_LINE_S.
+ * if memory allocation fails, returns NULL and sets errorCode to MALLOC_ERROR_F.
+ * resets errorCode:  END_OF_LINE_S , MALLOC_ERROR_F, UTIL_SUCCESS_S
+ */
+char* getFirstToken(const char *str, ErrCode *errorCode)
 {
     int i = 0;
-    char* word;
+    char* token;
     *errorCode = NULL_INITIAL; /* reset error code to initial state */
 
     while (isspace(str[i]))
@@ -59,60 +74,64 @@ char* getFirstToken(char *str, ErrCode *errorCode)
     }
 
     if (str[i] == ',') { /* if the first character is ';' or ',' */
-        word = malloc(COMMA_LENGTH + NULL_TERMINATOR); /* 1 for illegal character and 1 for '\0' */
-        if (word == NULL) {
+        token = malloc(COMMA_LENGTH + NULL_TERMINATOR); /* 1 for illegal character and 1 for '\0' */
+        if (token == NULL) {
             *errorCode = MALLOC_ERROR_F;
             return NULL; 
         }
-        word[0] = ','; /* set the first character to ',' */
-        word[1] = '\0';  /* set the last character to '\0' */
+        token[0] = ','; /* set the first character to ',' */
+        token[1] = '\0';  /* set the last character to '\0' */
         i++; /* skip the illegal character */
     }
     else {
         int start = i;
-        while (str[i] != '\0' && str[i] != ',' && !isspace(str[i]))  /* find the end of the word */
+        while (str[i] != '\0' && str[i] != ',' && !isspace(str[i]))  /* find the end of the token */
             i++;
 
-        word = malloc(i - start + 1); /* +1 for '\0' */
-        if (word == NULL) {
+        token = malloc(i - start + 1); /* +1 for '\0' */
+        if (token == NULL) {
             *errorCode = MALLOC_ERROR_F;
             return NULL;
         }
 
-        strncpy(word, str + start, i - start);
-        word[i - start] = '\0';
+        strncpy(token, str + start, i - start);
+        token[i - start] = '\0';
     }
 
     while (isspace(str[i])) 
         i++;
 
     *errorCode = UTIL_SUCCESS_S; /* set error code to success */
-    return word;
+    return token;
 }
 
+/**
+ * cutFirstToken - same as getFirstToken, but also cuts token from the string.
+ * errorCode:  END_OF_LINE_S , MALLOC_ERROR_F, UTIL_SUCCESS_S
+ */
 char *cutFirstToken(char *str, ErrCode *errorCode)
 {
-    char *word;
+    char *token;
     *errorCode = NULL_INITIAL; /* reset error code to initial state */
-    word = getFirstToken(str, errorCode);
+    token = getFirstToken(str, errorCode);
 
-    if (*errorCode != UTIL_SUCCESS_S) /* if an error occurred while getting the first word */
+    if (*errorCode != UTIL_SUCCESS_S) /* if an error occurred while getting the first token */
         return NULL;
 
-    cutnChar(str, strlen(word)); /* cut the first word from the string */
-    return word;
+    cutnChar(str, strlen(token)); /* cut the first token from the string */
+    return token;
 }
 
 /* string manipulation functions */
 
-char* strDup(char* src) {
+char* strDup(const char* src) {
     char* dest = malloc(strlen(src) + NULL_TERMINATOR);
     if (dest != NULL) 
         strcpy(dest, src);
     return dest;
 }
 
-char *mergeStrings(char *start, char *end)
+char* mergeStrings(const char *start, const char *end)
 {
     char *merged;
     if (start == NULL || end == NULL)
@@ -120,9 +139,9 @@ char *mergeStrings(char *start, char *end)
     
 
     merged = malloc(strlen(start) + strlen(end) + NULL_TERMINATOR); /* enough room for merged string */
-    if (merged == NULL) { /* malloc failed */
+    if (merged == NULL) /* malloc failed */
         return NULL;
-    }
+
 
     strcpy(merged, start); /* copy the first string */
     strcat(merged, end); /* concatenate the two strings */
@@ -148,7 +167,7 @@ void cutnChar(char *str, int n)
 
 /* file management functions */
 
-FILE* openFile(char *filename, char *ending, char *mode, ErrCode *errorCode)
+FILE* openFile(const char *filename,const char *ending, const char *mode, ErrCode *errorCode)
 {
     FILE *fp;
     char* fullFileName = mergeStrings(filename, ending); /* merge filename and ending to create full file name */
@@ -176,13 +195,17 @@ FILE* openFile(char *filename, char *ending, char *mode, ErrCode *errorCode)
     return fp;
 }
 
-ErrCode delFile(char *filename, char *ending)
+/**
+ * delFile - deletes a file with the given filename and ending.
+ * errorCode:  MALLOC_ERROR_File_Del_F, FILE_DELETE_ERROR_F, UTIL_SUCCESS_S
+ */
+ErrCode delFile(const char *filename, const char *ending)
 {
     char *fullFileName;
     
     fullFileName = mergeStrings(filename, ending);
     if (fullFileName == NULL) {
-        return MALLOC_ERROR_F;
+        return MALLOC_ERROR_File_Del_F;
     }
 
     if (remove(fullFileName) != 0) { /* if file delete was unsuccessful */

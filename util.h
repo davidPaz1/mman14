@@ -9,17 +9,17 @@
 
 /* scanning functions */
 char* readLine(FILE *fp, ErrCode *errorCode);
-char* getFirstToken(char *str, ErrCode *errorCode); /* get the first token from the string */
+char* getFirstToken(const char *str, ErrCode *errorCode); /* get the first token from the string */
 char* cutFirstToken(char *str, ErrCode *errorCode); /* cut the first token from the string */
 
 
 /* string manipulation functions */
-char* strDup(char* src); /* string duplication */
-char* mergeStrings(char* str1, char* str2); /* merge two strings */
+char* strDup(const char* src); /* string duplication */
+char* mergeStrings(const char* str1, const char* str2); /* merge two strings */
 void cutnChar(char *str, int n); /* cut the first n characters from the string */
 
 /* file management functions */
-FILE* openFile(char* filename, char* ending , char* mode, ErrCode* errorCode);
-ErrCode delFile(char* filename, char* ending);
+FILE* openFile(const char *filename, const char *ending, const char *mode, ErrCode *errorCode);
+ErrCode delFile(const char *filename, const char *ending);
 
 #endif

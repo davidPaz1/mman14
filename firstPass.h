@@ -6,7 +6,7 @@
 #include "tables.h"
 
 /* Preprocessor functions prototypes */
-ErrCode executeFirstPass(char *inputFileName, int *DCF, int *ICF, macroTable* macroNames); /* main function for the preprocessor */
+ErrCode executeFirstPass(const char *inputFileName, int *DCF, int *ICF, macroTable* macroNames); /* main function for the preprocessor */
 
 
 void firstPassErrorExit(FILE* amFile, parsedLine* pLine); /* clean up and exit the first pass */

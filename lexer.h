@@ -30,16 +30,16 @@ void printParsedLine(parsedLine *pline); /* print the parsed line for debugging 
 
 /* is X functions prototypes */
 /* keyword functions prototypes */
-Bool isEndOfLine(char* str); /* check if the string is an end of line */
-Bool isOperationName(char* arg); /* check if the string is an operation name */
-Bool isRegister(char* arg); /* check if the string is a register name */
-Bool isDirective(char* arg); /* check if the string is a directive */
-Bool isMacroStart(char* arg); /* check if the string is a macro start */
-Bool isMacroEnd(char* arg); /* check if the string is a macro end */
-Bool isKeywords(char* arg); /* check if the string is a keyword */
-Bool isLabel(char* str); /* check if the string is a label */
+Bool isEndOfLine(const char* str); /* check if the string is an end of line */
+Bool isOperationName(const char* arg); /* check if the string is an operation name */
+Bool isRegister(const char* arg); /* check if the string is a register name */
+Bool isDirective(const char* arg); /* check if the string is a directive */
+Bool isMacroStart(const char* arg); /* check if the string is a macro start */
+Bool isMacroEnd(const char* arg); /* check if the string is a macro end */
+Bool isKeywords(const char* arg); /* check if the string is a keyword */
+Bool isLabel(const char* str); /* check if the string is a label */
 
-ErrCode isValidLabel(char *label, macroTable *table); /* check if the label is valid */
-ErrCode isMacroNameValid(macroTable* table ,char* macroName);
+ErrCode isValidLabel(macroTable *table, const char *label); /* check if the label is valid */
+ErrCode isMacroNameValid(macroTable* table , const char* macroName);
 
 #endif

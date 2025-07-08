@@ -10,7 +10,7 @@
  * it also handles errors and adds them to the error list.
  * Returns PREPROCESSOR_SUCCESS_S on success, PREPROCESSOR_FAILURE_S on failure.
  */
-ErrCode executePreprocessor(macroTable *table, ErrorList *errorList, FILE *asFile, FILE *amFile, char *inputFileName) {
+ErrCode executePreprocessor(macroTable *table, ErrorList *errorList, FILE *asFile, FILE *amFile, const char *inputFileName) {
     char *line, *firstToken; /* line to read from the .as file and first token of the line */
     ErrCode errorCode = NULL_INITIAL; /* Initialize error code */
     Bool inMacroDef = FALSE; /* flag to indicate if the current line is a macro definition line */
@@ -101,7 +101,7 @@ ErrCode executePreprocessor(macroTable *table, ErrorList *errorList, FILE *asFil
     return PREPROCESSOR_SUCCESS_S;
 }
 
-ErrCode spreadMacro(macroTable *table, char *macroName, FILE *amFile)
+ErrCode spreadMacro(macroTable *table, const char *macroName, FILE *amFile)
 {
     macroBody *macroBody, *next; /* will hold the body of the macro we are about to spread */
     ErrCode errorCode = NULL_INITIAL; /* initialize error code to NULL_INITIAL */

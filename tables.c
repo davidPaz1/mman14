@@ -16,7 +16,7 @@ macroTable* createMacroTable() {
     return newTable; /* return the new table */
 }
 
-macroNode* createMacroNode(char* macroName, ErrCode* errorCode) {
+macroNode* createMacroNode(const char* macroName, ErrCode* errorCode) {
     macroNode* newMacro; /* returned macro */
     *errorCode = NULL_INITIAL; /* initialize error code to NULL_INITIAL */
 
@@ -40,7 +40,7 @@ macroNode* createMacroNode(char* macroName, ErrCode* errorCode) {
     return newMacro;
 }
 
-macroBody* createMacroBody(char* line, ErrCode* errorCode) {
+macroBody* createMacroBody(const char* line, ErrCode* errorCode) {
     macroBody* newBody = malloc(sizeof(macroBody));  /* returned body */
     *errorCode = NULL_INITIAL; /* initialize error code to NULL_INITIAL */
 
@@ -61,14 +61,9 @@ macroBody* createMacroBody(char* line, ErrCode* errorCode) {
 }
 
 /* add a new macro to the table */
-ErrCode addMacro(macroTable* table , char* name) {
+ErrCode addMacro(macroTable* table , const char* name) {
     macroNode* newMacro; /* new macro to be added */
     ErrCode errorCode = NULL_INITIAL; /* initialize error code to NULL_INITIAL */
-
-    if (table == NULL || name == NULL) { /*test123*/
-        fprintf(stderr, "invalid macro table or line\n");
-        return UNEXPECTED_NULL_INPUT_F; /* exit if the table or line is NULL */
-    }
 
     errorCode = isMacroNameValid(table, name); /* check if the macro name is valid */
     if (errorCode != MACROTABLE_SUCCESS_S) /* if the macro name is not valid */
@@ -85,15 +80,11 @@ ErrCode addMacro(macroTable* table , char* name) {
     return MACROTABLE_SUCCESS_S; /* return success */
 }
 
-ErrCode addMacroLine(macroTable* table, char* line) {
+ErrCode addMacroLine(macroTable* table, const char* line) {
     macroBody* newLine; /* new line to be added */
     macroNode* headNode; /* the macro to which the line will be added */
     ErrCode errorCode = NULL_INITIAL; /* initialize error code to NULL_INITIAL */
 
-    if (table == NULL || line == NULL) { /*test123*/
-        fprintf(stderr, "invalid macro table or line\n");
-        return UNEXPECTED_NULL_INPUT_F; /* exit if the table or line is NULL */
-    }
     headNode = table->macroHead; /* get the head of the macro list */
     
     newLine = createMacroBody(line, &errorCode); /* create a new body for the line */
@@ -112,7 +103,7 @@ ErrCode addMacroLine(macroTable* table, char* line) {
     return MACROTABLE_SUCCESS_S; /* return success */
 }
 
-macroBody* findMacro(macroTable* table, char* macroName, ErrCode* errorCode) {
+macroBody* findMacro(macroTable* table, const char* macroName, ErrCode* errorCode) {
     macroNode* current; /* used to iterate through the macro list */
     *errorCode = NULL_INITIAL; /* initialize error code to NULL_INITIAL */
 
@@ -129,7 +120,7 @@ macroBody* findMacro(macroTable* table, char* macroName, ErrCode* errorCode) {
     return NULL; /* Macro not found */
 }
 
-Bool isMacroExists(macroTable* table, char* macroName) {
+Bool isMacroExists(macroTable* table, const char* macroName) {
 
     macroNode* current = table->macroHead; /* used to iterate through the macro list */
     while (current != NULL) {

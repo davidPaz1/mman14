@@ -106,7 +106,7 @@ Bool isFatalErr(ErrCode code) {
     }        
 }
 
-void printErrorMsg(ErrCode Ecode, char *stage, unsigned int line)
+void printErrorMsg(ErrCode Ecode, const char *stage, unsigned int line)
 {
     fprintf(stderr, "Ecode: %d - ", Ecode);
     if (line != 0)

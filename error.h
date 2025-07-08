@@ -85,7 +85,7 @@ typedef struct ErrorList {
 
 /* errorcode handling functions prototypes */
 char* getErrorMessage(ErrCode error); /* print error message based on error code */
-void printErrorMsg(ErrCode code, char *stage, unsigned int line); /* print error message based on error code */
+void printErrorMsg(ErrCode code, const char *stage, unsigned int line); /* print error message based on error code */
 Bool isFatalErr(ErrCode code);
 
 /* error list handling functions prototypes */

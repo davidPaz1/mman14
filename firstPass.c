@@ -9,7 +9,7 @@
 /* 17 has an explanation for the first pass */
 /*page 19 or 31 for algorithm for preprocessing */
 
-ErrCode executeFirstPass(char *inputFileName, int *DCF, int *ICF, macroTable* macroNames)
+ErrCode executeFirstPass(const char *inputFileName, int *DCF, int *ICF, macroTable* macroNames)
 {
     int lineNumber = 0; /* line number in the .as file [debug]*/
     int DC = 0; /* data counter */
@@ -46,7 +46,7 @@ ErrCode executeFirstPass(char *inputFileName, int *DCF, int *ICF, macroTable* ma
         firstToken = pLine->firstToken; /* get the first token from the parsedLine structure (easier to read) */
 
         if(pLine->label != NULL){ /* if the line has a label */
-            errorCode = isValidLabel(pLine->label, macroNames); /* check if the label is valid */
+            errorCode = isValidLabel(macroNames, pLine->label); /* check if the label is valid */
             if (errorCode != LEXER_SUCCESS_S) { /* if the label is not valid */
                 firstPassErrorExit(amFile, pLine); /* clean up and exit the first pass */
                 return errorCode; /* return failure if an error occurred */

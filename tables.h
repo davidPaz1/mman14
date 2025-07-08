@@ -25,15 +25,15 @@ typedef struct macroTable { /* head of linked list of all the macros */
 
 /* "public" functions */
 macroTable* createMacroTable();
-ErrCode addMacro(macroTable* table , char* name);
-ErrCode addMacroLine(macroTable* table, char* line);
-macroBody* findMacro(macroTable* table, char* macroName, ErrCode* errorCode);
+ErrCode addMacro(macroTable* table , const char* name);
+ErrCode addMacroLine(macroTable* table, const char* line);
+macroBody* findMacro(macroTable* table, const char* macroName, ErrCode* errorCode);
 void freeMacroTable(macroTable* table);
 
 /* "private" functions */
-macroNode* createMacroNode(char* macroName, ErrCode* errorCode);
-macroBody* createMacroBody(char* line, ErrCode* errorCode);
-Bool isMacroExists(macroTable* table, char* macroName);
+macroNode* createMacroNode(const char* macroName, ErrCode* errorCode);
+macroBody* createMacroBody(const char* line, ErrCode* errorCode);
+Bool isMacroExists(macroTable* table, const char* macroName);
 void freeMacroNode(macroNode* node);
 void freeMacroBody(macroBody* body);
 
