@@ -7,10 +7,10 @@
 #define OVER_LENGTH  1 /* overlength should store \n or \r if line is under MAX_LINE_FILE_LENGTH */
 #define COMMA_LENGTH 1 /* length of the comma character ',' */
 
+/* scanning functions */
 char* readLine(FILE *fp, ErrCode *errorCode);
 char* getFirstToken(char *str, ErrCode *errorCode); /* get the first token from the string */
 char* cutFirstToken(char *str, ErrCode *errorCode); /* cut the first token from the string */
-/* scanning functions */
 
 
 /* string manipulation functions */

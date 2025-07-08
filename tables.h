@@ -24,7 +24,7 @@ typedef struct macroTable { /* head of linked list of all the macros */
 /* function prototypes */
 
 /* "public" functions */
-macroTable* createMacroTable(ErrCode *errorCode);
+macroTable* createMacroTable();
 ErrCode addMacro(macroTable* table , char* name);
 ErrCode addMacroLine(macroTable* table, char* line);
 macroBody* findMacro(macroTable* table, char* macroName, ErrCode* errorCode);

@@ -5,17 +5,14 @@
 #include "util.h" /* for strDup */
 
 /* MacroTable functions that operate on the MacroTable struct (linked list)*/
-macroTable* createMacroTable(ErrCode* errorCode) {
-    macroTable* newTable; /* returned table */
-    *errorCode = NULL_INITIAL; /* initialize error code to NULL_INITIAL */
-
-    newTable = malloc(sizeof(macroTable)); /* allocate memory for the table */
+macroTable* createMacroTable() {
+    
+    macroTable* newTable = malloc(sizeof(macroTable)); /* allocate memory for the table */
     if (newTable == NULL) {
-        *errorCode = MALLOC_ERROR_F; /* set error code to MALLOC_ERROR */
         return NULL; /* exit if memory allocation fails */
     }
+
     newTable->macroHead = NULL; /* initialize the head of the list to NULL */
-    *errorCode = MACROTABLE_SUCCESS_S; /* set error code to MACROTABLE_SUCCESS */
     return newTable; /* return the new table */
 }
 

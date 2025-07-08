@@ -12,10 +12,14 @@ char* getErrorMessage(ErrCode code) {
         case EXTRANEOUS_TEXT_E: /* 3 */
             return "extraneous text after the end of the line, should never be used.";
 
-        /* debugging errors 6 - 9 */
-        case UNKNOWN_ERROR: /* 6 */
-            return "unknown error occurred. Should never be used.";
-        case UNEXPECTED_NULL_INPUT_F: /* 7 */
+        /* error.c codes 4 - 7 */
+        case MALLOC_ERROR_LIST_F: /* 7 */
+            return "memory allocation error for the error list, should never be used.";
+
+        /* debugging errors 8 - 9 */
+        case UNKNOWN_ERROR: /* 8 */
+            return "unknown error, should never be used.";
+        case UNEXPECTED_NULL_INPUT_F: /* 9 */
             return "unexpected NULL input, should never be used.";
 
         /* util errors 10 - 29 */
@@ -103,39 +107,49 @@ Bool isFatalErr(ErrCode code) {
     }        
 }
 
-void printErrorMsg(ErrCode code, char *context)
+void printErrorMsg(ErrCode Ecode, char *stage, unsigned int line)
 {
-    fprintf(stderr, "Ecode: %d - ", code);
-    if (context[0] == '\0' || context == NULL) /* if context is NULL or empty */
-        fprintf(stderr, "%s\n", getErrorMessage(code));
-    else
-        fprintf(stderr, "Error %s because %s\n", context, getErrorMessage(code));
-    if(context == NULL) /* if context is NULL it is due to malloc failure */
-        fprintf(stderr, "Error %s\n", getErrorMessage(MALLOC_ERROR_F));
+    fprintf(stderr, "Ecode: %d - ", Ecode);
+    if (line != 0)
+        fprintf(stderr, "line %u ", line);
+    if (stage != NULL)
+        fprintf(stderr, "at %s stage ", stage);
+    
+    if (line != 0 || stage != NULL)
+        fprintf(stderr, "- ");
+        
+    fprintf(stderr, "%s\n", getErrorMessage(Ecode));
 }
 
-void createErrorList(ErrorList *list, char *filename)
+ErrorList* createErrorList(char *filename)
 {
-    list->count = 0;
-    list->fatalError = FALSE; /* initialize fatal error flag to FALSE */
-    list->filename = filename;
-    list->stage = NULL; /* initialize stage to NULL */
-    list->head = NULL;
-    list->tail = NULL;
+    ErrorList* newList = malloc(sizeof(ErrorList));
+    if (newList == NULL) 
+        return NULL;
+    
+
+    newList->count = 0;
+    newList->fatalError = FALSE; /* initialize fatal error flag to FALSE */
+    newList->filename = filename;
+    newList->stage = NULL; /* initialize stage to NULL */
+    newList->head = NULL;
+    newList->tail = NULL;
+    return newList;
 }
 
-int addError(ErrorList *list, ErrCode code, unsigned int line, Bool isFatal)
+void addErrorToList(ErrorList *list, ErrCode code, unsigned int line)
 {
     ErrorNode *newNode = malloc(sizeof(ErrorNode));
+    list->count++; /* increment the count of errors by 1 for the new error being added */
     if (newNode == NULL) {
         list->fatalError = TRUE; /* set fatal error flag if memory allocation fails */
-        list->count++; /* increment the count of errors */
-        printErrors(list, 1); /* print errors with unknown filename */
-        printErrorMsg(MALLOC_ERROR_F, "Failed to allocate memory for error node");
-        return -1; /* return -1 if memory allocation fails */
+        list->count++; /* increment the count of errors by 1 for the malloc failure */
+        printErrorMsg(code, NULL, line); /* print the error message */
+        printErrorMsg(MALLOC_ERROR_LIST_F, NULL, line); /* print the error message */
+        return;
     }
 
-    newNode->code = code;
+    newNode->errCode = code;
     newNode->line = line;
     newNode->next = NULL;
 
@@ -146,20 +160,17 @@ int addError(ErrorList *list, ErrCode code, unsigned int line, Bool isFatal)
         list->tail->next = newNode; /* link the new node to the end of the list */
         list->tail = newNode; /* update the tail to the new node */
     }
-    
-    list->count++; /* increment the count of errors */
-    if (isFatal) 
-        list->fatalError = TRUE; /* set fatal error flag if isFatal is TRUE */
 
-    return 0; /* return 0 on success */
+    if (isFatalErr(code)) /* if the error is fatal */
+        list->fatalError = TRUE; /* set fatal error flag if isFatal is TRUE */
 }
 
 void printErrors(ErrorList *list, unsigned int incCount) {
     ErrorNode *curr = list->head;
     list->count += incCount; /* increment the count of errors by incCount (will be used mainly for malloc failures) */
-    fprintf(stderr, "there were %d errors in file %s during the %s:\n", list->count, list->filename, list->stage);
+    fprintf(stderr, "there were %d error(s) in file %s during the %s:\n", list->count, list->filename, list->stage);
     while (curr != NULL) {
-        fprintf(stderr, "line %u: %s\n", curr->line, getErrorMessage(curr->code));
+        printErrorMsg(curr->errCode, NULL, curr->line); /* print each error message */
         curr = curr->next;
     }
 }

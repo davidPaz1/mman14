@@ -170,7 +170,7 @@ FILE* openFile(char *filename, char *ending, char *mode, ErrCode *errorCode)
     }
 
     if (*errorCode == NULL_INITIAL) /* if no error occurred */
-    *errorCode = UTIL_SUCCESS_S; /* set error code to success */
+        *errorCode = UTIL_SUCCESS_S; /* set error code to success */
     
     free(fullFileName); /* free the allocated memory for fullFileName */
     return fp;
@@ -179,7 +179,7 @@ FILE* openFile(char *filename, char *ending, char *mode, ErrCode *errorCode)
 ErrCode delFile(char *filename, char *ending)
 {
     char *fullFileName;
-
+    
     fullFileName = mergeStrings(filename, ending);
     if (fullFileName == NULL) {
         return MALLOC_ERROR_F;

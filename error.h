@@ -16,9 +16,15 @@ typedef enum ErrCode {
     EOF_REACHED_S = 2, /* indicate that the EOF was reached while reading */
     EXTRANEOUS_TEXT_E = 3, /* extraneous text after the end of the line */
 
-    /* debugging errors 6 - 9 */
-    UNKNOWN_ERROR = 6, /* unknown error, should never be used */
-    UNEXPECTED_NULL_INPUT_F = 7, /* unexpected NULL input, should never be used */
+    /* error.c codes 4 - 7 */
+    ERROR_C_FILE_SUCCESS_S = 4, /* success error file */
+    ERROR_C_FILE_FAILURE_S = 5, /* failure error file */
+    SEEN_FATAL_ERROR_S = 6, /* indicates that a fatal error was seen */
+    MALLOC_ERROR_LIST_F = 7, /* memory allocation error for the error list */
+
+    /* debugging errors 8 - 9 */
+    UNKNOWN_ERROR = 8, /* unknown error, should never be used */
+    UNEXPECTED_NULL_INPUT_F = 9, /* unexpected NULL input, should never be used */
 
     /* util errors 10 - 29 */
     UTIL_SUCCESS_S = 10,
@@ -68,7 +74,7 @@ typedef enum ErrCode {
 } ErrCode;
 
 typedef struct ErrorNode {
-    ErrCode code;
+    ErrCode errCode;
     unsigned int line;              
     struct ErrorNode *next;
 } ErrorNode;
@@ -84,12 +90,12 @@ typedef struct ErrorList {
 
 /* errorcode handling functions prototypes */
 char* getErrorMessage(ErrCode error); /* print error message based on error code */
+void printErrorMsg(ErrCode code, char *stage, unsigned int line); /* print error message based on error code */
 Bool isFatalErr(ErrCode code);
-void printErrorMsg(ErrCode code, char *context); /* print error message based on error code */
 
 /* error list handling functions prototypes */
-void createErrorList(ErrorList *list, char *filename); /* initialize the error list */
-int addError(ErrorList *list, ErrCode code, unsigned int line, Bool isFatal); /* add error to the list */
+ErrorList* createErrorList(char *filename); /* initialize the error list */
+void addErrorToList(ErrorList *list, ErrCode code, unsigned int line); /* add error to the list */
 void printErrors(ErrorList *list, unsigned int incCount); /* print all errors in the list */
 void freeErrorsList(ErrorList *list); /* free the error list */
 
