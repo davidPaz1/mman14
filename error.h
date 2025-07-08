@@ -10,21 +10,16 @@ they also are divided into categories of severity and meaning:
 _S = signal or success, _F = fatal - halt immediately, _E = error - will halt at the end of the stage
 note all unspecified errors shouldn't be used and if they are we consider them fatal */
 typedef enum ErrCode {
-    /* VERY GENERAL error codes 0 - 5 */
+    /* VERY GENERAL error codes 0 - 7 */
     NULL_INITIAL = 0, /* initial state of error code, used to "forget" previous errorCode, should never be used */
     MALLOC_ERROR_F = 1, /* memory allocation Ferror */
     EOF_REACHED_S = 2, /* indicate that the EOF was reached while reading */
     EXTRANEOUS_TEXT_E = 3, /* extraneous text after the end of the line */
-
-    /* error.c codes 4 - 7 */
-    ERROR_C_FILE_SUCCESS_S = 4, /* success error file */
-    ERROR_C_FILE_FAILURE_S = 5, /* failure error file */
-    SEEN_FATAL_ERROR_S = 6, /* indicates that a fatal error was seen */
-    MALLOC_ERROR_LIST_F = 7, /* memory allocation error for the error list */
+    MALLOC_ERROR_File_Del_F = 4, /* memory allocation error for the file delete function */
+    MALLOC_ERROR_LIST_F = 5, /* memory allocation error for the error list */
 
     /* debugging errors 8 - 9 */
     UNKNOWN_ERROR = 8, /* unknown error, should never be used */
-    UNEXPECTED_NULL_INPUT_F = 9, /* unexpected NULL input, should never be used */
 
     /* util errors 10 - 29 */
     UTIL_SUCCESS_S = 10,
@@ -96,7 +91,7 @@ Bool isFatalErr(ErrCode code);
 /* error list handling functions prototypes */
 ErrorList* createErrorList(char *filename); /* initialize the error list */
 void addErrorToList(ErrorList *list, ErrCode code, unsigned int line); /* add error to the list */
-void printErrors(ErrorList *list, unsigned int incCount); /* print all errors in the list */
+void printErrors(ErrorList *list); /* print all errors in the list */
 void freeErrorsList(ErrorList *list); /* free the error list */
 
 #endif

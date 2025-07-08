@@ -5,6 +5,11 @@
 #include "util.h"
 #include "tables.h"
 
+/* * executePreprocessor - main function for the preprocessor.
+ * it reads the .as file, processes macro definitions and uses, and writes to the .am file.
+ * it also handles errors and adds them to the error list.
+ * Returns PREPROCESSOR_SUCCESS_S on success, PREPROCESSOR_FAILURE_S on failure.
+ */
 ErrCode executePreprocessor(macroTable *table, ErrorList *errorList, FILE *asFile, FILE *amFile, char *inputFileName) {
     char *line, *firstToken; /* line to read from the .as file and first token of the line */
     ErrCode errorCode = NULL_INITIAL; /* Initialize error code */
@@ -12,17 +17,23 @@ ErrCode executePreprocessor(macroTable *table, ErrorList *errorList, FILE *asFil
     unsigned int lineCount = 0; /* counter for line numbers */
     
     while (errorCode != EOF_REACHED_S) {
+
+        if (errorList->fatalError) { /* check if there was a fatal error in previous iterations */
+            return PREPROCESSOR_FAILURE_S;
+        }
+            
         lineCount++; /* increment the line count */
+        /* printf("lineCount: %u, inMacroDef: %d\n", lineCount, inMacroDef); */
+
         line = readLine(asFile, &errorCode); /* read a line from the .as file 1 */
         if (errorCode == EOF_REACHED_S)
             break; /* end of file reached, exit the loop */
 
-        if (errorCode != UTIL_SUCCESS_S) { /* check if an error occurred while reading the line */
+        if (errorCode != UTIL_SUCCESS_S) { /* check if an error occurred while reading the line */            
             addErrorToList(errorList, errorCode, lineCount);
-            if (errorList->fatalError) { /* check if has a fatal error */
-                preprocessorFreeMemory(line, NULL); /* clean up and exit the preprocessor */
-                return PREPROCESSOR_FAILURE_S; /* return failure if an error occurred */
-            }
+            /* all other errors we didn't check in readLine() are fatal */
+            return PREPROCESSOR_FAILURE_S; 
+            
         }
 
         firstToken = getFirstToken(line, &errorCode); /* get the first token from the line */
@@ -45,62 +56,49 @@ ErrCode executePreprocessor(macroTable *table, ErrorList *errorList, FILE *asFil
             continue; /* skip to the next line */
         }
         
-        if (errorCode != UTIL_SUCCESS_S) { /* check if an error occurred in getFirstToken */
+        if (errorCode != UTIL_SUCCESS_S) { /* check if an error occurred in getFirstToken() */
             addErrorToList(errorList, errorCode, lineCount);
-            if (errorList->fatalError) { /* check if there was a fatal error */
-                preprocessorFreeMemory(line, NULL); /* clean up and exit the preprocessor */
-                return PREPROCESSOR_FAILURE_S; /* return failure if an error occurred */
-            }
+            preprocessorFreeMemory(line, NULL); /* clean up and exit the preprocessor */
+            /* all other errors we didn't check in getFirstToken() are fatal */
+            return PREPROCESSOR_FAILURE_S; 
         }
-        /* identify type of line and */
 
         if(isMacroExists(table, firstToken)) { /* check if the line is a macro use line 2 */
             errorCode = spreadMacro(table, firstToken, amFile); /* spread the macro body into the .am file */
-            if (errorCode != MACROTABLE_SUCCESS_S) { /* check if the macro was spread successfully */
+            if (errorCode != MACROTABLE_SUCCESS_S)  /* check if the macro was spread successfully */
                 addErrorToList(errorList, errorCode, lineCount);
-                if (errorList->fatalError) { /* check if there was a fatal error */
-                    preprocessorFreeMemory(line, NULL); /* clean up and exit the preprocessor */
-                    return PREPROCESSOR_FAILURE_S; /* return failure if an error occurred */
-                }
-            }
         }
         else if (strcmp(firstToken, "mcro") == 0) { /* check if the line is a macro definition line 3 */
-            inMacroDef = TRUE; /* set the flag to indicate that we are in a macro definition 4 */
             cutnChar(line, strlen(firstToken)); /* cut the first word from the line for processing */
             errorCode = macroDef(table, line); /* add the macro definition to the macro table */
-            if (errorCode != MACROTABLE_SUCCESS_S) { /* check if the macro definition was added successfully */
-                preprocessorFreeMemory(line, NULL); /* clean up and exit the preprocessor */
-                return errorCode; /* return failure if an error occurred */
-            }
-            
+            if (errorCode != MACROTABLE_SUCCESS_S) /* check if the macro definition was added successfully */
+                addErrorToList(errorList, errorCode, lineCount); /* add the error to the error list */
+            else
+                inMacroDef = TRUE; /* set the flag to indicate that we are in a macro definition 4 */
         }
         else if (strcmp(firstToken, "mcroend") == 0) { /* check if the line is a macro end line 7 */
-            if (!inMacroDef) { /* if we are not in a macro definition */
-                preprocessorFreeMemory(line, firstToken);; /* clean up and exit the preprocessor */
-                return UNMATCHED_MACRO_END_E; /* return failure if an error occurred */
-            }
+            if (!inMacroDef) /* if we are not in a macro definition */
+                addErrorToList(errorList, UNMATCHED_MACRO_END_E, lineCount); /* add an error to the error list */
             inMacroDef = FALSE; /* reset the flag to indicate that we are no longer in a macro definition 8 */
         }
         else if (inMacroDef) { /* if we are in a macro definition 6 */
             errorCode = addMacroLine(table, line); /* add the line to the macro body */
-            if (errorCode != MACROTABLE_SUCCESS_S) { /* check if the line was added successfully */
-                preprocessorFreeMemory(line, NULL); /* clean up and exit the preprocessor */
-                return errorCode; /* return failure if an error occurred */
-            }
+            if (errorCode != MACROTABLE_SUCCESS_S)  /* check if the line was added successfully */
+                addErrorToList(errorList, errorCode, lineCount); /* add the error to the error list */
         }
         else { /* if the line is just a regular line unrelated to macros */
             fputs(line, amFile); /* write the line to the .am file */
             fputc('\n', amFile); /* add a newline character after the line */
         }
 
-        preprocessorFreeMemory(line, NULL); /* free the line memory */
+        preprocessorFreeMemory(line, firstToken); /* free the line memory */
 
     } /* end of while loop */
 
     if(errorList->count > 0) /* if there were any errors during the preprocessing */
-        return PREPROCESSOR_FAILURE_S; /* return failure */
+        return PREPROCESSOR_FAILURE_S;
     
-    return PREPROCESSOR_SUCCESS_S; /* return success */
+    return PREPROCESSOR_SUCCESS_S;
 }
 
 ErrCode spreadMacro(macroTable *table, char *macroName, FILE *amFile)
@@ -137,11 +135,11 @@ ErrCode macroDef(macroTable* table, char* line) /* add a line to the macro body 
 
     errorCode = addMacro(table, macroName); /* if the line is not empty, add it to the macro body */
     if (errorCode != MACROTABLE_SUCCESS_S) { /* check if the line was added successfully */
-        free(macroName); /* free the macro name memory */
-        return errorCode; /* return failure if an error occurred */
+        free(macroName);
+        return errorCode; 
     }
-    free(macroName); /* free the macro name memory */
-    return MACROTABLE_SUCCESS_S; /* return success */
+    free(macroName);
+    return MACROTABLE_SUCCESS_S;
 }
 
 void preprocessorFreeMemory(char *line, char *firstToken)

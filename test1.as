@@ -4,9 +4,9 @@ MAIN: mov M1[r2][r7],LENGTH
 LOOP: jmp END
     prn #-5
     
-    mcro mov
-
-    mcroend
+;    mcro mov
+;    mcro aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+;    mcroend
 
     mcro a_mc
     mov M1[r3][r3],r3

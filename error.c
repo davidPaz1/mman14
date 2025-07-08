@@ -13,21 +13,21 @@ char* getErrorMessage(ErrCode code) {
             return "extraneous text after the end of the line, should never be used.";
 
         /* error.c codes 4 - 7 */
+        case MALLOC_ERROR_File_Del_F: /* 6 */
+            return "memory allocation error while deleting the file.";
         case MALLOC_ERROR_LIST_F: /* 7 */
-            return "memory allocation error for the error list, should never be used.";
+            return "memory allocation error while adding an error to the list";
 
         /* debugging errors 8 - 9 */
         case UNKNOWN_ERROR: /* 8 */
             return "unknown error, should never be used.";
-        case UNEXPECTED_NULL_INPUT_F: /* 9 */
-            return "unexpected NULL input, should never be used.";
 
         /* util errors 10 - 29 */
 
         case LINE_TOO_LONG_E: /* 12 */
                 return "line length in file is longer than allowed (80).";
         case INPUT_FILE_UNREADABLE_F: /* 13 */
-            return "could not read input file, make sure it exists and is readable.";
+            return "could not read input .as file, make sure it exists and is readable.";
         case FILE_READ_ERROR_F: /* 14 */
             return "could not read from file, make sure it exists and is readable.";
         case FILE_WRITE_ERROR_F: /* 15 */
@@ -100,7 +100,6 @@ Bool isFatalErr(ErrCode code) {
         case FILE_WRITE_ERROR_F:
         case FILE_DELETE_ERROR_F:
         case INVALID_FILE_MODE_F:
-        case UNEXPECTED_NULL_INPUT_F:
             return TRUE;
         default:
             return FALSE; /* all other errors are not fatal */
@@ -165,9 +164,8 @@ void addErrorToList(ErrorList *list, ErrCode code, unsigned int line)
         list->fatalError = TRUE; /* set fatal error flag if isFatal is TRUE */
 }
 
-void printErrors(ErrorList *list, unsigned int incCount) {
+void printErrors(ErrorList *list) {
     ErrorNode *curr = list->head;
-    list->count += incCount; /* increment the count of errors by incCount (will be used mainly for malloc failures) */
     fprintf(stderr, "there were %d error(s) in file %s during the %s:\n", list->count, list->filename, list->stage);
     while (curr != NULL) {
         printErrorMsg(curr->errCode, NULL, curr->line); /* print each error message */
