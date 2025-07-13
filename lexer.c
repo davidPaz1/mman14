@@ -318,7 +318,7 @@ ErrCode isMacroNameValid(macroTable* table , const char* macroName) {
         return MACRO_NAME_TOO_LONG_E; /* exit if the macro name is too long */
     
     if (!isalpha(macroName[0]))
-        return MACRO_INVALID_CHAR_E; /* exit if the first character is not a letter */
+        return MACRO_INVALID_START_CHAR_E; /* exit if the first character is not a letter */
 
     for (i = 1; i < len; i++) {
         if (!isalnum(macroName[i]) && macroName[i] != '_')
@@ -331,5 +331,5 @@ ErrCode isMacroNameValid(macroTable* table , const char* macroName) {
     if (isMacroExists(table, macroName))
         return MACRO_NAME_EXISTS_E; /* exit if the macro name already exists */
     
-    return MACROTABLE_SUCCESS_S; /* Macro name is valid */
+    return TABLES_SUCCESS_S; /* Macro name is valid */
 }

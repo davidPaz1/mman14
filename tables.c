@@ -33,7 +33,7 @@ macroNode* createMacroNode(const char* macroName, ErrCode* errorCode) {
         return NULL; /* exit if memory allocation fails */
     }
 
-    *errorCode = MACROTABLE_SUCCESS_S; /* set error code to MACROTABLE_SUCCESS */
+    *errorCode = TABLES_SUCCESS_S; /* set error code to MACROTABLE_SUCCESS */
     newMacro->bodyHead = NULL; /* set the body head to the first line in the body */
     newMacro->bodyTail = NULL; /* set the body tail to the last line in the body */
     newMacro->nextMacro = NULL; /* initialize the next macro pointer to NULL */
@@ -56,7 +56,7 @@ macroBody* createMacroBody(const char* line, ErrCode* errorCode) {
         return NULL;
     }
     newBody->nextLine = NULL;
-    *errorCode = MACROTABLE_SUCCESS_S; /* set error code to MACROTABLE_SUCCESS */
+    *errorCode = TABLES_SUCCESS_S; /* set error code to MACROTABLE_SUCCESS */
     return newBody;
 }
 
@@ -66,18 +66,18 @@ ErrCode addMacro(macroTable* table , const char* name) {
     ErrCode errorCode = NULL_INITIAL; /* initialize error code to NULL_INITIAL */
 
     errorCode = isMacroNameValid(table, name); /* check if the macro name is valid */
-    if (errorCode != MACROTABLE_SUCCESS_S) /* if the macro name is not valid */
+    if (errorCode != TABLES_SUCCESS_S) /* if the macro name is not valid */
         return errorCode; /* exit if the macro name is not valid */
     
 
     newMacro = createMacroNode(name, &errorCode);
-    if (errorCode != MACROTABLE_SUCCESS_S) 
+    if (errorCode != TABLES_SUCCESS_S) 
         return errorCode; /* exit if the macro node creation failed */
     
 
     newMacro->nextMacro = table->macroHead; /* insert at the beginning of the list */
     table->macroHead = newMacro; /* update the head of the list */
-    return MACROTABLE_SUCCESS_S; /* return success */
+    return TABLES_SUCCESS_S; /* return success */
 }
 
 ErrCode addMacroLine(macroTable* table, const char* line) {
@@ -88,7 +88,7 @@ ErrCode addMacroLine(macroTable* table, const char* line) {
     headNode = table->macroHead; /* get the head of the macro list */
     
     newLine = createMacroBody(line, &errorCode); /* create a new body for the line */
-    if (errorCode != MACROTABLE_SUCCESS_S) 
+    if (errorCode != TABLES_SUCCESS_S) 
         return errorCode; /* exit if memory allocation fails */
     
 
@@ -100,7 +100,7 @@ ErrCode addMacroLine(macroTable* table, const char* line) {
         headNode->bodyTail = newLine; /* update the tail of the body */
     }
 
-    return MACROTABLE_SUCCESS_S; /* return success */
+    return TABLES_SUCCESS_S; /* return success */
 }
 
 macroBody* findMacro(macroTable* table, const char* macroName, ErrCode* errorCode) {
@@ -110,7 +110,7 @@ macroBody* findMacro(macroTable* table, const char* macroName, ErrCode* errorCod
     current = table->macroHead;
     while (current != NULL) {
         if (strcmp(current->macroName, macroName) == 0) {
-            *errorCode = MACROTABLE_SUCCESS_S; /* set error code to success */
+            *errorCode = TABLES_SUCCESS_S; /* set error code to success */
             return current->bodyHead; /* return the body of the found macro */
         }
         current = current->nextMacro;
@@ -120,6 +120,9 @@ macroBody* findMacro(macroTable* table, const char* macroName, ErrCode* errorCod
     return NULL; /* Macro not found */
 }
 
+/** isMacroExists - checks if a macro with the given name exists in the table.
+ * Returns TRUE if the macro exists, otherwise returns FALSE.
+ */
 Bool isMacroExists(macroTable* table, const char* macroName) {
 
     macroNode* current = table->macroHead; /* used to iterate through the macro list */

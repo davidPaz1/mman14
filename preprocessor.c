@@ -63,13 +63,13 @@ ErrCode executePreprocessor(macroTable *table, ErrorList *errorList, FILE *asFil
 
         if(isMacroExists(table, firstToken)) { /* check if the line is a macro use line 2 */
             errorCode = spreadMacro(table, firstToken, amFile); /* spread the macro body into the .am file */
-            if (errorCode != MACROTABLE_SUCCESS_S)  /* check if the macro was spread successfully */
+            if (errorCode != TABLES_SUCCESS_S)  /* check if the macro was spread successfully */
                 addErrorToList(errorList, errorCode);
         }
         else if (strcmp(firstToken, "mcro") == 0) { /* check if the line is a macro definition line 3 */
             cutnChar(line, strlen(firstToken)); /* cut the first word from the line for processing */
             errorCode = macroDef(table, line); /* add the macro definition to the macro table */
-            if (errorCode != MACROTABLE_SUCCESS_S) /* check if the macro definition was added successfully */
+            if (errorCode != TABLES_SUCCESS_S) /* check if the macro definition was added successfully */
                 addErrorToList(errorList, errorCode); /* add the error to the error list */
             else
                 inMacroDef = TRUE; /* set the flag to indicate that we are in a macro definition 4 */
@@ -81,7 +81,7 @@ ErrCode executePreprocessor(macroTable *table, ErrorList *errorList, FILE *asFil
         }
         else if (inMacroDef) { /* if we are in a macro definition 6 */
             errorCode = addMacroLine(table, line); /* add the line to the macro body */
-            if (errorCode != MACROTABLE_SUCCESS_S)  /* check if the line was added successfully */
+            if (errorCode != TABLES_SUCCESS_S)  /* check if the line was added successfully */
                 addErrorToList(errorList, errorCode); /* add the error to the error list */
         }
         else { /* if the line is just a regular line unrelated to macros */
@@ -105,7 +105,7 @@ ErrCode spreadMacro(macroTable *table, const char *macroName, FILE *amFile)
     ErrCode errorCode = NULL_INITIAL; /* initialize error code to NULL_INITIAL */
     
     macroBody = findMacro(table, macroName, &errorCode); /* find the macro body in the table */
-    if (errorCode != MACROTABLE_SUCCESS_S)
+    if (errorCode != TABLES_SUCCESS_S)
         return errorCode; /* return failure if an error occurred */
     
     while (macroBody != NULL) { /* iterate through the macro body */
@@ -115,7 +115,7 @@ ErrCode spreadMacro(macroTable *table, const char *macroName, FILE *amFile)
         macroBody = next; /* move to the next line */
     }
 
-    return MACROTABLE_SUCCESS_S; /* return success */
+    return TABLES_SUCCESS_S; /* return success */
 }
 
 ErrCode macroDef(macroTable* table, char* line) /* add a line to the macro body */
@@ -132,12 +132,12 @@ ErrCode macroDef(macroTable* table, char* line) /* add a line to the macro body 
     }
 
     errorCode = addMacro(table, macroName); /* if the line is not empty, add it to the macro body */
-    if (errorCode != MACROTABLE_SUCCESS_S) { /* check if the line was added successfully */
+    if (errorCode != TABLES_SUCCESS_S) { /* check if the line was added successfully */
         free(macroName);
         return errorCode; 
     }
     free(macroName);
-    return MACROTABLE_SUCCESS_S;
+    return TABLES_SUCCESS_S;
 }
 
 void preprocessorFreeMemory(char *line, char *firstToken)

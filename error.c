@@ -11,11 +11,9 @@ char* getErrorMessage(ErrCode code) {
                 return "memory allocation failed.";
         case EXTRANEOUS_TEXT_E: /* 3 */
             return "extraneous text after the end of the line, should never be used.";
-
-        /* error.c codes 4 - 7 */
-        case MALLOC_ERROR_File_Del_F: /* 6 */
+        case MALLOC_ERROR_File_Del_F: /* 4 */
             return "memory allocation error while deleting the file.";
-        case MALLOC_ERROR_LIST_F: /* 7 */
+        case MALLOC_ERROR_LIST_F: /* 5 */
             return "memory allocation error while adding an error to the list";
 
         /* debugging errors 8 - 9 */
@@ -56,27 +54,26 @@ char* getErrorMessage(ErrCode code) {
             return "label and a macro name cannot be the same.";
         case LABEL_NAME_IS_KEYWORD_E: /* 30 */
             return "label name is a keyword, should not be a keyword.";
-
-        /* tables errors 40 - 59 */
-        case MACRO_NAME_EXISTS_E: /* 41 */
+        case MACRO_NAME_EXISTS_E: /* 31 */
             return "macro name already exists.";
-        case UNMATCHED_MACRO_END_E: /* 42 */
-            return "had \"macroend\" without having an opening macro definition.";
-        case MACRO_NAME_TOO_LONG_E: /* 43 */
+        case MACRO_NAME_TOO_LONG_E: /* 32 */
             return "macro name is too long.";
-        case MACRO_NAME_EMPTY_E: /* 44 */
+        case MACRO_NAME_EMPTY_E: /* 33 */
             return "macro name is empty.";
-        case MACRO_INVALID_START_CHAR_E: /* 45 */
+        case MACRO_INVALID_START_CHAR_E: /* 34 */
             return "macro name starts with an invalid character, should start with a letter.";
-        case MACRO_INVALID_CHAR_E: /* 46 */
+        case MACRO_INVALID_CHAR_E: /* 35 */
             return "macro name contains invalid characters.";
-        case MACRO_NAME_IS_KEYWORD_E: /* 47 */
+        case MACRO_NAME_IS_KEYWORD_E: /* 36 */
             return "macro name is a set keyword by the assembly language.";
 
-        case SYMBOLTABLE_SUCCESS_S: /* 50 */
-            return "symbol table operation was successful.";
-        case SYMBOL_NAME_EXISTS_E: /* 51 */
+        /* tables errors 50 - 69 */
+        case SYMBOL_NAME_EXISTS_E: /* 52 */
             return "symbol name already exists.";
+
+        /* preprocessor errors 70 - 79 */
+        case UNMATCHED_MACRO_END_E: /* 72 */
+            return "had \"macroend\" without having an opening macro definition.";
 
 
         /* firstPass errors 60 - 69 */
@@ -100,6 +97,8 @@ Bool isFatalErr(ErrCode code) {
         case FILE_WRITE_ERROR_F:
         case FILE_DELETE_ERROR_F:
         case INVALID_FILE_MODE_F:
+        case MALLOC_ERROR_File_Del_F:
+        case MALLOC_ERROR_LIST_F:
             return TRUE;
         default:
             return FALSE; /* all other errors are not fatal */

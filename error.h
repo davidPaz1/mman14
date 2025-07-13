@@ -43,23 +43,22 @@ typedef enum ErrCode {
     LABEL_TEXT_AFTER_COLON_E = 28, /* text found after label colon */
     LABEL_SAME_AS_MACRO_E = 29, /* label is the same as a macro name, should never be used */
     LABEL_NAME_IS_KEYWORD_E = 30, /* label is a keyword, should never be used */
+    MACRO_NAME_EXISTS_E = 31, /* macro name already exists */
+    MACRO_NAME_TOO_LONG_E = 32, /* macro name is too long */
+    MACRO_NAME_EMPTY_E = 33, /* macro name is empty */
+    MACRO_INVALID_START_CHAR_E = 34, /* macro name starts with an invalid character */
+    MACRO_INVALID_CHAR_E = 35, /* macro name contains invalid characters */
+    MACRO_NAME_IS_KEYWORD_E = 36, /* macro name is a keyword, should never be used */
 
-    /* tables errors 40 - 69 */
-    MACROTABLE_SUCCESS_S = 40, /* macro operation was successful */
-    MACRO_NAME_EXISTS_E = 41, /* macro name already exists */
-    UNMATCHED_MACRO_END_E = 42, /* macro not found */
-    MACRO_NAME_TOO_LONG_E = 43, /* macro name is too long */
-    MACRO_NAME_EMPTY_E = 44, /* macro name is empty */
-    MACRO_INVALID_START_CHAR_E = 45, /* macro name starts with an invalid character */
-    MACRO_INVALID_CHAR_E = 46, /* macro name contains invalid characters */
-    MACRO_NAME_IS_KEYWORD_E = 47, /* macro name is a keyword, should never be used */
-
-    SYMBOLTABLE_SUCCESS_S = 50, /* symbol table operation was successful */
-    SYMBOL_NAME_EXISTS_E = 51, /* symbol name already exists */
-
+    /* tables errors 50 - 69 */
+    TABLES_SUCCESS_S = 50, /* macro operation was successful */
+    TABLES_FAILURE_S = 51, /* macro operation failed */
+    SYMBOL_NAME_EXISTS_E = 52, /* symbol name already exists */
+    
     /* preprocessor errors 70 - 79 */
     PREPROCESSOR_SUCCESS_S = 70, /* preprocessor executed successfully */
     PREPROCESSOR_FAILURE_S = 71, /* preprocessor failed */
+    UNMATCHED_MACRO_END_E = 72, /* macro closer not found */
 
     /* firstPass errors 80 - 89 */
     FIRSTPASS_SUCCESS_S = 80, /* first pass was successful */
