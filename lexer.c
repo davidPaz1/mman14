@@ -7,113 +7,175 @@
 /* readParsedLine - reads a line from the file and returns a parsedLine structure
  * errorCode:  END_OF_LINE_S , MALLOC_ERROR_F, UTIL_SUCCESS_S
  */
-parsedLine* readParsedLine(FILE *fp, ErrCode *errorCode)
+parsedLine* readParsedLine(FILE *fp, ErrCode *errorCode, macroTable *table, ErrorList *errorList)
 {
-    parsedLine *lineRead;
-    *errorCode = NULL_INITIAL; /* reset error code to initial state */
+    parsedLine* pLine;
+    char* line;
 
-    lineRead = malloc(sizeof(parsedLine));
-    if (lineRead == NULL) {
+    line = readLine(fp, errorCode); /* we will delete the parsed parts from this line */
+    if (*errorCode == EOF_REACHED_S)
+        return NULL; /* end of file reached, return NULL */
+
+    if (*errorCode != UTIL_SUCCESS_S)  /* if an error occurred while reading the line */
+        return NULL;
+    
+
+    pLine = malloc(sizeof(parsedLine));
+    if (pLine == NULL) {
         *errorCode = MALLOC_ERROR_F;
+        free(line); /* free the line memory */
         return NULL;
     }
 
-    lineRead->restOfLine = readLine(fp, errorCode); /* we will delete the parsed parts from this line */
-    if (*errorCode != UTIL_SUCCESS_S) { /* if an error occurred while reading the line */
-        free(lineRead); /* free the allocated memory for the parsedLine */
-        return NULL; /* return NULL */
+    pLine->lineContentUnion = (union dataOrInstruction){0}; /* initialize the union to zero */
+
+    /* get the label from the line */
+    *errorCode = getLabelFromLine(pLine, line, table, errorList);
+    if (*errorCode != LEXER_SUCCESS_S) { /* if an error occurred while getting the label */
+        freeParsedLine(pLine);
+        free(line);
+        return NULL;
     }
-    
-    /* if an error occurred while determining the line type */
-    *errorCode = determineLineType(lineRead); /* determine the type of the line */
+
+    *errorCode = determineLineType(pLine, line); /* determine the type of the line */
     if (*errorCode != LEXER_SUCCESS_S) {
-        freeScannedLine(lineRead); /* free the allocated memory for the parsedLine */
+        freeParsedLine(pLine);
+        free(line); 
         return NULL; 
     }
 
-    return lineRead;
+    if (pLine->typesOfLine == COMMENT_LINE || pLine->typesOfLine == EMPTY_LINE)
+        return pLine; /* if the line is a comment or an empty line, return it */
+
+    if (pLine->typesOfLine == DIRECTIVE_LINE) {
+        *errorCode = parseDirectiveLine(pLine, line, errorList);
+        if (*errorCode != LEXER_SUCCESS_S) { /* if an error occurred while parsing the directive line */
+            freeParsedLine(pLine);
+            free(line);
+            return NULL; /* return NULL if an error occurred */
+        }
+    } else if (pLine->typesOfLine == INSTRUCTION_LINE) {
+        *errorCode = parseInstructionLine(pLine, line, errorList); /* parse the instruction line */
+        if (*errorCode != LEXER_SUCCESS_S) { /* if an error occurred while parsing the instruction line */
+            freeParsedLine(pLine);
+            free(line);
+            return NULL; /* return NULL if an error occurred */
+        }
+    }
+    free(line); 
+    return pLine;
 }
 
-/* errorCode:  END_OF_LINE_S , MALLOC_ERROR_F, LEXER_SUCCESS_S */
-ErrCode determineLineType(parsedLine *pline) 
+ErrCode getLabelFromLine(parsedLine *pLine, char *line, macroTable *macroNames, ErrorList *errorList)
 {
-    char *token, *line;
+    char *token;
+    ErrCode errorCode = NULL_INITIAL;
+    
+    token = getFirstToken(line, &errorCode);
+    if (errorCode != UTIL_SUCCESS_S) 
+        return errorCode;
+
+    if (!isLabel(token)){
+        pLine->label = NULL; /* if the first token is not a label, set the label to NULL */
+        free(token);
+        return LEXER_SUCCESS_S; /* if the first token is not a label, return success */
+    }
+
+    errorCode = isValidLabel(macroNames, token);
+    if( errorCode != LEXER_SUCCESS_S) {
+        addErrorToList(errorList, errorCode); /* add the error to the error list */
+        free(token); /* free the allocated memory for the token */
+        return LEXER_FAILURE_S;
+    }
+
+    pLine->label = token; /* set the label in the parsedLine structure */
+    cutnChar(line, strlen(token)); /* cut the label from the line */
+    return LEXER_SUCCESS_S;
+}
+
+ErrCode determineLineType(parsedLine *pLine, char *line) 
+{
+    char *token;
     ErrCode errorCode = NULL_INITIAL; /* reset error code to initial state */
 
-    line = pline->restOfLine; /* get the line from the parsedLine structure (easier to read) */
-    pline->firstToken = NULL; /* initialize the first token to NULL */
-    pline->label = NULL; /* initialize the label to NULL */
-    pline->typesOfLine = UNSET_LINE; /* initialize the type of line to UNSET_LINE */
-    
-    if (isEndOfLine(line)) 
-        return EMPTY_LINE_TYPE_S; /* if the line is empty, return EMPTY_LINE_TYPE */
-    
-    if (line[0] == ';') 
-        return COMMENT_LINE_TYPE_S; /* if the line is a comment, return COMMENT_LINE_TYPE */
+    pLine->typesOfLine = UNSET_LINE; /* initialize the type of line to UNSET_LINE */
 
-    token = cutFirstToken(line, &errorCode); /* get the first token from the line */
-
-    /* note we still need to check for errors of getFirstToken() but we will do that after isLabel() call*/
-
-    if (isLabel(token)) { /* check if the first token is a label */
-        pline->label = token;
-        token = cutFirstToken(line, &errorCode); /* get the next token after the label */
-    }
-    else
-        pline->label = NULL; /* set the label to NULL */
-    
-    /* here we check for errors of getFirstToken() (may be the first token may be the second)*/
-    if (errorCode != UTIL_SUCCESS_S) {
-        free(token); /* free the allocated memory for the token */
-        return errorCode;
+    if (isEndOfLine(line)) { /* if the line is empty */
+        pLine->typesOfLine = EMPTY_LINE;
+        return LEXER_SUCCESS_S; 
     }
     
-    pline->firstToken = token; /* set the first token to the operation name */
-
-    /* we dont need to free token as it is now part of the parsedLine structure */
-    if (isOperationName(token))   /* if the line is an instruction */
-        pline->typesOfLine = INSTRUCTION_LINE;
-    else if (isDirective(token)) 
-        pline->typesOfLine = DIRECTIVE_LINE; /* if the line is a directive */
-    else if (token[0] == '.') /* if the line contains a dot, it is unknown directive */
-        return INVALID_DIRECTIVE_E; /* return error code for invalid directive */
-    else {/* if the line is not an instruction or a directive */
-        printParsedLine(pline); /* print the parsed line for debugging purposes */
-        return UNKNOWN_LINE_TYPE_E; /* return error code for unknown line type */
+    if (line[0] == ';') {
+        pLine->typesOfLine = COMMENT_LINE; /* if the line starts with ';', it is a comment */
+        return LEXER_SUCCESS_S; /* return success */
     }
-    return LEXER_SUCCESS_S; 
+
+    token = cutFirstToken(line, &errorCode); /* cut the first token from the line */
+    if (errorCode == MALLOC_ERROR_F)
+        return MALLOC_ERROR_F;
+    
+    if (isOperationName(token)){   /* if the line is an instruction */
+        pLine->typesOfLine = INSTRUCTION_LINE;
+        pLine->lineContentUnion.instruction.operationName = token; /* set the operation name */
+        return LEXER_SUCCESS_S;
+    }
+
+    if (isDirective(token)){
+        pLine->typesOfLine = DIRECTIVE_LINE; /* if the line is a directive */
+        pLine->lineContentUnion.directive.directiveName = token; /* set the directive name */
+        return LEXER_SUCCESS_S;
+    }
+
+    if (token[0] == '.') /* if the line contains a dot, it is unknown directive */
+        return INVALID_DIRECTIVE_E; 
+    
+    return UNKNOWN_LINE_TYPE_E; /* the line is not an instruction or a directive */
 }
 
-void freeScannedLine(parsedLine *pline) {
-    if (pline == NULL) 
-        return; /* if the parsedLine is NULL, do nothing */
+ErrCode parseDirectiveLine(parsedLine *pLine, char *line, ErrorList *errorList){
+    char *token;
+    ErrCode errorCode = NULL_INITIAL;
 
-    if (pline->restOfLine != NULL) 
-        free(pline->restOfLine);
-    if (pline->label != NULL) 
-        free(pline->label);
-    if (pline->firstToken != NULL)
-        free(pline->firstToken);
-    free(pline); /* free the parsedLine structure itself */
+    return LEXER_SUCCESS_S;
 }
 
-void printParsedLine(parsedLine *pline) {
-    if (pline == NULL) {
-        printf("Parsed line is NULL\n");
-        return; /* if the parsedLine is NULL, do nothing */
-    }
-
-    printf("Rest of line:%s\n", pline->restOfLine);
-    if (pline->restOfLine != NULL) 
-    {
-        printf("Rest of line len is %d\n", strlen(pline->restOfLine));
-    }
+ErrCode parseInstructionLine(parsedLine *pLine, char *line, ErrorList *errorList){
+    char *token;
+    ErrCode errorCode = NULL_INITIAL;
     
-    
-    printf("Label:%s\n", pline->label);
-    printf("First token:%s\n", pline->firstToken);
-    printf("Type of line: %d\n", pline->typesOfLine);
+    return LEXER_SUCCESS_S;
 }
+
+void freeParsedLine(parsedLine *pLine) {
+    if (!pLine)
+        return;
+
+    free(pLine->label);
+    
+    switch (pLine->typesOfLine) {
+        case DIRECTIVE_LINE:
+            if (pLine->lineContentUnion.directive.directiveName != NULL)
+                free(pLine->lineContentUnion.directive.directiveName);
+            if (pLine->lineContentUnion.directive.dataItems != NULL)
+                free(pLine->lineContentUnion.directive.dataItems);
+            if (pLine->lineContentUnion.directive.directiveLabel != NULL)
+                free(pLine->lineContentUnion.directive.directiveLabel);
+            break;
+        case INSTRUCTION_LINE:
+            if (pLine->lineContentUnion.instruction.operationName != NULL)
+                free(pLine->lineContentUnion.instruction.operationName);
+            if (pLine->lineContentUnion.instruction.operand1 != NULL)
+                free(pLine->lineContentUnion.instruction.operand1);
+            if (pLine->lineContentUnion.instruction.operand2 != NULL)
+                free(pLine->lineContentUnion.instruction.operand2);
+            break;
+
+        default: /* For COMMENT_LINE and EMPTY_LINE, no additional memory to free */
+            break;
+    }
+    free(pLine);
+}
+
 
 /* is X functions: */
 

@@ -15,6 +15,24 @@ int main(int argc, char const *argv[])
 {
     char* inputFileName = NULL;
     int i;
+
+    ErrCode ec = NULL_INITIAL; /* debugging error code */
+    macroTable* macroNames = createMacroTable(); /* macro table to hold all the macros found */
+    ErrorList* errorList = createErrorList("test1"); /* error list to hold all the errors found */
+    FILE *fp = openFile("test1", ".as", "r", &ec); /* open the file for reading */
+    parsedLine *pLine = readParsedLine(fp, &ec, macroNames, errorList); /* read the parsed line from the file */
+    if (ec != LEXER_SUCCESS_S) { /* check if an error occurred while reading the line */
+        printErrorMsg(ec, "lexer", 0);
+        return 1;
+    }
+    
+    if (TRUE){ /* used to skip the rest of the code for debugging */
+        freeParsedLine(pLine); /* free the parsed line structure */
+        freeTableAndLists(macroNames, errorList); /* free the macro table and error list */
+        freeFiles(fp, NULL, NULL); /* close the files if they were opened */
+        return 0; /* exit the program */
+    }
+
     printf("argc: %d\n", argc);
     if (argc < 2) { /* check if there are no arguments */
         printf("No input files provided. will run with default file name 'test.as'\n\n");
@@ -47,8 +65,9 @@ void executeAssembler(char* fileName)
         printErrorMsg(MALLOC_ERROR_F, "preprocessor", 0);
         return; /* exit if memory allocation fails */
     }
-    errorList->stage = "preprocessor";
-    
+
+    printf("Starting preprocessor...\n");  /* print start message */
+    errorList->stage = "preprocessor";  
 
     /* Open the .as file for reading and .am file for writing */
     asFile = openFile(fileName, ".as", "r", &errCode);
@@ -57,17 +76,16 @@ void executeAssembler(char* fileName)
 
     if (errCode != UTIL_SUCCESS_S){
         printf("Error opening file %s.as: %s\n", fileName, getErrorMessage(errCode));
-        freeTableAndLists(macroNames, errorList); /* free the macro table and error list */
-        return; 
+        freeTableAndLists(macroNames, errorList); 
+        return; /* exit if the file cannot be opened */
     }
-    printf("Starting preprocessor...\n");  /* print start message */
-
 
     amFile = openFile(fileName, ".am", "w", &errCode);
     if (errCode != UTIL_SUCCESS_S) {
         printf("Error opening file %s.am: %s\n", fileName, getErrorMessage(errCode));
-        freeTableAndLists(macroNames, errorList); /* free the macro table and error list */
+        freeTableAndLists(macroNames, errorList); 
         freeFiles(asFile, NULL, NULL);
+        return; /* exit if the file cannot be opened */
     }
 
     errCode = executePreprocessor(macroNames, errorList, asFile, amFile, fileName); /* test with a sample file name */
@@ -79,15 +97,32 @@ void executeAssembler(char* fileName)
     }
     printf("\nPreprocessor executed successfully.\n"); /* print success message */
     
+    freeFiles(asFile, amFile, NULL);
+
+
     printf("Starting first pass...\n");
     errorList->stage = "first pass";
-    errCode = executeFirstPass(fileName, &DCF, &ICF, macroNames); /* execute the first pass */
+
+    amFile = openFile(fileName, ".am", "r", &errCode);
+    if (errCode != UTIL_SUCCESS_S) {
+        printf("Error opening file %s.am: for reading %s\n", fileName, getErrorMessage(errCode));
+        freeTableAndLists(macroNames, errorList); /* free the macro table and error list */
+        return; /* exit if the file cannot be opened */
+    }
+
+    errCode = executeFirstPass(amFile, &DCF, &ICF, macroNames, errorList); /* execute the first pass */
     if (errCode != FIRSTPASS_SUCCESS_S) {
         printErrorMsg(errCode, "first pass", 0); /* print the error message */
         return;
     }
     printf("\nFirst pass executed successfully.\n"); /* print success message */
     
+    /*
+    printf("starting second pass...\n");
+    errorList->stage = "second pass";
+    */
+    
+
     freeTableAndLists(macroNames, errorList); /* free the macro table and error list */
     freeFiles(asFile, amFile, NULL); /* close the files if they were opened */
     printf("successfully executed file %s\n", fileName); 

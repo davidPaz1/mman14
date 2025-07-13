@@ -32,9 +32,9 @@ typedef enum ErrCode {
     FILE_DELETE_ERROR_F = 17, /* file delete error */
     
     /* lexer errors 20 - 39 */
-    LEXER_SUCCESS_S = 20, /* scanning was successful */
-    COMMENT_LINE_TYPE_S = 21, /* comment line */
-    EMPTY_LINE_TYPE_S = 22, /* empty line */
+    LEXER_SUCCESS_S = 20, 
+    LEXER_FAILURE_S = 21,
+    INVALID_DIRECTIVE_E = 22, /* invalid directive */
     UNKNOWN_LINE_TYPE_E = 23, /* unknown line type */
     LABEL_INVALID_START_CHAR_E = 24, /* invalid start character */
     LABEL_INVALID_CHAR_E = 25, /* invalid character in the line */
@@ -43,7 +43,6 @@ typedef enum ErrCode {
     LABEL_TEXT_AFTER_COLON_E = 28, /* text found after label colon */
     LABEL_SAME_AS_MACRO_E = 29, /* label is the same as a macro name, should never be used */
     LABEL_NAME_IS_KEYWORD_E = 30, /* label is a keyword, should never be used */
-    INVALID_DIRECTIVE_E = 31, /* invalid directive */
 
     /* tables errors 40 - 69 */
     MACROTABLE_SUCCESS_S = 40, /* macro operation was successful */
@@ -76,6 +75,7 @@ typedef struct ErrorNode {
 
 typedef struct ErrorList {
     unsigned int count; /* the number of errors in the list */
+    unsigned int currentLine; /* the current line number we are processing (will save us from passing it to every function) */
     char* stage; /* the stage that the error(s) occurred in, e.g. "preprocessor", "first pass" */
     char* filename; /* the name of the file where the error(s) occurred */
     Bool fatalError; /* indicates if there is a fatal error in the list like malloc failure */
@@ -90,7 +90,7 @@ Bool isFatalErr(ErrCode code);
 
 /* error list handling functions prototypes */
 ErrorList* createErrorList(char *filename); /* initialize the error list */
-void addErrorToList(ErrorList *list, ErrCode code, unsigned int line); /* add error to the list */
+void addErrorToList(ErrorList *list, ErrCode code); /* add error to the list */
 void printErrors(ErrorList *list); /* print all errors in the list */
 void freeErrorsList(ErrorList *list); /* free the error list */
 

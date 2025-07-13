@@ -8,25 +8,46 @@
 #define COLON_LENGTH 1 /* length of the colon character ':' */
 
 typedef enum lineType {
-    /* empty line and comment line are set as an errorCode so i could return an empty struct */
-    INSTRUCTION_LINE = 0, /* instruction line */
-    DIRECTIVE_LINE, /* directive line */
-    UNSET_LINE = -1 /* unset line type, used for error handling */
+    INSTRUCTION_LINE = 0, 
+    DIRECTIVE_LINE, 
+    COMMENT_LINE, 
+    EMPTY_LINE, 
+    UNSET_LINE = -1 /* used for error handling */
 } lineType;
 
 typedef struct parsedLine {
-    char* restOfLine; /* the line itself */
-    char* label; /* the label of the line, if it has one */
-    char* firstToken; /* the first token of the line */
+    char* label; /* the label at the start of the line, if it doesn't have one it will be NULL */
     lineType typesOfLine; /* type of the line */ 
+    union dataOrInstruction
+    {
+        /* if the line is a directive (typesOfLine == DIRECTIVE_LINE), this will hold the directive data */
+        struct directiveData {
+            char* directiveName; /* the name of the directive, e.g. .data , .string , .mat , .entry , .extern */
+            unsigned int dataCount; /* number of data items in the directive (also to move DC) */
+            int* dataItems; /* .data , .string , .mat items (length is dataCount [for .str +1]) */
+            char* directiveLabel; /* .entry or .extern label */
+        } directive;
+
+        /* if the line is an instruction (typesOfLine == INSTRUCTION_LINE), this will hold the instruction data */
+        struct instructionData {
+            char* operationName; /* the name of the operation */
+            unsigned int wordCount; /* number of words needed for the binary code of the instruction (to move IC) */
+            unsigned int operandCount; /* number of operands in the instruction */
+            char* operand1; /* first operand */
+            char* operand2; /* second operand */
+        } instruction;
+    }lineContentUnion; /* union to hold either directive or instruction data */
 } parsedLine;
 
 
 /* for first pass mainly */
-parsedLine* readParsedLine(FILE *fp, ErrCode *errorCode);
-ErrCode determineLineType(parsedLine *pLine); /* determine the type of the line and if it has a label */
-void freeScannedLine(parsedLine *pLine); /* free the memory allocated for the parsedLine structure */
-void printParsedLine(parsedLine *pline); /* print the parsed line for debugging purposes */
+parsedLine* readParsedLine(FILE *fp, ErrCode *errorCode, macroTable *table, ErrorList *errorList); /* read a line from the file and return a parsedLine structure */
+ErrCode getLabelFromLine(parsedLine *pline, char *line, macroTable *macroNames, ErrorList *errorList); /* get the label from the line if it exists */
+ErrCode determineLineType(parsedLine *pLine, char *line); /* determine the type of the line and if it has a label */
+ErrCode parseDirectiveLine(parsedLine *pline, char *line, ErrorList *errorList); 
+ErrCode parseInstructionLine(parsedLine *pLine, char *line, ErrorList *errorList);
+
+void freeParsedLine(parsedLine *pLine); /* free the memory allocated for the parsedLine structure */
 
 /* is X functions prototypes */
 /* keyword functions prototypes */

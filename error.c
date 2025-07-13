@@ -38,6 +38,8 @@ char* getErrorMessage(ErrCode code) {
             return "could not delete file pls ignore the half built files.";
 
         /* lexer errors 20 - 39 */
+        case INVALID_DIRECTIVE_E: /* 22 */
+            return "invalid directive, should be one of the valid directives (.data, .string, .mat, .entry, .extern).";
         case UNKNOWN_LINE_TYPE_E: /* 23 */
             return "unknown line type found, should be one of the four types (instruction, directive, comment, empty).";
         case LABEL_INVALID_START_CHAR_E: /* 24 */
@@ -54,8 +56,6 @@ char* getErrorMessage(ErrCode code) {
             return "label and a macro name cannot be the same.";
         case LABEL_NAME_IS_KEYWORD_E: /* 30 */
             return "label name is a keyword, should not be a keyword.";
-        case INVALID_DIRECTIVE_E: /* 31 */
-            return "invalid directive, should be one of the valid directives (.data, .string, .entry, .extern).";
 
         /* tables errors 40 - 59 */
         case MACRO_NAME_EXISTS_E: /* 41 */
@@ -128,6 +128,7 @@ ErrorList* createErrorList(char *filename)
     
 
     newList->count = 0;
+    newList->currentLine = 0; /* initialize current line number to 0 */
     newList->fatalError = FALSE; /* initialize fatal error flag to FALSE */
     newList->filename = filename;
     newList->stage = NULL; /* initialize stage to NULL */
@@ -136,20 +137,20 @@ ErrorList* createErrorList(char *filename)
     return newList;
 }
 
-void addErrorToList(ErrorList *list, ErrCode code, unsigned int line)
+void addErrorToList(ErrorList *list, ErrCode code)
 {
     ErrorNode *newNode = malloc(sizeof(ErrorNode));
     list->count++; /* increment the count of errors by 1 for the new error being added */
     if (newNode == NULL) {
         list->fatalError = TRUE; /* set fatal error flag if memory allocation fails */
         list->count++; /* increment the count of errors by 1 for the malloc failure */
-        printErrorMsg(code, NULL, line); /* print the error message */
-        printErrorMsg(MALLOC_ERROR_LIST_F, NULL, line); /* print the error message */
+        printErrorMsg(code, NULL, list->currentLine); /* print the error message */
+        printErrorMsg(MALLOC_ERROR_LIST_F, NULL, list->currentLine); /* print the error message */
         return;
     }
 
     newNode->errCode = code;
-    newNode->line = line;
+    newNode->line = list->currentLine; /* set the line number of the error */
     newNode->next = NULL;
 
     if (list->head == NULL) { /* if the list is empty */
