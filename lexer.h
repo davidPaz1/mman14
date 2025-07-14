@@ -39,16 +39,21 @@ typedef struct parsedLine {
     }lineContentUnion; /* union to hold either directive or instruction data */
 } parsedLine;
 
+#define INITIAL_DATA_ITEMS_SIZE 10 /* initial size of the dataItems array for directives */
 
 /* for first pass mainly */
 parsedLine* readParsedLine(FILE *fp, ErrCode *errorCode, macroTable *table, ErrorList *errorList); /* read a line from the file and return a parsedLine structure */
 ErrCode getLabelFromLine(parsedLine *pline, char *line, macroTable *macroNames, ErrorList *errorList); /* get the label from the line if it exists */
 ErrCode determineLineType(parsedLine *pLine, char *line); /* determine the type of the line and if it has a label */
 ErrCode parseDirectiveLine(parsedLine *pline, char *line, ErrorList *errorList); 
+ErrCode parseDataDirectiveLine(parsedLine *pLine, char *line, ErrorList *errorList);
+ErrCode parseStrDirectiveLine(parsedLine *pLine, char *line, ErrorList *errorList);
+ErrCode parseMatDirectiveLine(parsedLine *pLine, char *line, ErrorList *errorList);
+ErrCode parseEntryDirectiveLine(parsedLine *pLine, char *line, ErrorList *errorList);
+ErrCode parseExternDirectiveLine(parsedLine *pLine, char *line, ErrorList *errorList);
 ErrCode parseInstructionLine(parsedLine *pLine, char *line, ErrorList *errorList);
-
 void freeParsedLine(parsedLine *pLine); /* free the memory allocated for the parsedLine structure */
-
+void printParsedLine(parsedLine *pLine);
 /* is X functions prototypes */
 /* keyword functions prototypes */
 Bool isEndOfLine(const char* str); /* check if the string is an end of line */
@@ -59,6 +64,7 @@ Bool isMacroStart(const char* arg); /* check if the string is a macro start */
 Bool isMacroEnd(const char* arg); /* check if the string is a macro end */
 Bool isKeywords(const char* arg); /* check if the string is a keyword */
 Bool isLabel(const char* str); /* check if the string is a label */
+Bool isValidInteger(int value); /* check if the integer value is valid for the assembler */
 
 ErrCode isValidLabel(macroTable *table, const char *label); /* check if the label is valid */
 ErrCode isMacroNameValid(macroTable* table , const char* macroName);

@@ -66,6 +66,25 @@ char* getErrorMessage(ErrCode code) {
             return "macro name contains invalid characters.";
         case MACRO_NAME_IS_KEYWORD_E: /* 36 */
             return "macro name is a set keyword by the assembly language.";
+        case DIRECTIVE_DATA_MISSING_E: /* 37 */
+            return "directive is missing data items, should have at least one data item.";
+        case MISSING_COMMA_E: /* 38 */
+            return "missing comma between the directive arguments, should have a comma between two data items.";
+        case DATA_INVALID_VALUE_E: /* 39 */
+            return "data item can only contain numbers.";
+        case DATA_ITEM_NOT_INTEGER_E: /* 40 */
+            return "doubles are not allowed, please use integers instead.";
+        case INTEGER_OUT_OF_RANGE_E: /* 41 */
+            return "integer value is out of range of a word (10 bits) should be between -512 and 511.";
+        case STR_MISSING_OPEN_QUOTE_E: /* 42 */
+            return "string directive is missing an opening quotation mark, should start with a \" character.";
+        case STR_MISSING_CLOSE_QUOTE_E: /* 43 */
+            return "string directive is missing a closing quotation mark, should end with a \" character.";
+        case STR_INVALID_CHAR_E: /* 44 */
+            return "string directive contains invalid characters, should only contain ASCII characters.";
+        case STR_QUOTE_IN_MIDDLE_E: /* 45 */
+            return "string directive cant contain quotes in the middle.";
+
 
         /* tables errors 50 - 69 */
         case SYMBOL_NAME_EXISTS_E: /* 52 */

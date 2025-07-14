@@ -17,6 +17,8 @@
 #define BASE4_INSTRUCTION_LENGTH 5
 
 #define REGISTER_SIZE 10
+#define MAX_10BIT 511
+#define MIN_10BIT -512
 
 /*enums*/
 typedef enum boolean {
@@ -27,21 +29,21 @@ typedef enum boolean {
 /* may be used idk */
 typedef enum opCode {
     mov = 0,
-    cmp,
-    add,
-    sub,
-    not,
-    clr,
-    lea,
-    inc,
-    dec,
-    jmp,
-    bne,
-    red,
-    prn,
-    jsr,
-    rts,
-    stop,
+    cmp = 1,
+    add = 2,
+    sub = 3,
+    lea = 4,
+    clr = 5,
+    not = 6,
+    inc = 7,
+    dec = 8,
+    jmp = 9,
+    bne = 10,
+    jsr = 11,
+    red = 12,
+    prn = 13,
+    rts = 14,
+    stop = 15,
     invalid = -1
 } opCode;
 

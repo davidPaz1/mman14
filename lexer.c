@@ -27,7 +27,7 @@ parsedLine* readParsedLine(FILE *fp, ErrCode *errorCode, macroTable *table, Erro
         return NULL;
     }
 
-    pLine->lineContentUnion = (union dataOrInstruction){0}; /* initialize the union to zero */
+    memset(&pLine->lineContentUnion, 0, sizeof(pLine->lineContentUnion)); /* initialize the union to zero */
 
     /* get the label from the line */
     *errorCode = getLabelFromLine(pLine, line, table, errorList);
@@ -102,7 +102,7 @@ ErrCode determineLineType(parsedLine *pLine, char *line)
 
     if (isEndOfLine(line)) { /* if the line is empty */
         pLine->typesOfLine = EMPTY_LINE;
-        return LEXER_SUCCESS_S; 
+        return LEXER_SUCCESS_S;
     }
     
     if (line[0] == ';') {
@@ -133,8 +133,205 @@ ErrCode determineLineType(parsedLine *pLine, char *line)
 }
 
 ErrCode parseDirectiveLine(parsedLine *pLine, char *line, ErrorList *errorList){
+
+    pLine->lineContentUnion.directive.dataCount = 0;
+    pLine->lineContentUnion.directive.dataItems = NULL;
+    pLine->lineContentUnion.directive.directiveLabel = NULL;
+
+    if(isEndOfLine(line)){ /* if the directive has no data */
+        addErrorToList(errorList, DIRECTIVE_DATA_MISSING_E);
+        return LEXER_FAILURE_S;
+    }
+
+    if (strcmp(pLine->lineContentUnion.directive.directiveName, ".data") == 0) 
+        return parseDataDirectiveLine(pLine, line, errorList);
+    
+    if (strcmp(pLine->lineContentUnion.directive.directiveName, ".string") == 0) 
+        return parseStrDirectiveLine(pLine, line, errorList);
+    
+    if (strcmp(pLine->lineContentUnion.directive.directiveName, ".mat") == 0) 
+      return parseMatDirectiveLine(pLine, line, errorList);
+
+    if (strcmp(pLine->lineContentUnion.directive.directiveName, ".entry") == 0) 
+        return parseEntryDirectiveLine(pLine, line, errorList);
+
+    if (strcmp(pLine->lineContentUnion.directive.directiveName, ".extern") == 0) 
+        return parseExternDirectiveLine(pLine, line, errorList);
+
+    return INVALID_DIRECTIVE_E; /* should not reach here */
+}
+
+ErrCode parseDataDirectiveLine(parsedLine *pLine, char *line, ErrorList *errorList)
+{
+    char *token, *endPtr;
+    unsigned int startErrCount = errorList->count; /* save the current error count to check if any errors were added */
+    unsigned int dataCount = 0, arrSize = INITIAL_DATA_ITEMS_SIZE; /* arrSize is the initial size of the dataItems array */
+    
+    int* dataItems = malloc(sizeof(int) * arrSize);
+    if (dataItems == NULL) {
+        addErrorToList(errorList, MALLOC_ERROR_F);
+        return LEXER_FAILURE_S;
+    }
+
+    token = strtok(line, ",");
+
+    while (token != NULL) {
+        double value;
+
+        while (isspace(*token)) /* skip leading whitespace */
+            token++;
+
+        endPtr = token; /* set endPtr to the start of the token */
+        value = strtod(token, &endPtr);
+
+        while (isspace(*endPtr)) /* skip trailing whitespace */
+            endPtr++;
+
+        if (endPtr == token) /* if no number was found */
+            addErrorToList(errorList, DATA_INVALID_VALUE_E);
+        else if (*endPtr != '\0') /* if there are non-numeric and non-whitespace characters after the number */
+            addErrorToList(errorList, MISSING_COMMA_E);
+        else if (value != (int)value) /* if the value is not an integer */
+            addErrorToList(errorList, DATA_ITEM_NOT_INTEGER_E);
+        else if (!isValidInteger((int)value)) /* check if the integer value is valid for the assembler */
+            addErrorToList(errorList, INTEGER_OUT_OF_RANGE_E);        
+
+        if (dataCount >= arrSize) { /* resize array if needed */
+            int *temp;
+            arrSize *= 2;
+            temp = realloc(dataItems, sizeof(int) * arrSize);
+            if (temp == NULL) {
+                free(dataItems);
+                addErrorToList(errorList, MALLOC_ERROR_F);
+                return LEXER_FAILURE_S;
+            }
+            dataItems = temp;
+        }
+
+        dataItems[dataCount++] = (int)value;
+        token = strtok(NULL, ","); /* get next token */
+    }
+
+    if (startErrCount < errorList->count) { /* if new errors were added */
+        free(dataItems);
+        return LEXER_FAILURE_S;
+    }
+
+    pLine->lineContentUnion.directive.dataItems = dataItems;
+    pLine->lineContentUnion.directive.dataCount = dataCount;
+
+    return LEXER_SUCCESS_S;
+}
+
+ErrCode parseStrDirectiveLine(parsedLine *pLine, char *line, ErrorList *errorList)
+{
+    ErrCode errorCode = NULL_INITIAL;
+    unsigned int startErrCount = errorList->count; /* save the current error count to check if any errors were added */
+    unsigned int i, arrSize = INITIAL_DATA_ITEMS_SIZE;
+    char *startQuote, *endQuote;
+    int* dataItems = malloc(sizeof(int) * INITIAL_DATA_ITEMS_SIZE);
+    if (dataItems == NULL) {
+        addErrorToList(errorList, MALLOC_ERROR_F);
+        return LEXER_FAILURE_S;
+    }
+
+    if (errorCode == MALLOC_ERROR_F) { /* if memory allocation failed */
+        free(dataItems);
+        addErrorToList(errorList, errorCode);
+        return LEXER_FAILURE_S;
+    }
+    
+    startQuote = strchr(line, '"'); /* find the first quote */
+    endQuote = strrchr(line, '"'); /* find the last quote */
+
+    if (startQuote == NULL){ /* if didn't find any quote */
+        addErrorToList(errorList, STR_MISSING_OPEN_QUOTE_E);
+        addErrorToList(errorList, STR_MISSING_CLOSE_QUOTE_E);
+    }
+    else if (startQuote != line) /* if the first character is not '"' */
+        addErrorToList(errorList, STR_MISSING_OPEN_QUOTE_E);
+    else if (endQuote != line + strlen(line) - 1) /* if the last character is not '"' */
+        addErrorToList(errorList, STR_MISSING_CLOSE_QUOTE_E);
+
+    for (i = 1; i < strlen(line) - 1; i++)
+    {
+        if (line[i] == '"') /* if the string contains a quote in the middle */
+            addErrorToList(errorList, STR_QUOTE_IN_MIDDLE_E);
+        if(!isascii(line[i])) /* if the first character is not a valid ASCII character */
+            addErrorToList(errorList, STR_INVALID_CHAR_E);
+        
+        if (i - 1 >= arrSize) { /* resize array if needed */
+            int *temp;
+            arrSize *= 2;
+            temp = realloc(dataItems, sizeof(int) * arrSize);
+            if (temp == NULL) {
+                free(dataItems);
+                addErrorToList(errorList, MALLOC_ERROR_F);
+                return LEXER_FAILURE_S;
+            }
+            dataItems = temp;
+        }
+        
+        dataItems[i - 1] = (int)line[i]; /* store the character in the dataItems array */
+    }
+
+    if (i - 1 >= arrSize) { /* resize array if needed */
+            int *temp;
+            arrSize += 1; /* add one more space for the null terminator */
+            temp = realloc(dataItems, sizeof(int) * arrSize);
+            if (temp == NULL) {
+                free(dataItems);
+                addErrorToList(errorList, MALLOC_ERROR_F);
+                return LEXER_FAILURE_S;
+            }
+            dataItems = temp;
+    }
+    dataItems[i - 1] = '\0'; /* add null terminator to the end of the string */
+    if (startErrCount < errorList->count){ /* if new errors were added */ 
+        free(dataItems);
+        return LEXER_FAILURE_S;
+    } 
+    
+    pLine->lineContentUnion.directive.dataItems = dataItems; /* set the data items in the parsed line */
+    pLine->lineContentUnion.directive.dataCount = i; /* set the data count in the parsed line */
+    return LEXER_SUCCESS_S;
+}
+
+ErrCode parseMatDirectiveLine(parsedLine *pLine, char *line, ErrorList *errorList)
+{
     char *token;
     ErrCode errorCode = NULL_INITIAL;
+
+    if (FALSE){
+        (void)errorCode;
+        (void)token;
+    }
+
+    return LEXER_SUCCESS_S;
+}
+
+ErrCode parseEntryDirectiveLine(parsedLine *pLine, char *line, ErrorList *errorList)
+{
+    char *token;
+    ErrCode errorCode = NULL_INITIAL;
+
+    if (FALSE){
+        (void)errorCode;
+        (void)token;
+    }
+
+    return LEXER_SUCCESS_S; 
+}
+
+ErrCode parseExternDirectiveLine(parsedLine *pLine, char *line, ErrorList *errorList)
+{
+    char *token;
+    ErrCode errorCode = NULL_INITIAL;
+
+    if (FALSE){
+        (void)errorCode;
+        (void)token;
+    }
 
     return LEXER_SUCCESS_S;
 }
@@ -142,7 +339,12 @@ ErrCode parseDirectiveLine(parsedLine *pLine, char *line, ErrorList *errorList){
 ErrCode parseInstructionLine(parsedLine *pLine, char *line, ErrorList *errorList){
     char *token;
     ErrCode errorCode = NULL_INITIAL;
-    
+
+    if (FALSE){
+        (void)errorCode;
+        (void)token;
+    }
+
     return LEXER_SUCCESS_S;
 }
 
@@ -176,9 +378,74 @@ void freeParsedLine(parsedLine *pLine) {
     free(pLine);
 }
 
+void printParsedLine(parsedLine *pLine)
+{
+    if (pLine == NULL)
+        return;
+
+    printf("Parsed Line:\n");
+    if (pLine->label != NULL)
+        printf("%s", pLine->label);
+    
+    switch (pLine->typesOfLine) {
+        case INSTRUCTION_LINE:
+            printf(" %s ", pLine->lineContentUnion.instruction.operationName);
+            if (pLine->lineContentUnion.instruction.operand1 != NULL)
+                printf(" %s", pLine->lineContentUnion.instruction.operand1);
+            if (pLine->lineContentUnion.instruction.operand2 != NULL)
+                printf(" , %s", pLine->lineContentUnion.instruction.operand2);
+            break;
+        case DIRECTIVE_LINE:
+            if (strcmp(pLine->lineContentUnion.directive.directiveName, ".string") == 0)
+            {
+                printf(" %s \"", pLine->lineContentUnion.directive.directiveName);
+                if (pLine->lineContentUnion.directive.dataItems != NULL) {
+                    unsigned int i;
+                    for (i = 0; i < pLine->lineContentUnion.directive.dataCount; i++) {
+                        printf("%c", pLine->lineContentUnion.directive.dataItems[i]);
+                    }
+                }
+                printf("\"");
+            } else if (strcmp(pLine->lineContentUnion.directive.directiveName, ".data") == 0 ||
+                        strcmp(pLine->lineContentUnion.directive.directiveName, ".mat") == 0 ||
+                        strcmp(pLine->lineContentUnion.directive.directiveName, ".string") == 0) 
+            {
+                printf(" %s", pLine->lineContentUnion.directive.directiveName);
+                if (pLine->lineContentUnion.directive.dataCount > 0) {
+                    unsigned int i;
+                    for (i = 0; i < pLine->lineContentUnion.directive.dataCount; i++) {
+                        printf(" %d", pLine->lineContentUnion.directive.dataItems[i]);
+                        if (i < pLine->lineContentUnion.directive.dataCount - 1)
+                            printf(",");
+                    }
+                }
+            }
+            else /* .entry or .extern */
+            {
+                printf(" %s", pLine->lineContentUnion.directive.directiveName);
+                if (pLine->lineContentUnion.directive.directiveLabel != NULL)
+                    printf(" %s", pLine->lineContentUnion.directive.directiveLabel);
+            }
+            break;
+        case COMMENT_LINE:
+            printf("Comment Line");
+            break;
+        case EMPTY_LINE:
+            printf("Empty Line");
+            break;
+        case UNSET_LINE:
+            printf("Unset Line");
+            break;
+        default:
+            printf("Unknown Line Type");
+            break;
+    }
+    printf("\n");
+}
 
 /* is X functions: */
 
+/* Check if the string is end of line (contains only whitespace or is empty) */
 Bool isEndOfLine(const char *str)
 {
     int i = 0;
@@ -272,6 +539,13 @@ Bool isLabel(const char *str)
     if (labelEnd == NULL) 
         return FALSE; /* if ':' is not found, it is not a label */
     return TRUE; /* if ':' is found, it is a label */
+}
+
+Bool isValidInteger(int value)
+{
+    if (value >= MIN_10BIT && value <= MAX_10BIT) /* check if the integer value can fit in 10 bits (-512 to 511) */
+        return TRUE;
+    return FALSE;
 }
 
 ErrCode isValidLabel(macroTable *table, const char *label)

@@ -20,12 +20,16 @@ int main(int argc, char const *argv[])
     macroTable* macroNames = createMacroTable(); /* macro table to hold all the macros found */
     ErrorList* errorList = createErrorList("test1"); /* error list to hold all the errors found */
     FILE *fp = openFile("test1", ".as", "r", &ec); /* open the file for reading */
-    parsedLine *pLine = readParsedLine(fp, &ec, macroNames, errorList); /* read the parsed line from the file */
+    parsedLine *pLine;
+    errorList->stage = "lexer debug"; /* set the stage of the error list to lexer */      
+    pLine = readParsedLine(fp, &ec, macroNames, errorList); /* read the parsed line from the file */
     if (ec != LEXER_SUCCESS_S) { /* check if an error occurred while reading the line */
-        printErrorMsg(ec, "lexer", 0);
+        printErrors(errorList); /* print the errors found */
         return 1;
     }
     
+    printParsedLine(pLine); /* print the parsed line */
+
     if (TRUE){ /* used to skip the rest of the code for debugging */
         freeParsedLine(pLine); /* free the parsed line structure */
         freeTableAndLists(macroNames, errorList); /* free the macro table and error list */

@@ -31,7 +31,7 @@ typedef enum ErrCode {
     INVALID_FILE_MODE_F = 16, /* invalid file mode */
     FILE_DELETE_ERROR_F = 17, /* file delete error */
     
-    /* lexer errors 20 - 39 */
+    /* lexer errors 20 - 49 */
     LEXER_SUCCESS_S = 20, 
     LEXER_FAILURE_S = 21,
     INVALID_DIRECTIVE_E = 22, /* invalid directive */
@@ -41,14 +41,24 @@ typedef enum ErrCode {
     LABEL_TOO_LONG_E = 26, /* label is too long */
     LABEL_EMPTY_E = 27, /* label is empty */
     LABEL_TEXT_AFTER_COLON_E = 28, /* text found after label colon */
-    LABEL_SAME_AS_MACRO_E = 29, /* label is the same as a macro name, should never be used */
-    LABEL_NAME_IS_KEYWORD_E = 30, /* label is a keyword, should never be used */
+    LABEL_SAME_AS_MACRO_E = 29, /* label is the same as a macro name */
+    LABEL_NAME_IS_KEYWORD_E = 30, /* label is a keyword */
     MACRO_NAME_EXISTS_E = 31, /* macro name already exists */
     MACRO_NAME_TOO_LONG_E = 32, /* macro name is too long */
     MACRO_NAME_EMPTY_E = 33, /* macro name is empty */
     MACRO_INVALID_START_CHAR_E = 34, /* macro name starts with an invalid character */
     MACRO_INVALID_CHAR_E = 35, /* macro name contains invalid characters */
-    MACRO_NAME_IS_KEYWORD_E = 36, /* macro name is a keyword, should never be used */
+    MACRO_NAME_IS_KEYWORD_E = 36, /* macro name is a keyword */
+
+    DIRECTIVE_DATA_MISSING_E = 37, /* directive is missing data items */
+    MISSING_COMMA_E = 38, /* missing comma in the directive */
+    DATA_INVALID_VALUE_E = 39, /* data item is not a valid number */
+    DATA_ITEM_NOT_INTEGER_E = 40, /* data item is not an integer */
+    INTEGER_OUT_OF_RANGE_E = 41, /* integer value is out of range */
+    STR_MISSING_OPEN_QUOTE_E = 42, /* string directive is missing an opening quotation mark */
+    STR_MISSING_CLOSE_QUOTE_E = 43, /* string directive is missing a closing quotation mark */
+    STR_INVALID_CHAR_E = 44, /* string directive contains invalid characters */
+    STR_QUOTE_IN_MIDDLE_E = 45, /* string directive contains a quote in the middle */
 
     /* tables errors 50 - 69 */
     TABLES_SUCCESS_S = 50, /* macro operation was successful */
@@ -62,7 +72,7 @@ typedef enum ErrCode {
 
     /* firstPass errors 80 - 89 */
     FIRSTPASS_SUCCESS_S = 80, /* first pass was successful */
-    FIRSTPASS_FAILURE_S = 81 /* first pass error, should never be used */
+    FIRSTPASS_FAILURE_S = 81 /* first pass error */
 
 } ErrCode;
 
