@@ -1,6 +1,10 @@
 MAIN: mov M1[r2][r7],LENGTH
     add r2,STR
 
+M1: .mat [2][9] -1,2,3,4, 5,24,3424,2432
+TEST: .data 1 2
+STR: .string "abcdef"
+
 LOOP: jmp END
     prn #-5
     
@@ -29,7 +33,5 @@ TRY: a_mc
     inc K
     mcroend
 
-STR: .string “abcdef”
 LENGTH: .data 6,-9,15
 K: .data 22
-M1: .mat [2][2] 1,2,3,4

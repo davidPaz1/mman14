@@ -210,7 +210,7 @@ ErrCode parseDataDirectiveLine(parsedLine *pLine, char *line, ErrorList *errorLi
 
         dataItems[dataCount++] = (int)value;
         token = strtok(NULL, ","); /* get next token */
-    }
+    } /* end of while */
 
     if (startErrCount < errorList->count) { /* if new errors were added */
         free(dataItems);
@@ -299,13 +299,95 @@ ErrCode parseStrDirectiveLine(parsedLine *pLine, char *line, ErrorList *errorLis
 
 ErrCode parseMatDirectiveLine(parsedLine *pLine, char *line, ErrorList *errorList)
 {
-    char *token;
     ErrCode errorCode = NULL_INITIAL;
-
-    if (FALSE){
-        (void)errorCode;
-        (void)token;
+    unsigned int startErrCount = errorList->count; /* save the current error count to check if any errors were added */
+    unsigned int dataCount = 0, i = 0; 
+    int row = 0, col = 0;
+    char *token, *endPtr;
+    int* dataItems = NULL;
+    
+    token = cutFirstToken(line, &errorCode); /* should be "[row]"*/
+    if (errorCode != UTIL_SUCCESS_S) {
+        addErrorToList(errorList, errorCode);
+        return LEXER_FAILURE_S;
     }
+
+    /* check if start and end characters are correct and parse the row size */
+    if (token[0] != '[' || sscanf(token+1, "%d", &row) != 1 || token[strlen(token) - 1] != ']')
+        addErrorToList(errorList, MAT_INVALID_ROW_E);
+
+    free(token);
+    token = cutFirstToken(line, &errorCode); /* should be "[col]" */
+    if (errorCode != UTIL_SUCCESS_S) {
+        if (errorCode == END_OF_LINE_S)
+            errorCode = DIRECTIVE_DATA_MISSING_E;
+        addErrorToList(errorList, errorCode);
+        return LEXER_FAILURE_S;
+    }
+
+    /* check if start and end characters are correct and parse the column size */ 
+    if (token[0] != '[' || sscanf(token+1, "%d", &col) != 1 || token[strlen(token) - 1] != ']') 
+        addErrorToList(errorList, MAT_INVALID_COL_E);
+    
+    free(token);
+    if (startErrCount < errorList->count) /* if new errors were added */
+        return LEXER_FAILURE_S;
+
+    if (row <= 0 || col <= 0) { /* check if row or col are zero or negative */
+        addErrorToList(errorList, MAT_SIZE_ZERO_NEG_E);
+        return LEXER_FAILURE_S;
+    }
+
+    dataCount = row * col; /* calculate the number of data items in the matrix */
+    dataItems = calloc(dataCount, sizeof(int)); /* allocate memory for the data items (zero-initialized) */
+    if (dataItems == NULL) {
+        addErrorToList(errorList, MALLOC_ERROR_F);
+        return LEXER_FAILURE_S;
+    }
+
+    i = 0;
+    token = strtok(line, ",");
+
+    while (token != NULL) {
+        double value;
+
+        while (isspace(*token)) /* skip leading whitespace */
+            token++;
+
+        if (dataCount <= i) { /* if we have more items than the matrix size */
+            addErrorToList(errorList, MAT_SIZE_TOO_LARGE_E); /* if there are more items than matrix size */
+            free(dataItems);
+            return LEXER_FAILURE_S;    
+        }
+
+        endPtr = token; /* set endPtr to the start of the token */
+        value = strtod(token, &endPtr);
+
+        while (isspace(*endPtr)) /* skip trailing whitespace */
+            endPtr++;
+
+        if (endPtr == token) /* if no number was found */
+            addErrorToList(errorList, DATA_INVALID_VALUE_E);
+        else if (*endPtr != '\0') /* if there are non-numeric and non-whitespace characters after the number */
+            addErrorToList(errorList, MISSING_COMMA_E);
+        else if (value != (int)value) /* if the value is not an integer */
+            addErrorToList(errorList, DATA_ITEM_NOT_INTEGER_E);
+        else if (!isValidInteger((int)value)) /* check if the integer value is valid for the assembler */
+            addErrorToList(errorList, INTEGER_OUT_OF_RANGE_E);        
+
+        
+
+        dataItems[i++] = (int)value;
+        token = strtok(NULL, ","); /* get next token */
+    }
+
+    free(token);
+    if (startErrCount < errorList->count) /* if new errors were added */
+        return LEXER_FAILURE_S;
+    
+
+    pLine->lineContentUnion.directive.dataItems = dataItems; /* set the data items in the parsed line */
+    pLine->lineContentUnion.directive.dataCount = dataCount; /* set the data count in the parsed line */
 
     return LEXER_SUCCESS_S;
 }

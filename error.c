@@ -84,7 +84,14 @@ char* getErrorMessage(ErrCode code) {
             return "string directive contains invalid characters, should only contain ASCII characters.";
         case STR_QUOTE_IN_MIDDLE_E: /* 45 */
             return "string directive cant contain quotes in the middle.";
-
+        case MAT_INVALID_ROW_E: /* 46 */
+            return "matrix has an invalid row, should be in the format .mat[row][col] where row and col are positive integers.";
+        case MAT_INVALID_COL_E: /* 47 */
+            return "matrix has an invalid column, should be in the format .mat[row][col] where row and col are positive integers.";
+        case MAT_SIZE_ZERO_NEG_E: /* 48 */
+            return "matrix has a size of zero or negative, should have positive row and column.";
+        case MAT_SIZE_TOO_LARGE_E: /* 49 */
+            return "matrix input is larger than the size entered, please increase the size or reduce the input.";
 
         /* tables errors 50 - 69 */
         case SYMBOL_NAME_EXISTS_E: /* 52 */

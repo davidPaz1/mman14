@@ -25,6 +25,9 @@ int main(int argc, char const *argv[])
     pLine = readParsedLine(fp, &ec, macroNames, errorList); /* read the parsed line from the file */
     if (ec != LEXER_SUCCESS_S) { /* check if an error occurred while reading the line */
         printErrors(errorList); /* print the errors found */
+        freeParsedLine(pLine); /* free the parsed line structure */
+        freeTableAndLists(macroNames, errorList);
+        freeFiles(fp, NULL, NULL); /* close the files if they were opened */
         return 1;
     }
     

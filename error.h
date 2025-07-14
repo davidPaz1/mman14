@@ -49,7 +49,6 @@ typedef enum ErrCode {
     MACRO_INVALID_START_CHAR_E = 34, /* macro name starts with an invalid character */
     MACRO_INVALID_CHAR_E = 35, /* macro name contains invalid characters */
     MACRO_NAME_IS_KEYWORD_E = 36, /* macro name is a keyword */
-
     DIRECTIVE_DATA_MISSING_E = 37, /* directive is missing data items */
     MISSING_COMMA_E = 38, /* missing comma in the directive */
     DATA_INVALID_VALUE_E = 39, /* data item is not a valid number */
@@ -59,20 +58,28 @@ typedef enum ErrCode {
     STR_MISSING_CLOSE_QUOTE_E = 43, /* string directive is missing a closing quotation mark */
     STR_INVALID_CHAR_E = 44, /* string directive contains invalid characters */
     STR_QUOTE_IN_MIDDLE_E = 45, /* string directive contains a quote in the middle */
+    MAT_INVALID_ROW_E = 46, /* matrix directive has an invalid row */
+    MAT_INVALID_COL_E = 47, /* matrix directive has an invalid column */
+    MAT_SIZE_ZERO_NEG_E = 48, /* matrix directive has a size of zero */
+    MAT_SIZE_TOO_LARGE_E = 49, /* matrix directive has invalid data */
 
-    /* tables errors 50 - 69 */
-    TABLES_SUCCESS_S = 50, /* macro operation was successful */
-    TABLES_FAILURE_S = 51, /* macro operation failed */
-    SYMBOL_NAME_EXISTS_E = 52, /* symbol name already exists */
-    
-    /* preprocessor errors 70 - 79 */
-    PREPROCESSOR_SUCCESS_S = 70, /* preprocessor executed successfully */
-    PREPROCESSOR_FAILURE_S = 71, /* preprocessor failed */
-    UNMATCHED_MACRO_END_E = 72, /* macro closer not found */
+    /* tables errors 80 - 99 */
+    TABLES_SUCCESS_S = 70, /* macro operation was successful */
+    TABLES_FAILURE_S = 71, /* macro operation failed */
+    SYMBOL_NAME_EXISTS_E = 72, /* symbol name already exists */
 
-    /* firstPass errors 80 - 89 */
-    FIRSTPASS_SUCCESS_S = 80, /* first pass was successful */
-    FIRSTPASS_FAILURE_S = 81 /* first pass error */
+    /* preprocessor errors 100 - 109 */
+    PREPROCESSOR_SUCCESS_S = 100, /* preprocessor executed successfully */
+    PREPROCESSOR_FAILURE_S = 101, /* preprocessor failed */
+    UNMATCHED_MACRO_END_E = 102, /* macro closer not found */
+
+    /* firstPass errors 110 - 119 */
+    FIRSTPASS_SUCCESS_S = 110, /* first pass was successful */
+    FIRSTPASS_FAILURE_S = 111, /* first pass error */
+
+    /* secondPass errors 120 - 129 */
+    SECOND_PASS_SUCCESS_S = 120, /* second pass was successful */
+    SECOND_PASS_FAILURE_S = 121 /* second pass error */
 
 } ErrCode;
 

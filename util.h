@@ -5,7 +5,6 @@
 
 /* utility functions prototypes */
 #define OVER_LENGTH  1 /* overlength should store \n or \r if line is under MAX_LINE_FILE_LENGTH */
-#define COMMA_LENGTH 1 /* length of the comma character ',' */
 
 /* scanning functions */
 char* readLine(FILE *fp, ErrCode *errorCode);

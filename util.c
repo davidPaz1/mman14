@@ -54,14 +54,14 @@ char* readLine(FILE *fp, ErrCode *errorCode) {
 
 /**
  * getFirstToken - returns the first token of a string, skipping leading spaces
- * and handling illegal characters (',') by returning them as a single character string.
  * if the string is empty or contains only whitespace, returns NULL and sets errorCode to END_OF_LINE_S.
  * if memory allocation fails, returns NULL and sets errorCode to MALLOC_ERROR_F.
- * resets errorCode:  END_OF_LINE_S , MALLOC_ERROR_F, UTIL_SUCCESS_S
+ * if reaches a character '[' , it stops and returns the token.
+ * errorCode:  END_OF_LINE_S , MALLOC_ERROR_F, UTIL_SUCCESS_S
  */
 char* getFirstToken(const char *str, ErrCode *errorCode)
 {
-    int i = 0;
+    int i = 0, startNonSpace = 0; /* index of the first non-space character */
     char* token;
     *errorCode = NULL_INITIAL; /* reset error code to initial state */
 
@@ -73,32 +73,23 @@ char* getFirstToken(const char *str, ErrCode *errorCode)
         return NULL;
     }
 
-    if (str[i] == ',') { /* if the first character is ';' or ',' */
-        token = malloc(COMMA_LENGTH + NULL_TERMINATOR); /* 1 for illegal character and 1 for '\0' */
-        if (token == NULL) {
-            *errorCode = MALLOC_ERROR_F;
-            return NULL; 
-        }
-        token[0] = ','; /* set the first character to ',' */
-        token[1] = '\0';  /* set the last character to '\0' */
-        i++; /* skip the illegal character */
-    }
-    else {
-        int start = i;
-        while (str[i] != '\0' && str[i] != ',' && !isspace(str[i]))  /* find the end of the token */
-            i++;
+    startNonSpace = i;
+    /* read the first character separately because we would get stuck on '[' */
+    if (str[i] != '\0' && !isspace(str[i]))
+        i++;
+    while (str[i] != '\0' && str[i] != '[' && !isspace(str[i]))  /* find the end of the token */
+        i++;
 
-        token = malloc(i - start + 1); /* +1 for '\0' */
-        if (token == NULL) {
-            *errorCode = MALLOC_ERROR_F;
-            return NULL;
-        }
-
-        strncpy(token, str + start, i - start);
-        token[i - start] = '\0';
+    token = malloc(i - startNonSpace + 1); /* +1 for '\0' */
+    if (token == NULL) {
+        *errorCode = MALLOC_ERROR_F;
+        return NULL;
     }
 
-    while (isspace(str[i])) 
+    strncpy(token, str + startNonSpace, i - startNonSpace);
+    token[i - startNonSpace] = '\0';
+
+    while (isspace(str[i]))
         i++;
 
     *errorCode = UTIL_SUCCESS_S; /* set error code to success */
