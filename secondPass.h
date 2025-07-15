@@ -12,6 +12,10 @@ ErrCode executeSecondPass(FILE* amFile, FILE* obFile, MacroTable* macroTable, Sy
 void writeEntryFile(FILE* entFile, SymbolTable* symbolTable);
 void writeExternFile(FILE* extFile, SymbolTable* symbolTable);
 
+
+void writeEntryFile(FILE* entFile, SymbolTable* symbolTable);
+void writeExternFile(FILE* extFile, SymbolTable* symbolTable);
+
 void secPassErrorExit(parsedLine* pLine); /* clean up and exit the second pass */
 void secPassFreeMemory(parsedLine* pLine); /* free the memory allocated from the second pass */
 #endif
