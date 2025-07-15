@@ -27,7 +27,7 @@ char* getErrorMessage(ErrCode code) {
         case INPUT_FILE_UNREADABLE_F: /* 13 */
             return "could not read input .as file, make sure it exists and is readable.";
         case FILE_READ_ERROR_F: /* 14 */
-            return "could not read from file, make sure it exists and is readable.";
+            return "could not open file to read, make sure it exists and is readable.";
         case FILE_WRITE_ERROR_F: /* 15 */
             return "file write error.";
         case INVALID_FILE_MODE_F: /* 16 */

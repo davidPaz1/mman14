@@ -6,10 +6,10 @@
 #include "tables.h"
 #include "util.h"
 
-void freeFiles(FILE* asFile, FILE* amFile, FILE* obFile);
+void freeFiles(FILE* file1, FILE* file2, FILE* file3);
 void freeTableAndLists(MacroTable* macroTable, SymbolTable* symbolTable, ErrorList* errorList); /* free the macro table and error list */
 void executeAssembler(char* fileName); /* main function to execute the file */
-void PreProcessorFileErrorExit(ErrorList* errorList, FILE* amFile);
+void deleteFileErrorExit(ErrorList* errorList, char* fileExtension);
 
 int main(int argc, char const *argv[])
 {
@@ -65,7 +65,7 @@ int main(int argc, char const *argv[])
 void executeAssembler(char* fileName)
 {
     ErrCode errCode = NULL_INITIAL; /* initialize error code to NULL_INITIAL */
-    FILE *asFile = NULL, *amFile = NULL; /* file pointers for the assembly and macro files */
+    FILE *asFile = NULL, *amFile = NULL, *obFile = NULL, *entFile = NULL, *extFile = NULL;
     int DCF = 0, ICF = 0;
     MacroTable* macroTable = createMacroTable(); /* create a macro table to hold all the macros found */
     SymbolTable* symbolTable  = createSymbolTable(); /* create a symbol table to hold all the symbols found */
@@ -99,9 +99,9 @@ void executeAssembler(char* fileName)
 
     errCode = executePreprocessor(macroTable, errorList, asFile, amFile, fileName); /* test with a sample file name */
     if (errCode == PREPROCESSOR_FAILURE_S) {
-        PreProcessorFileErrorExit(errorList, amFile); /* clean up and exit the preprocessor */
-        freeTableAndLists(macroTable, symbolTable , errorList); /* free the macro table and error list */
         freeFiles(asFile, amFile, NULL); /* close the files if they were opened */
+        deleteFileErrorExit(errorList, ".am"); /* clean up and exit the preprocessor */
+        freeTableAndLists(macroTable, symbolTable , errorList); /* free the macro table and error list */
         return;
     }
     printf("\nPreprocessor executed successfully.\n"); /* print success message */
@@ -120,26 +120,62 @@ void executeAssembler(char* fileName)
     }
 
     errCode = executeFirstPass(amFile, &DCF, &ICF, macroTable, symbolTable , errorList); /* execute the first pass */
-    if (errCode != FIRSTPASS_SUCCESS_S) {
-        printErrorMsg(errCode, "first pass", 0); /* print the error message */
-        return;
+    if (errCode == FIRSTPASS_FAILURE_S) {
+        printErrors(errorList);
+        freeTableAndLists(macroTable, symbolTable , errorList); /* free the macro table and error list */
+        freeFiles(amFile, NULL, NULL);
     }
     printf("\nFirst pass executed successfully.\n"); /* print success message */
     
-    /*
+    
     printf("starting second pass...\n");
     errorList->stage = "second pass";
-    */
     
+    obFile = openFile(fileName, ".ob", "w", &errCode); /* open the .ob file for writing */
+    if (errCode != UTIL_SUCCESS_S) {
+        printf("Error opening file %s.ob: %s\n", fileName, getErrorMessage(errCode));
+        freeTableAndLists(macroTable, symbolTable , errorList); /* free the macro table and error list */
+        freeFiles(amFile, NULL, NULL);
+        return; /* exit if the file cannot be opened */
+    }
+
+    errCode = executeSecondPass(amFile, obFile, DCF, ICF, macroTable, symbolTable , errorList); /* execute the second pass */
+    if (errCode != SECOND_PASS_SUCCESS_S) {
+        freeFiles(amFile, obFile, NULL);
+        deleteFileErrorExit(errorList, ".ob"); /* clean up and exit the second pass */
+        freeTableAndLists(macroTable, symbolTable , errorList); /* free the macro table and error list */
+    }
+
+    /* still need to handle .ent and .ext files */
+    if (symbolTable->haveEntry) { /* if there are entry symbols */
+        entFile = openFile(fileName, ".ent", "w", &errCode); /* open the .ent file for writing */
+        if (errCode != UTIL_SUCCESS_S) {
+            printf("Error opening file %s.ent: %s\n", fileName, getErrorMessage(errCode));
+            freeTableAndLists(macroTable, symbolTable , errorList); /* free the macro table and error list */
+            freeFiles(amFile, obFile, NULL);
+            return; /* exit if the file cannot be opened */
+        }
+        writeEntryFile(entFile, symbolTable); /* write the entry symbols to the .ent file */
+    }
+    if (symbolTable->haveExtern) { /* if there are extern symbols */
+        extFile = openFile(fileName, ".ext", "w", &errCode); /* open the .ext file for writing */
+        if (errCode != UTIL_SUCCESS_S) {
+            printf("Error opening file %s.ext: %s\n", fileName, getErrorMessage(errCode));
+            freeTableAndLists(macroTable, symbolTable , errorList); /* free the macro table and error list */
+            freeFiles(amFile, obFile, NULL);
+            return; /* exit if the file cannot be opened */
+        }
+        writeExternFile(extFile, symbolTable); /* write the entry symbols to the .ext file */
+    }
 
     freeTableAndLists(macroTable, symbolTable , errorList); /* free the macro table and error list */
     freeFiles(asFile, amFile, NULL); /* close the files if they were opened */
     printf("successfully executed file %s\n", fileName); 
 }
 
-void PreProcessorFileErrorExit(ErrorList* errorList, FILE* amFile)
+void deleteFileErrorExit(ErrorList* errorList, char* fileExtension)
 {
-    ErrCode errorCode = delFile(errorList->filename, ".am"); /* delete the .am file if it was created */
+    ErrCode errorCode = delFile(errorList->filename, fileExtension); /* delete the specified file if it was created */
     if (errorCode != UTIL_SUCCESS_S) { /* check if the file was deleted successfully */
         errorList->count++; /* increment the error count */
     }
@@ -155,14 +191,11 @@ void freeTableAndLists(MacroTable* macroTable, SymbolTable* symbolTable, ErrorLi
     freeErrorsList(errorList); /* free the error list */
 }
 
-void freeFiles(FILE* asFile, FILE* amFile, FILE* obFile) {
-    if (asFile != NULL) {
-        fclose(asFile); /* close the file if it was opened */
-    }
-    if (amFile != NULL) {
-        fclose(amFile); /* close the file if it was opened */
-    }
-    if (obFile != NULL) {
-        fclose(obFile); /* close the file if it was opened */
-    }
+void freeFiles(FILE* file1, FILE* file2, FILE* file3) {
+    if (file1 != NULL) 
+        fclose(file1); /* close the file if it was opened */
+    if (file2 != NULL) 
+        fclose(file2); /* close the file if it was opened */
+    if (file3 != NULL) 
+        fclose(file3); /* close the file if it was opened */    
 }
