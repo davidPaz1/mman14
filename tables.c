@@ -103,20 +103,16 @@ ErrCode addMacroLine(MacroTable* macroTable, const char* line) {
     return TABLES_SUCCESS_S; /* return success */
 }
 
-MacroBody* findMacro(MacroTable* macroTable, const char* macroName, ErrCode* errorCode) {
+MacroBody* findMacro(MacroTable* macroTable, const char* macroName) {
     MacroNode* current; /* used to iterate through the macro list */
-    *errorCode = NULL_INITIAL; /* initialize error code to NULL_INITIAL */
 
     current = macroTable->macroHead;
     while (current != NULL) {
-        if (strcmp(current->macroName, macroName) == 0) {
-            *errorCode = TABLES_SUCCESS_S; /* set error code to success */
+        if (strcmp(current->macroName, macroName) == 0) 
             return current->bodyHead; /* return the body of the found macro */
-        }
         current = current->nextMacro;
     }
 
-    *errorCode = UNKNOWN_ERROR; /* it should not reach here because findMacro is called only after isMacroExists */
     return NULL; /* Macro not found */
 }
 
@@ -124,15 +120,7 @@ MacroBody* findMacro(MacroTable* macroTable, const char* macroName, ErrCode* err
  * Returns TRUE if the macro exists, otherwise returns FALSE.
  */
 Bool isMacroExists(MacroTable* macroTable, const char* macroName) {
-
-    MacroNode* current = macroTable->macroHead; /* used to iterate through the macro list */
-    while (current != NULL) {
-        if (strcmp(current->macroName, macroName) == 0) /* check if the macro name matches */
-            return TRUE; /* Macro exists */
-        current = current->nextMacro;
-    }
-    
-    return FALSE; /* Macro does not exist */
+    return findMacro(macroTable, macroName) != NULL; /* check if the macro exists by trying to find it */
 }
 
 

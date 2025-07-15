@@ -104,9 +104,13 @@ void executeAssembler(char* fileName)
         return;
     }
     printf("\nPreprocessor executed successfully.\n"); /* print success message */
-    
     freeFiles(asFile, amFile, NULL);
 
+    if (TRUE) { /* we want to test up to the end of the preprocessor */
+        printf("Skipping first pass for testing.\n");
+        freeTableAndLists(macroTable, symbolTable , errorList);
+        return;
+    }
 
     printf("Starting first pass...\n");
     errorList->stage = "first pass";

@@ -29,6 +29,8 @@ ErrCode executePreprocessor(MacroTable *macroTable, ErrorList *errorList, FILE *
 
         if (errorCode != UTIL_SUCCESS_S) { /* check if an error occurred while reading the line */            
             addErrorToList(errorList, errorCode);
+            if (errorCode == LINE_TOO_LONG_E) /* if the line is too long, skip it and continue to the next line */
+                continue; 
             /* all other errors we didn't check in readLine() are fatal */
             return PREPROCESSOR_FAILURE_S; 
             
@@ -62,9 +64,11 @@ ErrCode executePreprocessor(MacroTable *macroTable, ErrorList *errorList, FILE *
         }
 
         if(isMacroExists(macroTable, firstToken)) { /* check if the line is a macro use line 2 */
-            errorCode = spreadMacro(macroTable, firstToken, amFile); /* spread the macro body into the .am file */
-            if (errorCode != TABLES_SUCCESS_S)  /* check if the macro was spread successfully */
-                addErrorToList(errorList, errorCode);
+            cutnChar(line, strlen(firstToken)); /* cut the first word from the line for processing */
+            if(!isEndOfLine(line)) /* if there are some extraneous text after the macro name */
+                addErrorToList(errorList, EXTRANEOUS_TEXT_E);
+            else /* if the line is just a macro use line */
+                spreadMacro(macroTable, firstToken, amFile); /* spread the macro body into the .am file */
         }
         else if (strcmp(firstToken, "mcro") == 0) { /* check if the line is a macro definition line 3 */
             cutnChar(line, strlen(firstToken)); /* cut the first word from the line for processing */
@@ -75,9 +79,13 @@ ErrCode executePreprocessor(MacroTable *macroTable, ErrorList *errorList, FILE *
                 inMacroDef = TRUE; /* set the flag to indicate that we are in a macro definition 4 */
         }
         else if (strcmp(firstToken, "mcroend") == 0) { /* check if the line is a macro end line 7 */
-            if (!inMacroDef) /* if we are not in a macro definition */
+            cutnChar(line, strlen(firstToken)); /* cut the first word from the line for processing */
+            if (!isEndOfLine(line)) /* if there are some extraneous text after the mcroend */
+                addErrorToList(errorList, EXTRANEOUS_TEXT_E); 
+            else if (!inMacroDef) /* if we are not in a macro definition */
                 addErrorToList(errorList, UNMATCHED_MACRO_END_E); /* add an error to the error list */
-            inMacroDef = FALSE; /* reset the flag to indicate that we are no longer in a macro definition 8 */
+            else
+                inMacroDef = FALSE; /* reset the flag to indicate that we are no longer in a macro definition 8 */
         }
         else if (inMacroDef) { /* if we are in a macro definition 6 */
             errorCode = addMacroLine(macroTable, line); /* add the line to the macro body */
@@ -99,23 +107,20 @@ ErrCode executePreprocessor(MacroTable *macroTable, ErrorList *errorList, FILE *
     return PREPROCESSOR_SUCCESS_S;
 }
 
-ErrCode spreadMacro(MacroTable *macroTable, const char *macroName, FILE *amFile)
+void spreadMacro(MacroTable *macroTable, const char *macroName, FILE *amFile)
 {
     MacroBody *macroBody, *next; /* will hold the body of the macro we are about to spread */
     ErrCode errorCode = NULL_INITIAL; /* initialize error code to NULL_INITIAL */
     
-    macroBody = findMacro(macroTable, macroName, &errorCode); /* find the macro body in the table */
-    if (errorCode != TABLES_SUCCESS_S)
-        return errorCode; /* return failure if an error occurred */
-    
+    macroBody = findMacro(macroTable, macroName); /* find the macro body in the table */
+    /* macroBody cannot be NULL here because we checked if the macro exists before calling this function */
+
     while (macroBody != NULL) { /* iterate through the macro body */
         next = macroBody->nextLine; /* save the next line */
         fputs(macroBody->line, amFile); /* write the current line to the .am file */
         fputc('\n', amFile); /* write the empty line to the .am file */
         macroBody = next; /* move to the next line */
     }
-
-    return TABLES_SUCCESS_S; /* return success */
 }
 
 ErrCode macroDef(MacroTable* macroTable, char* line) /* add a line to the macro body */

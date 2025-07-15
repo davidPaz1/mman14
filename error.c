@@ -10,7 +10,7 @@ char* getErrorMessage(ErrCode code) {
         case MALLOC_ERROR_F: /* 1 */
                 return "memory allocation failed.";
         case EXTRANEOUS_TEXT_E: /* 3 */
-            return "extraneous text after the end of the line, should never be used.";
+            return "extraneous text after the end of the line";
         case MALLOC_ERROR_File_Del_F: /* 4 */
             return "memory allocation error while deleting the file.";
         case MALLOC_ERROR_LIST_F: /* 5 */

@@ -8,7 +8,7 @@
 
 ErrCode executePreprocessor(MacroTable* macroTable, ErrorList* errorList, FILE* asFile, FILE* amFile, const char* inputFileName);/* main function for the preprocessor */
 
-ErrCode spreadMacro(MacroTable* macroTable, const char* macroName, FILE* amFile); /* spread the macro body into the .am file */
+void spreadMacro(MacroTable* macroTable, const char* macroName, FILE* amFile); /* spread the macro body into the .am file */
 ErrCode macroDef(MacroTable* macroTable, char* line); /* add a line to the macro body */
 
 void preprocessorFreeMemory(char* line, char* firstToken); /* free the memory allocated from the preprocessor */

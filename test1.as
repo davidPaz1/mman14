@@ -12,15 +12,17 @@ LOOP: jmp END
 ;    mcro aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
 ;    mcroend
 
+    mcro a_mc extraTxt
     mcro a_mc
     mov M1[r3][r3],r3
     bne LOOP
-    mcroend  ad
-
+    mcroend extraTxt
+    mcroend
+    
     sub r1, r4
     inc K
 
-    a_mc
+    a_mc extraTxt
 
 
 END: stop
