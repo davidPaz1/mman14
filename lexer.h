@@ -8,7 +8,7 @@
 #define COLON_LENGTH 1 /* length of the colon character ':' */
 
 typedef enum lineType {
-    INSTRUCTION_LINE = 0, 
+    INSTRUCTION_LINE = 1, 
     DIRECTIVE_LINE, 
     COMMENT_LINE, 
     EMPTY_LINE, 

@@ -33,8 +33,8 @@ ErrCode executeFirstPass(FILE* amFile, int *DCF, int *ICF, MacroTable* macroName
             break; /* end of file reached, exit the loop */
         
         if (errorCode != LEXER_SUCCESS_S) { /* check if an error occurred while reading the line */
-            firstPassErrorExit(pLine); /* clean up and exit the first pass */
-            return FIRSTPASS_FAILURE_S; /* return failure if an error occurred */
+            freeParsedLine(pLine); /* clean up and exit the first pass */
+            continue; /* continue to the next line */
         }
 
         if (pLine->typesOfLine == EMPTY_LINE || pLine->typesOfLine == COMMENT_LINE) {
@@ -58,6 +58,9 @@ ErrCode executeFirstPass(FILE* amFile, int *DCF, int *ICF, MacroTable* macroName
         
         freeParsedLine(pLine);
     } /* end of while loop */
+
+    if(errorList->count > 0) /* if there are errors in the error list */
+        return FIRSTPASS_FAILURE_S;
 
     *DCF = DC; /* set the final data counter */
     *ICF = IC; /* set the final instruction counter */

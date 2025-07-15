@@ -2,9 +2,9 @@ CC = gcc
 exeFlags = $(CC) -pedantic -ansi -Wall -g
 compileFlags =  $(exeFlags) -c
 
-run: main.o tables.o preprocessor.o firstPass.o util.o lexer.o error.o
-	$(exeFlags) main.o tables.o preprocessor.o firstPass.o util.o lexer.o error.o -o run
-main.o: main.c preprocessor.h firstPass.h error.h global.h lexer.h tables.h util.h
+run: main.o tables.o preprocessor.o firstPass.o secondPass.o util.o lexer.o error.o
+	$(exeFlags) main.o tables.o preprocessor.o firstPass.o secondPass.o util.o lexer.o error.o -o run
+main.o: main.c preprocessor.h firstPass.h secondPass.h error.h global.h lexer.h tables.h util.h
 	$(compileFlags) main.c
 tables.o: tables.c tables.h global.h error.h lexer.h util.h
 	$(compileFlags) tables.c
@@ -12,6 +12,8 @@ preprocessor.o: preprocessor.c preprocessor.h global.h error.h lexer.h util.h ta
 	$(compileFlags) preprocessor.c
 firstPass.o: firstPass.c firstPass.h global.h error.h lexer.h util.h tables.h 
 	$(compileFlags) firstPass.c
+secondPass.o: secondPass.c secondPass.h global.h error.h lexer.h util.h tables.h
+	$(compileFlags) secondPass.c
 
 
 util.o : util.c util.h global.h

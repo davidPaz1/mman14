@@ -1,6 +1,7 @@
 #include "global.h"
 #include "preprocessor.h"
 #include "firstPass.h"
+#include "secondPass.h"
 #include "error.h"
 #include "lexer.h"
 #include "tables.h"
@@ -15,31 +16,29 @@ int main(int argc, char const *argv[])
 {
     char* inputFileName = NULL;
     int i;
-    printf("%d\v\v\v", sizeof(Bool));
-    ErrCode ec = NULL_INITIAL; /* debugging error code */
-    MacroTable* macroTable = createMacroTable(); /* macro table to hold all the macros found */
-    SymbolTable* symbolTable  = createSymbolTable(); /* symbol table to hold all the symbols found */
-    ErrorList* errorList = createErrorList("test1"); /* error list to hold all the errors found */
-    FILE *fp = openFile("test1", ".as", "r", &ec); /* open the file for reading */
-    parsedLine *pLine;
-    errorList->stage = "lexer debug"; /* set the stage of the error list to lexer */      
-    pLine = readParsedLine(fp, &ec, macroTable, errorList); /* read the parsed line from the file */
-    if (ec != LEXER_SUCCESS_S) { /* check if an error occurred while reading the line */
-        printErrors(errorList); /* print the errors found */
-        freeParsedLine(pLine); /* free the parsed line structure */
-        freeTableAndLists(macroTable, symbolTable , errorList);
-        freeFiles(fp, NULL, NULL); /* close the files if they were opened */
-        return 1;
-    }
-    
-    printParsedLine(pLine); /* print the parsed line */
-
-    if (TRUE){ /* used to skip the rest of the code for debugging */
+    if (FALSE) { /* used to skip the rest of the code for debugging */
+        ErrCode ec = NULL_INITIAL; /* debugging error code */
+        MacroTable* macroTable = createMacroTable(); /* macro table to hold all the macros found */
+        SymbolTable* symbolTable  = createSymbolTable(); /* symbol table to hold all the symbols found */
+        ErrorList* errorList = createErrorList("test1"); /* error list to hold all the errors found */
+        FILE *fp = openFile("test1", ".as", "r", &ec); /* open the file for reading */
+        parsedLine *pLine;
+        errorList->stage = "lexer debug"; /* set the stage of the error list to lexer */      
+        pLine = readParsedLine(fp, &ec, macroTable, errorList); /* read the parsed line from the file */
+        if (ec != LEXER_SUCCESS_S) { /* check if an error occurred while reading the line */
+            printErrors(errorList); /* print the errors found */
+            freeParsedLine(pLine); /* free the parsed line structure */
+            freeTableAndLists(macroTable, symbolTable , errorList);
+            fclose(fp);
+            return 1;
+        }
+        
+        printParsedLine(pLine); /* print the parsed line */
         freeParsedLine(pLine); /* free the parsed line structure */
         freeTableAndLists(macroTable, symbolTable , errorList); /* free the macro table and error list */
-        freeFiles(fp, NULL, NULL); /* close the files if they were opened */
-        return 0; /* exit the program */
-    }
+        fclose(fp);
+        return 0;
+    } /* end of debugging code */
 
     printf("argc: %d\n", argc);
     if (argc < 2) { /* check if there are no arguments */
@@ -70,7 +69,7 @@ void executeAssembler(char* fileName)
     MacroTable* macroTable = createMacroTable(); /* create a macro table to hold all the macros found */
     SymbolTable* symbolTable  = createSymbolTable(); /* create a symbol table to hold all the symbols found */
     ErrorList* errorList = createErrorList(fileName); /* create an error list to hold errors */
-    if (errorList == NULL || macroTable == NULL || symbolTable  != NULL) { /* check if memory allocation was successful */
+    if (errorList == NULL || macroTable == NULL || symbolTable == NULL) { /* check if memory allocation was successful */
         printErrorMsg(MALLOC_ERROR_F, "preprocessor", 0);
         return; /* exit if memory allocation fails */
     }
@@ -124,10 +123,16 @@ void executeAssembler(char* fileName)
         printErrors(errorList);
         freeTableAndLists(macroTable, symbolTable , errorList); /* free the macro table and error list */
         freeFiles(amFile, NULL, NULL);
+        return;
     }
     printf("\nFirst pass executed successfully.\n"); /* print success message */
     
-    
+    if (TRUE) { /* we want to test up to the end of the first pass */
+        printf("Skipping second pass for testing.\n");
+        freeFiles(amFile, NULL, NULL); /* close the files if they were opened */
+        freeTableAndLists(macroTable, symbolTable , errorList); /* free the macro table and error list */
+        return; /* exit after the first pass */
+    }
     printf("starting second pass...\n");
     errorList->stage = "second pass";
     
@@ -139,11 +144,12 @@ void executeAssembler(char* fileName)
         return; /* exit if the file cannot be opened */
     }
 
-    errCode = executeSecondPass(amFile, obFile, DCF, ICF, macroTable, symbolTable , errorList); /* execute the second pass */
-    if (errCode != SECOND_PASS_SUCCESS_S) {
+    errCode = executeSecondPass(amFile, obFile, macroTable, symbolTable, errorList); /* execute the second pass */
+    if (errCode == SECOND_PASS_FAILURE_S) {
         freeFiles(amFile, obFile, NULL);
         deleteFileErrorExit(errorList, ".ob"); /* clean up and exit the second pass */
         freeTableAndLists(macroTable, symbolTable , errorList); /* free the macro table and error list */
+        return; /* exit if the second pass failed */
     }
 
     /* still need to handle .ent and .ext files */

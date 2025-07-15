@@ -190,16 +190,15 @@ SymbolTable* createSymbolTable()
 ErrCode addSymbol(SymbolTable* table, const char* name, unsigned int address, const char* firstToken)
 {
     SymbolNode* newSymbol; /* new symbol to be added */
-    ErrCode errorCode = NULL_INITIAL; /* initialize error code to NULL_INITIAL */
 
     newSymbol = createSymbolNode(name, address, firstToken);
     if (newSymbol == NULL) 
         return MALLOC_ERROR_F;
     
 
-    if (table->head == NULL) {
+    if (table->head == NULL) 
         table->head = newSymbol;
-    } else {
+    else {
         newSymbol->next = table->head; 
         table->head = newSymbol; /* insert at the beginning of the list */
     }
@@ -256,10 +255,11 @@ void addToAddress(SymbolTable *table, unsigned int addAddress, const char *typeT
 }
 
 void freeSymbolTable(SymbolTable* table){
+    SymbolNode* current;
     if (table == NULL) /* check if the table is NULL */
-        return;
+    return;
 
-    SymbolNode* current = table->head; /* used to iterate through the symbol nodes */
+    current = table->head; /* used to iterate through the symbol nodes */
     while (current != NULL) { /* iterate through the symbol nodes and free them */
         SymbolNode* next = current->next; /* save the next node */
         freeSymbolNode(current);
@@ -272,10 +272,14 @@ void freeSymbolTable(SymbolTable* table){
 
 SymbolNode* createSymbolNode(const char* name, unsigned int address, const char* firstToken){
     SymbolNode* newNode = (SymbolNode*)malloc(sizeof(SymbolNode));
-    if (newNode == NULL) {
+    if (newNode == NULL) 
         return NULL; /* exit if memory allocation fails */
+    
+    newNode->symbolName = strDup(name);
+    if (newNode->symbolName == NULL) {
+        free(newNode);
+        return NULL;
     }
-    newNode->symbolName = strdup(name);
     newNode->address = address;
     newNode->next = NULL;
 
@@ -287,7 +291,7 @@ SymbolNode* createSymbolNode(const char* name, unsigned int address, const char*
         newNode->type = EXTERN_SYMBOL;
     else if (strcmp(firstToken, "mat") == 0)
         newNode->type = MAT_SYMBOL;
-    else if (isDirectiveLineType(firstToken)) /* is token .data or .string */
+    else if (isDirective(firstToken)) /* is token .data or .string */
         newNode->type = DATA_SYMBOL;
     else
         newNode->type = UNDEFINED_SYMBOL; /* if the token is not recognized, set the type to UNDEFINED_SYMBOL */

@@ -5,7 +5,7 @@
 #include "tables.h"
 
 /* readParsedLine - reads a line from the file and returns a parsedLine structure
- * errorCode:  END_OF_LINE_S , MALLOC_ERROR_F, UTIL_SUCCESS_S
+ * errorCode:  EOF_REACHED_S , MALLOC_ERROR_F, UTIL_SUCCESS_S
  */
 parsedLine* readParsedLine(FILE *fp, ErrCode *errorCode, MacroTable *table, ErrorList *errorList)
 {
@@ -13,18 +13,27 @@ parsedLine* readParsedLine(FILE *fp, ErrCode *errorCode, MacroTable *table, Erro
     char* line;
 
     line = readLine(fp, errorCode); /* we will delete the parsed parts from this line */
-    if (*errorCode == EOF_REACHED_S)
-        return NULL; /* end of file reached, return NULL */
-
     if (*errorCode != UTIL_SUCCESS_S)  /* if an error occurred while reading the line */
         return NULL;
-    
 
     pLine = malloc(sizeof(parsedLine));
     if (pLine == NULL) {
         *errorCode = MALLOC_ERROR_F;
-        free(line); /* free the line memory */
+        free(line);
         return NULL;
+    }
+
+    if (isEndOfLine(line)) { /* if the line is empty */
+        free(line);
+        pLine->typesOfLine = EMPTY_LINE; /* set the type of line to EMPTY_LINE */
+        *errorCode = LEXER_SUCCESS_S; /* return success */
+        return pLine;
+    }
+    if (line[0] == ';') { /* if the line starts with ';', it is a comment */
+        free(line);
+        pLine->typesOfLine = COMMENT_LINE;
+        *errorCode = LEXER_SUCCESS_S; /* return success */
+        return pLine; /* return the parsed line with type COMMENT_LINE */
     }
 
     memset(&pLine->lineContentUnion, 0, sizeof(pLine->lineContentUnion)); /* initialize the union to zero */
@@ -44,8 +53,10 @@ parsedLine* readParsedLine(FILE *fp, ErrCode *errorCode, MacroTable *table, Erro
         return NULL; 
     }
 
-    if (pLine->typesOfLine == COMMENT_LINE || pLine->typesOfLine == EMPTY_LINE)
+    if (pLine->typesOfLine == COMMENT_LINE || pLine->typesOfLine == EMPTY_LINE){
+        *errorCode = LEXER_SUCCESS_S;
         return pLine; /* if the line is a comment or an empty line, return it */
+    }
 
     if (pLine->typesOfLine == DIRECTIVE_LINE) {
         *errorCode = parseDirectiveLine(pLine, line, errorList);
@@ -82,7 +93,7 @@ ErrCode getLabelFromLine(parsedLine *pLine, char *line, MacroTable *macroNames, 
     }
 
     errorCode = isValidLabel(macroNames, token);
-    if( errorCode != LEXER_SUCCESS_S) {
+    if(errorCode != LEXER_SUCCESS_S) {
         addErrorToList(errorList, errorCode); /* add the error to the error list */
         free(token); /* free the allocated memory for the token */
         return LEXER_FAILURE_S;
@@ -99,16 +110,6 @@ ErrCode determineLineType(parsedLine *pLine, char *line)
     ErrCode errorCode = NULL_INITIAL; /* reset error code to initial state */
 
     pLine->typesOfLine = UNSET_LINE; /* initialize the type of line to UNSET_LINE */
-
-    if (isEndOfLine(line)) { /* if the line is empty */
-        pLine->typesOfLine = EMPTY_LINE;
-        return LEXER_SUCCESS_S;
-    }
-    
-    if (line[0] == ';') {
-        pLine->typesOfLine = COMMENT_LINE; /* if the line starts with ';', it is a comment */
-        return LEXER_SUCCESS_S; /* return success */
-    }
 
     token = cutFirstToken(line, &errorCode); /* cut the first token from the line */
     if (errorCode == MALLOC_ERROR_F)
@@ -465,7 +466,7 @@ void printParsedLine(parsedLine *pLine)
     if (pLine == NULL)
         return;
 
-    printf("Parsed Line:\n");
+    printf("\nParsed Line:\n");
     if (pLine->label != NULL)
         printf("%s", pLine->label);
     
@@ -522,7 +523,7 @@ void printParsedLine(parsedLine *pLine)
             printf("Unknown Line Type");
             break;
     }
-    printf("\n");
+    printf("\n\n");
 }
 
 /* is X functions: */

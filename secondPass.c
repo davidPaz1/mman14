@@ -39,6 +39,24 @@ ErrCode executeSecondPass(FILE* amFile, FILE* obFile, MacroTable* macroTable, Sy
     return SECOND_PASS_SUCCESS_S; /* return success if no errors occurred */
 }
 
+
+
+
+
+void writeEntryFile(FILE* entFile, SymbolTable* symbolTable) {
+
+    /* this function is not implemented yet, so we return immediately */
+    
+    return;
+}
+
+void writeExternFile(FILE* extFile, SymbolTable* symbolTable) {
+
+    /* this function is not implemented yet, so we return immediately */
+
+    return;
+}
+
 void secPassFreeMemory(parsedLine *pLine)
 {
     freeParsedLine(pLine); /* free the parsed line structure */
