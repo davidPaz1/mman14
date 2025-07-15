@@ -12,7 +12,8 @@ char* getFirstToken(const char *str, ErrCode *errorCode); /* get the first token
 char* cutFirstToken(char *str, ErrCode *errorCode); /* cut the first token from the string */
 
 
-/* string manipulation functions */
+/* string manipulation and handling functions */
+Bool isAscii(int c);
 char* strDup(const char* src); /* string duplication */
 char* mergeStrings(const char* str1, const char* str2); /* merge two strings */
 void cutnChar(char *str, int n); /* cut the first n characters from the string */

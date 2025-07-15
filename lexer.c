@@ -258,7 +258,7 @@ ErrCode parseStrDirectiveLine(parsedLine *pLine, char *line, ErrorList *errorLis
     {
         if (line[i] == '"') /* if the string contains a quote in the middle */
             addErrorToList(errorList, STR_QUOTE_IN_MIDDLE_E);
-        if(!isascii(line[i])) /* if the first character is not a valid ASCII character */
+        if(!isAscii(line[i])) /* if the first character is not a valid ASCII character */
             addErrorToList(errorList, STR_INVALID_CHAR_E);
         
         if (i - 1 >= arrSize) { /* resize array if needed */
