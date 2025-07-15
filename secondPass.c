@@ -5,7 +5,7 @@
 #include "tables.h"
 #include "util.h"
 
-ErrCode executeSecondPass(FILE* amFile, MacroTable* macroTable, SymbolTable* symbolTable, ErrorList* errorList){
+ErrCode executeSecondPass(FILE* amFile, FILE* obFile, MacroTable* macroTable, SymbolTable* symbolTable, ErrorList* errorList){
     ErrCode errorCode = NULL_INITIAL; /* initialize error code to NULL_INITIAL */
     parsedLine *pLine; /* parsed line structure to hold the line and its type */
 
@@ -14,9 +14,22 @@ ErrCode executeSecondPass(FILE* amFile, MacroTable* macroTable, SymbolTable* sym
     while (errorCode != EOF_REACHED_S) {
         if (errorList->fatalError) /* check if there was a fatal error in previous iterations */
             return SECOND_PASS_FAILURE_S;
+
         errorList->currentLine++;
 
         pLine = readParsedLine(amFile, &errorCode, macroTable, errorList); /* read a line from the .as file */
+        if (errorCode == EOF_REACHED_S)
+            break;
+
+        if (errorCode != LEXER_SUCCESS_S) { /* check if an error occurred while reading the line */
+            freeParsedLine(pLine);
+            return SECOND_PASS_FAILURE_S; /* return failure if an error occurred */
+        }
+
+        if (pLine->typesOfLine == EMPTY_LINE || pLine->typesOfLine == COMMENT_LINE) {
+            freeParsedLine(pLine); /* free the parsed line structure */
+            continue; /* skip empty or comment lines */
+        }
 
     } /* end of while loop */
 
