@@ -33,7 +33,6 @@ ErrCode executePreprocessor(MacroTable *macroTable, ErrorList *errorList, FILE *
                 continue; 
             /* all other errors we didn't check in readLine() are fatal */
             return PREPROCESSOR_FAILURE_S; 
-            
         }
 
         firstToken = getFirstToken(line, &errorCode); /* get the first token from the line */
@@ -109,14 +108,11 @@ ErrCode executePreprocessor(MacroTable *macroTable, ErrorList *errorList, FILE *
 
 void spreadMacro(MacroTable *macroTable, const char *macroName, FILE *amFile)
 {
-    MacroBody *macroBody, *next; /* will hold the body of the macro we are about to spread */
-    ErrCode errorCode = NULL_INITIAL; /* initialize error code to NULL_INITIAL */
-    
-    macroBody = findMacro(macroTable, macroName); /* find the macro body in the table */
+    MacroBody *macroBody = findMacro(macroTable, macroName); /* find the macro body in the table */
     /* macroBody cannot be NULL here because we checked if the macro exists before calling this function */
 
     while (macroBody != NULL) { /* iterate through the macro body */
-        next = macroBody->nextLine; /* save the next line */
+        MacroBody *next = macroBody->nextLine; /* save the next line */
         fputs(macroBody->line, amFile); /* write the current line to the .am file */
         fputc('\n', amFile); /* write the empty line to the .am file */
         macroBody = next; /* move to the next line */
