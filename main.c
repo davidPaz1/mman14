@@ -7,7 +7,7 @@
 #include "util.h"
 
 void freeFiles(FILE* asFile, FILE* amFile, FILE* obFile);
-void freeTableAndLists(macroTable* macroNames, ErrorList* errorList); /* free the macro table and error list */
+void freeTableAndLists(MacroTable* macroTable, SymbolTable* symbolTable, ErrorList* errorList); /* free the macro table and error list */
 void executeAssembler(char* fileName); /* main function to execute the file */
 void PreProcessorFileErrorExit(ErrorList* errorList, FILE* amFile);
 
@@ -15,18 +15,19 @@ int main(int argc, char const *argv[])
 {
     char* inputFileName = NULL;
     int i;
-
+    printf("%d\v\v\v", sizeof(Bool));
     ErrCode ec = NULL_INITIAL; /* debugging error code */
-    macroTable* macroNames = createMacroTable(); /* macro table to hold all the macros found */
+    MacroTable* macroTable = createMacroTable(); /* macro table to hold all the macros found */
+    SymbolTable* symbolTable  = createSymbolTable(); /* symbol table to hold all the symbols found */
     ErrorList* errorList = createErrorList("test1"); /* error list to hold all the errors found */
     FILE *fp = openFile("test1", ".as", "r", &ec); /* open the file for reading */
     parsedLine *pLine;
     errorList->stage = "lexer debug"; /* set the stage of the error list to lexer */      
-    pLine = readParsedLine(fp, &ec, macroNames, errorList); /* read the parsed line from the file */
+    pLine = readParsedLine(fp, &ec, macroTable, errorList); /* read the parsed line from the file */
     if (ec != LEXER_SUCCESS_S) { /* check if an error occurred while reading the line */
         printErrors(errorList); /* print the errors found */
         freeParsedLine(pLine); /* free the parsed line structure */
-        freeTableAndLists(macroNames, errorList);
+        freeTableAndLists(macroTable, symbolTable , errorList);
         freeFiles(fp, NULL, NULL); /* close the files if they were opened */
         return 1;
     }
@@ -35,7 +36,7 @@ int main(int argc, char const *argv[])
 
     if (TRUE){ /* used to skip the rest of the code for debugging */
         freeParsedLine(pLine); /* free the parsed line structure */
-        freeTableAndLists(macroNames, errorList); /* free the macro table and error list */
+        freeTableAndLists(macroTable, symbolTable , errorList); /* free the macro table and error list */
         freeFiles(fp, NULL, NULL); /* close the files if they were opened */
         return 0; /* exit the program */
     }
@@ -66,9 +67,10 @@ void executeAssembler(char* fileName)
     ErrCode errCode = NULL_INITIAL; /* initialize error code to NULL_INITIAL */
     FILE *asFile = NULL, *amFile = NULL; /* file pointers for the assembly and macro files */
     int DCF = 0, ICF = 0;
-    macroTable* macroNames = createMacroTable(); /* create a macro table to hold all the macros found */
+    MacroTable* macroTable = createMacroTable(); /* create a macro table to hold all the macros found */
+    SymbolTable* symbolTable  = createSymbolTable(); /* create a symbol table to hold all the symbols found */
     ErrorList* errorList = createErrorList(fileName); /* create an error list to hold errors */
-    if (errorList == NULL || macroNames == NULL) { /* check if memory allocation was successful */
+    if (errorList == NULL || macroTable == NULL || symbolTable  != NULL) { /* check if memory allocation was successful */
         printErrorMsg(MALLOC_ERROR_F, "preprocessor", 0);
         return; /* exit if memory allocation fails */
     }
@@ -83,22 +85,22 @@ void executeAssembler(char* fileName)
 
     if (errCode != UTIL_SUCCESS_S){
         printf("Error opening file %s.as: %s\n", fileName, getErrorMessage(errCode));
-        freeTableAndLists(macroNames, errorList); 
+        freeTableAndLists(macroTable, symbolTable , errorList); 
         return; /* exit if the file cannot be opened */
     }
 
     amFile = openFile(fileName, ".am", "w", &errCode);
     if (errCode != UTIL_SUCCESS_S) {
         printf("Error opening file %s.am: %s\n", fileName, getErrorMessage(errCode));
-        freeTableAndLists(macroNames, errorList); 
+        freeTableAndLists(macroTable, symbolTable , errorList); 
         freeFiles(asFile, NULL, NULL);
         return; /* exit if the file cannot be opened */
     }
 
-    errCode = executePreprocessor(macroNames, errorList, asFile, amFile, fileName); /* test with a sample file name */
+    errCode = executePreprocessor(macroTable, errorList, asFile, amFile, fileName); /* test with a sample file name */
     if (errCode == PREPROCESSOR_FAILURE_S) {
         PreProcessorFileErrorExit(errorList, amFile); /* clean up and exit the preprocessor */
-        freeTableAndLists(macroNames, errorList); /* free the macro table and error list */
+        freeTableAndLists(macroTable, symbolTable , errorList); /* free the macro table and error list */
         freeFiles(asFile, amFile, NULL); /* close the files if they were opened */
         return;
     }
@@ -113,11 +115,11 @@ void executeAssembler(char* fileName)
     amFile = openFile(fileName, ".am", "r", &errCode);
     if (errCode != UTIL_SUCCESS_S) {
         printf("Error opening file %s.am: for reading %s\n", fileName, getErrorMessage(errCode));
-        freeTableAndLists(macroNames, errorList); /* free the macro table and error list */
+        freeTableAndLists(macroTable, symbolTable , errorList); /* free the macro table and error list */
         return; /* exit if the file cannot be opened */
     }
 
-    errCode = executeFirstPass(amFile, &DCF, &ICF, macroNames, errorList); /* execute the first pass */
+    errCode = executeFirstPass(amFile, &DCF, &ICF, macroTable, symbolTable , errorList); /* execute the first pass */
     if (errCode != FIRSTPASS_SUCCESS_S) {
         printErrorMsg(errCode, "first pass", 0); /* print the error message */
         return;
@@ -130,7 +132,7 @@ void executeAssembler(char* fileName)
     */
     
 
-    freeTableAndLists(macroNames, errorList); /* free the macro table and error list */
+    freeTableAndLists(macroTable, symbolTable , errorList); /* free the macro table and error list */
     freeFiles(asFile, amFile, NULL); /* close the files if they were opened */
     printf("successfully executed file %s\n", fileName); 
 }
@@ -147,8 +149,9 @@ void PreProcessorFileErrorExit(ErrorList* errorList, FILE* amFile)
         printErrorMsg(errorCode, "preprocessor", 0); /* print the error message */
 }
 
-void freeTableAndLists(macroTable* macroNames, ErrorList* errorList) {
-    freeMacroTable(macroNames); /* free the macro table */
+void freeTableAndLists(MacroTable* macroTable, SymbolTable* symbolTable, ErrorList* errorList) {
+    freeMacroTable(macroTable); /* free the macro table */
+    freeSymbolTable(symbolTable); /* free the symbol table */
     freeErrorsList(errorList); /* free the error list */
 }
 

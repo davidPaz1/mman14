@@ -7,7 +7,7 @@
 /* readParsedLine - reads a line from the file and returns a parsedLine structure
  * errorCode:  END_OF_LINE_S , MALLOC_ERROR_F, UTIL_SUCCESS_S
  */
-parsedLine* readParsedLine(FILE *fp, ErrCode *errorCode, macroTable *table, ErrorList *errorList)
+parsedLine* readParsedLine(FILE *fp, ErrCode *errorCode, MacroTable *table, ErrorList *errorList)
 {
     parsedLine* pLine;
     char* line;
@@ -66,7 +66,7 @@ parsedLine* readParsedLine(FILE *fp, ErrCode *errorCode, macroTable *table, Erro
     return pLine;
 }
 
-ErrCode getLabelFromLine(parsedLine *pLine, char *line, macroTable *macroNames, ErrorList *errorList)
+ErrCode getLabelFromLine(parsedLine *pLine, char *line, MacroTable *macroNames, ErrorList *errorList)
 {
     char *token;
     ErrCode errorCode = NULL_INITIAL;
@@ -630,7 +630,7 @@ Bool isValidInteger(int value)
     return FALSE;
 }
 
-ErrCode isValidLabel(macroTable *table, const char *label)
+ErrCode isValidLabel(MacroTable *table, const char *label)
 {
     int i, len = strlen(label); /* start from 1 to skip the first character */
 
@@ -664,7 +664,7 @@ ErrCode isValidLabel(macroTable *table, const char *label)
     return LEXER_SUCCESS_S; /* valid label */
 }
 
-ErrCode isMacroNameValid(macroTable* table , const char* macroName) {
+ErrCode isMacroNameValid(MacroTable* table , const char* macroName) {
     int i; /* index for iterating through the macro name */
     int len = strlen(macroName); /* length of the macro name */
 

@@ -5,9 +5,9 @@
 #include "util.h" /* for strDup */
 
 /* MacroTable functions that operate on the MacroTable struct (linked list)*/
-macroTable* createMacroTable() {
+MacroTable* createMacroTable() {
     
-    macroTable* newTable = malloc(sizeof(macroTable)); /* allocate memory for the table */
+    MacroTable* newTable = malloc(sizeof(MacroTable)); /* allocate memory for the table */
     if (newTable == NULL) {
         return NULL; /* exit if memory allocation fails */
     }
@@ -16,11 +16,11 @@ macroTable* createMacroTable() {
     return newTable; /* return the new table */
 }
 
-macroNode* createMacroNode(const char* macroName, ErrCode* errorCode) {
-    macroNode* newMacro; /* returned macro */
+MacroNode* createMacroNode(const char* macroName, ErrCode* errorCode) {
+    MacroNode* newMacro; /* returned macro */
     *errorCode = NULL_INITIAL; /* initialize error code to NULL_INITIAL */
 
-    newMacro = malloc(sizeof(macroNode));
+    newMacro = malloc(sizeof(MacroNode));
     if (newMacro == NULL) {
         *errorCode = MALLOC_ERROR_F; /* set error code to MALLOC_ERROR */
         return NULL; /* exit if memory allocation fails */
@@ -40,8 +40,8 @@ macroNode* createMacroNode(const char* macroName, ErrCode* errorCode) {
     return newMacro;
 }
 
-macroBody* createMacroBody(const char* line, ErrCode* errorCode) {
-    macroBody* newBody = malloc(sizeof(macroBody));  /* returned body */
+MacroBody* createMacroBody(const char* line, ErrCode* errorCode) {
+    MacroBody* newBody = malloc(sizeof(MacroBody));  /* returned body */
     *errorCode = NULL_INITIAL; /* initialize error code to NULL_INITIAL */
 
     if (newBody == NULL) {
@@ -61,11 +61,11 @@ macroBody* createMacroBody(const char* line, ErrCode* errorCode) {
 }
 
 /* add a new macro to the table */
-ErrCode addMacro(macroTable* table , const char* name) {
-    macroNode* newMacro; /* new macro to be added */
+ErrCode addMacro(MacroTable* macroTable, const char* name) {
+    MacroNode* newMacro; /* new macro to be added */
     ErrCode errorCode = NULL_INITIAL; /* initialize error code to NULL_INITIAL */
 
-    errorCode = isMacroNameValid(table, name); /* check if the macro name is valid */
+    errorCode = isMacroNameValid(macroTable, name); /* check if the macro name is valid */
     if (errorCode != TABLES_SUCCESS_S) /* if the macro name is not valid */
         return errorCode; /* exit if the macro name is not valid */
     
@@ -75,17 +75,17 @@ ErrCode addMacro(macroTable* table , const char* name) {
         return errorCode; /* exit if the macro node creation failed */
     
 
-    newMacro->nextMacro = table->macroHead; /* insert at the beginning of the list */
-    table->macroHead = newMacro; /* update the head of the list */
+    newMacro->nextMacro = macroTable->macroHead; /* insert at the beginning of the list */
+    macroTable->macroHead = newMacro; /* update the head of the list */
     return TABLES_SUCCESS_S; /* return success */
 }
 
-ErrCode addMacroLine(macroTable* table, const char* line) {
-    macroBody* newLine; /* new line to be added */
-    macroNode* headNode; /* the macro to which the line will be added */
+ErrCode addMacroLine(MacroTable* macroTable, const char* line) {
+    MacroBody* newLine; /* new line to be added */
+    MacroNode* headNode; /* the macro to which the line will be added */
     ErrCode errorCode = NULL_INITIAL; /* initialize error code to NULL_INITIAL */
 
-    headNode = table->macroHead; /* get the head of the macro list */
+    headNode = macroTable->macroHead; /* get the head of the macro list */
     
     newLine = createMacroBody(line, &errorCode); /* create a new body for the line */
     if (errorCode != TABLES_SUCCESS_S) 
@@ -103,11 +103,11 @@ ErrCode addMacroLine(macroTable* table, const char* line) {
     return TABLES_SUCCESS_S; /* return success */
 }
 
-macroBody* findMacro(macroTable* table, const char* macroName, ErrCode* errorCode) {
-    macroNode* current; /* used to iterate through the macro list */
+MacroBody* findMacro(MacroTable* macroTable, const char* macroName, ErrCode* errorCode) {
+    MacroNode* current; /* used to iterate through the macro list */
     *errorCode = NULL_INITIAL; /* initialize error code to NULL_INITIAL */
 
-    current = table->macroHead;
+    current = macroTable->macroHead;
     while (current != NULL) {
         if (strcmp(current->macroName, macroName) == 0) {
             *errorCode = TABLES_SUCCESS_S; /* set error code to success */
@@ -123,9 +123,9 @@ macroBody* findMacro(macroTable* table, const char* macroName, ErrCode* errorCod
 /** isMacroExists - checks if a macro with the given name exists in the table.
  * Returns TRUE if the macro exists, otherwise returns FALSE.
  */
-Bool isMacroExists(macroTable* table, const char* macroName) {
+Bool isMacroExists(MacroTable* macroTable, const char* macroName) {
 
-    macroNode* current = table->macroHead; /* used to iterate through the macro list */
+    MacroNode* current = macroTable->macroHead; /* used to iterate through the macro list */
     while (current != NULL) {
         if (strcmp(current->macroName, macroName) == 0) /* check if the macro name matches */
             return TRUE; /* Macro exists */
@@ -136,21 +136,21 @@ Bool isMacroExists(macroTable* table, const char* macroName) {
 }
 
 
-void freeMacroTable(macroTable* table) {
-    if (table == NULL) /* check if the table is NULL */
+void freeMacroTable(MacroTable* macroTable) {
+    if (macroTable == NULL) /* check if the table is NULL */
         return; /* exit if the table is NULL */
-    freeMacroNode(table->macroHead); /* free the first macro node */
-    free(table);
+    freeMacroNode(macroTable->macroHead); /* free the first macro node */
+    free(macroTable);
 }
 
-void freeMacroNode(macroNode* node) {    
+void freeMacroNode(MacroNode* node) {    
     
-    macroNode* current = node; /* used to iterate through the macro nodes */
+    MacroNode* current = node; /* used to iterate through the macro nodes */
     if (node == NULL)
         return; /* exit if the node is NULL */
     
     while (current != NULL) { /* iterate through the macro nodes and free them */
-        macroNode* next = current->nextMacro;
+        MacroNode* next = current->nextMacro;
         free(current->macroName); /* free the macro name */
         freeMacroBody(current->bodyHead); /* free the body of the macro */
         free(current); /* free the macro node itself */
@@ -159,15 +159,146 @@ void freeMacroNode(macroNode* node) {
     
 }
 
-void freeMacroBody(macroBody* body) {
-    macroBody* current = body; /* used to iterate through the body lines */
+void freeMacroBody(MacroBody* body) {
+    MacroBody* current = body; /* used to iterate through the body lines */
     if (body == NULL)
         return;
     
     while (current != NULL) { /* iterate through the body lines and free them */
-        macroBody* next = current->nextLine;
+        MacroBody* next = current->nextLine;
         free(current->line);
         free(current);
         current = next;
     }
+}
+
+/* SymbolTable public functions */
+
+SymbolTable* createSymbolTable()
+{
+    SymbolTable* table = (SymbolTable*)malloc(sizeof(SymbolTable));
+    if (table == NULL)
+        return NULL;
+    
+    table->head = NULL;
+    table->haveEntry = FALSE;
+    table->haveExtern = FALSE;
+    table->count = 0;
+    return table;
+}
+
+ErrCode addSymbol(SymbolTable* table, const char* name, unsigned int address, const char* firstToken)
+{
+    SymbolNode* newSymbol; /* new symbol to be added */
+    ErrCode errorCode = NULL_INITIAL; /* initialize error code to NULL_INITIAL */
+
+    newSymbol = createSymbolNode(name, address, firstToken);
+    if (newSymbol == NULL) 
+        return MALLOC_ERROR_F;
+    
+
+    if (table->head == NULL) {
+        table->head = newSymbol;
+    } else {
+        newSymbol->next = table->head; 
+        table->head = newSymbol; /* insert at the beginning of the list */
+    }
+
+    if (newSymbol->type == ENTRY_SYMBOL)
+        table->haveEntry = TRUE;
+    if (newSymbol->type == EXTERN_SYMBOL)
+        table->haveExtern = TRUE;
+
+    table->count++;
+    return TABLES_SUCCESS_S;
+}
+
+SymbolNode* findSymbol(SymbolTable *table, const char *name)
+{
+    SymbolNode *current; /* used to iterate through the symbol nodes */
+
+    current = table->head;
+    while (current != NULL) {
+        if (strcmp(current->symbolName, name) == 0)
+            return current;
+        current = current->next;
+    }
+    return NULL;
+}
+
+Bool isSymbolExists(SymbolTable *table, const char *name)
+{
+    return findSymbol(table, name) != NULL; /* check if the symbol exists by trying to find it */
+}
+
+void addToAddress(SymbolTable *table, unsigned int addAddress, const char *typeToAdd)
+{
+    SymbolNode *current = table->head; /* used to iterate through the symbol nodes */
+    char* addTo = "dont add";
+
+    /* determine the type to add based on the symbol type */
+    /* if the type to add is not recognized, do not add to any symbol */
+    /* if the symbol is a directive / data symbol, add to data */
+    if (current->type == DATA_SYMBOL || current->type == MAT_SYMBOL || 
+        current->type == ENTRY_SYMBOL || current->type == EXTERN_SYMBOL) 
+        addTo = "data";
+    else if (current->type == CODE_SYMBOL)
+        addTo = "code";
+
+    while (current != NULL) {
+        if (strcmp(typeToAdd, addTo) == 0) /* check if the type to add matches the current symbol type */
+            current->address += addAddress;
+        
+        current = current->next;
+    }
+
+    return;
+}
+
+void freeSymbolTable(SymbolTable* table){
+    if (table == NULL) /* check if the table is NULL */
+        return;
+
+    SymbolNode* current = table->head; /* used to iterate through the symbol nodes */
+    while (current != NULL) { /* iterate through the symbol nodes and free them */
+        SymbolNode* next = current->next; /* save the next node */
+        freeSymbolNode(current);
+        current = next; /* move to the next node */
+    }
+    free(table); /* free the table itself */
+}
+
+/* SymbolTable private functions */
+
+SymbolNode* createSymbolNode(const char* name, unsigned int address, const char* firstToken){
+    SymbolNode* newNode = (SymbolNode*)malloc(sizeof(SymbolNode));
+    if (newNode == NULL) {
+        return NULL; /* exit if memory allocation fails */
+    }
+    newNode->symbolName = strdup(name);
+    newNode->address = address;
+    newNode->next = NULL;
+
+    if (isOperationName(firstToken))
+        newNode->type = CODE_SYMBOL; /* if the token is an operation name, set the type to CODE_SYMBOL */
+    else if (strcmp(firstToken, "entry") == 0)
+        newNode->type = ENTRY_SYMBOL;
+    else if (strcmp(firstToken, "extern") == 0)
+        newNode->type = EXTERN_SYMBOL;
+    else if (strcmp(firstToken, "mat") == 0)
+        newNode->type = MAT_SYMBOL;
+    else if (isDirectiveLineType(firstToken)) /* is token .data or .string */
+        newNode->type = DATA_SYMBOL;
+    else
+        newNode->type = UNDEFINED_SYMBOL; /* if the token is not recognized, set the type to UNDEFINED_SYMBOL */
+    return newNode;
+}
+
+void freeSymbolNode(SymbolNode *node)
+{
+    if (node == NULL)
+        return;
+
+    free(node->symbolName);
+    free(node);
 }

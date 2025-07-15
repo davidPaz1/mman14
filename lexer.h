@@ -42,8 +42,8 @@ typedef struct parsedLine {
 #define INITIAL_DATA_ITEMS_SIZE 10 /* initial size of the dataItems array for directives */
 
 /* for first pass mainly */
-parsedLine* readParsedLine(FILE *fp, ErrCode *errorCode, macroTable *table, ErrorList *errorList); /* read a line from the file and return a parsedLine structure */
-ErrCode getLabelFromLine(parsedLine *pline, char *line, macroTable *macroNames, ErrorList *errorList); /* get the label from the line if it exists */
+parsedLine* readParsedLine(FILE *fp, ErrCode *errorCode, MacroTable *table, ErrorList *errorList); /* read a line from the file and return a parsedLine structure */
+ErrCode getLabelFromLine(parsedLine *pline, char *line, MacroTable *macroNames, ErrorList *errorList); /* get the label from the line if it exists */
 ErrCode determineLineType(parsedLine *pLine, char *line); /* determine the type of the line and if it has a label */
 ErrCode parseDirectiveLine(parsedLine *pline, char *line, ErrorList *errorList); 
 ErrCode parseDataDirectiveLine(parsedLine *pLine, char *line, ErrorList *errorList);
@@ -66,7 +66,7 @@ Bool isKeywords(const char* arg); /* check if the string is a keyword */
 Bool isLabel(const char* str); /* check if the string is a label */
 Bool isValidInteger(int value); /* check if the integer value is valid for the assembler */
 
-ErrCode isValidLabel(macroTable *table, const char *label); /* check if the label is valid */
-ErrCode isMacroNameValid(macroTable* table , const char* macroName);
+ErrCode isValidLabel(MacroTable *table, const char *label); /* check if the label is valid */
+ErrCode isMacroNameValid(MacroTable* table , const char* macroName);
 
 #endif
