@@ -39,3 +39,4 @@ char* base4(const int *word)
     return base4; /* return the base4 string */
 }
 
+/* test for github */
