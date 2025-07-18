@@ -11,7 +11,8 @@
         "tables.h": "c",
         "firstpass.h": "c",
         "lexer.h": "c",
-        "cstdlib": "c"
+        "cstdlib": "c",
+        "secondpass.h": "c"
     },
     "cSpell.words": [
         "cutn",

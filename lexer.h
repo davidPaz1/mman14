@@ -54,6 +54,7 @@ ErrCode parseExternDirectiveLine(parsedLine *pLine, char *line, ErrorList *error
 ErrCode parseInstructionLine(parsedLine *pLine, char *line, ErrorList *errorList);
 void freeParsedLine(parsedLine *pLine); /* free the memory allocated for the parsedLine structure */
 void printParsedLine(parsedLine *pLine);
+
 /* is X functions prototypes */
 /* keyword functions prototypes */
 Bool isEndOfLine(const char* str); /* check if the string is an end of line */

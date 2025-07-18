@@ -36,24 +36,24 @@ void freeMacroBody(MacroBody* body);
 
 typedef enum Symbol_Type{
     UNDEFINED_SYMBOL = -1, /* symbol is not defined */
-    ENTRY_SYMBOL = 0,
-    EXTERN_SYMBOL, 
-    MAT_SYMBOL,
-    DATA_SYMBOL, 
-    CODE_SYMBOL
+    DATA_SYMBOL = 1,
+    CODE_SYMBOL,
+    EXTERN_SYMBOL
 } Symbol_Type;
 
 typedef struct SymbolNode {
     char* symbolName; /* name of the symbol */
     unsigned int address; /* address of the symbol */
+    unsigned int isEntry : 1; /* flags to indicate if the symbol is an entry symbol */
+    unsigned int isMat : 1; /* flags to indicate if the symbol is a mat symbol */
     Symbol_Type type; /* type of the symbol */
     struct SymbolNode* next; /* pointer to the next symbol in the list */
 } SymbolNode;
 
 typedef struct SymbolTable {
     SymbolNode* head; /* pointer to the first symbol in the list */
-    Bool haveEntry; /* flag to indicate if there is an entry symbol */
-    Bool haveExtern; /* flag to indicate if there is an extern symbol */
+    unsigned int haveEntry : 1; /* flag to indicate if there is an entry symbol */
+    unsigned int haveExtern : 1; /* flag to indicate if there is an extern symbol */
     unsigned int count; /* number of symbols in the table */
 } SymbolTable;
 

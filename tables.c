@@ -191,7 +191,7 @@ ErrCode addSymbol(SymbolTable* table, const char* name, unsigned int address, co
         table->head = newSymbol; /* insert at the beginning of the list */
     }
 
-    if (newSymbol->type == ENTRY_SYMBOL)
+    if (newSymbol->isEntry == TRUE)
         table->haveEntry = TRUE;
     if (newSymbol->type == EXTERN_SYMBOL)
         table->haveExtern = TRUE;
@@ -221,25 +221,16 @@ Bool isSymbolExists(SymbolTable *table, const char *name)
 void addToAddress(SymbolTable *table, unsigned int addAddress, const char *typeToAdd)
 {
     SymbolNode *current = table->head; /* used to iterate through the symbol nodes */
-    char* addTo = "dont add";
-
-    /* determine the type to add based on the symbol type */
-    /* if the type to add is not recognized, do not add to any symbol */
-    /* if the symbol is a directive / data symbol, add to data */
-    if (current->type == DATA_SYMBOL || current->type == MAT_SYMBOL || 
-        current->type == ENTRY_SYMBOL || current->type == EXTERN_SYMBOL) 
-        addTo = "data";
-    else if (current->type == CODE_SYMBOL)
-        addTo = "code";
 
     while (current != NULL) {
-        if (strcmp(typeToAdd, addTo) == 0) /* check if the type to add matches the current symbol type */
+        /* check if the type to add matches the current symbol type */
+        if (strcmp(typeToAdd, "data") == 0 && (current->type == DATA_SYMBOL || current->type == EXTERN_SYMBOL))
             current->address += addAddress;
-        
+        else if (strcmp(typeToAdd, "code") == 0 && current->type == CODE_SYMBOL)
+            current->address += addAddress;
+
         current = current->next;
     }
-
-    return;
 }
 
 void freeSymbolTable(SymbolTable* table){
@@ -271,14 +262,18 @@ SymbolNode* createSymbolNode(const char* name, unsigned int address, const char*
     newNode->address = address;
     newNode->next = NULL;
 
+    newNode->isEntry = FALSE; /* initialize the entry symbol flag to FALSE */
+    newNode->isMat = FALSE; /* initialize the mat symbol flag to FALSE */
+
+    if (strcmp(firstToken, ".entry") == 0)
+        newNode->isEntry = TRUE;
+    else if (strcmp(firstToken, ".mat") == 0)
+        newNode->isMat = TRUE;
+    
     if (isOperationName(firstToken))
         newNode->type = CODE_SYMBOL; /* if the token is an operation name, set the type to CODE_SYMBOL */
-    else if (strcmp(firstToken, "entry") == 0)
-        newNode->type = ENTRY_SYMBOL;
-    else if (strcmp(firstToken, "extern") == 0)
+    else if (strcmp(firstToken, ".extern") == 0)
         newNode->type = EXTERN_SYMBOL;
-    else if (strcmp(firstToken, "mat") == 0)
-        newNode->type = MAT_SYMBOL;
     else if (isDirective(firstToken)) /* is token .data or .string */
         newNode->type = DATA_SYMBOL;
     else

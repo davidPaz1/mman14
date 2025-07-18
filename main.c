@@ -100,13 +100,14 @@ void executeAssembler(char* fileName)
     if (errCode == PREPROCESSOR_FAILURE_S) {
         freeFiles(asFile, amFile, NULL); /* close the files if they were opened */
         deleteFileErrorExit(errorList, ".am"); /* clean up and exit the preprocessor */
+        printErrors(errorList); /* print the errors found */
         freeTableAndLists(macroTable, symbolTable , errorList); /* free the macro table and error list */
         return;
     }
     printf("\nPreprocessor executed successfully.\n"); /* print success message */
     freeFiles(asFile, amFile, NULL);
 
-    if (TRUE) { /* we want to test up to the end of the preprocessor */
+    if (FALSE) { /* we want to test up to the end of the preprocessor */
         printf("Skipping first pass for testing.\n");
         freeTableAndLists(macroTable, symbolTable , errorList);
         return;
@@ -151,7 +152,7 @@ void executeAssembler(char* fileName)
     errCode = executeSecondPass(amFile, obFile, macroTable, symbolTable, errorList); /* execute the second pass */
     if (errCode == SECOND_PASS_FAILURE_S) {
         freeFiles(amFile, obFile, NULL);
-        deleteFileErrorExit(errorList, ".ob"); /* clean up and exit the second pass */
+        printErrors(errorList); /* print the errors found */
         freeTableAndLists(macroTable, symbolTable , errorList); /* free the macro table and error list */
         return; /* exit if the second pass failed */
     }
@@ -186,13 +187,8 @@ void executeAssembler(char* fileName)
 void deleteFileErrorExit(ErrorList* errorList, char* fileExtension)
 {
     ErrCode errorCode = delFile(errorList->filename, fileExtension); /* delete the specified file if it was created */
-    if (errorCode != UTIL_SUCCESS_S) { /* check if the file was deleted successfully */
-        errorList->count++; /* increment the error count */
-    }
-    printErrors(errorList); /* print the errors if any */
-    
-    if (errorCode != UTIL_SUCCESS_S)
-        printErrorMsg(errorCode, "preprocessor", 0); /* print the error message */
+    if (errorCode != UTIL_SUCCESS_S) /* check if there was an error deleting the file */
+        addErrorToList(errorList, errorCode); /* add the error to the list */
 }
 
 void freeTableAndLists(MacroTable* macroTable, SymbolTable* symbolTable, ErrorList* errorList) {

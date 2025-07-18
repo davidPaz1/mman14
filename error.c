@@ -106,6 +106,12 @@ char* getErrorMessage(ErrCode code) {
         case FIRSTPASS_FAILURE_S: /* 71 */
             return "first pass failed.";
 
+        /* secondPass errors 80 - 89 */
+        case SECOND_PASS_SUCCESS_S: /* 80 */
+            return "second pass was successful.";
+        case SECOND_PASS_FAILURE_S: /* 81 */
+            return "second pass failed.";
+
         /* it should never reach here */
         default:
             return "unrecognized error code - shouldn't reach this point.";
