@@ -1,7 +1,7 @@
 #include "preprocessor.h"
 #include "global.h"
 #include "error.h"
-#include "lexer.h" /* for isLabel */
+#include "lexer.h"
 #include "util.h"
 #include "tables.h"
 
@@ -35,23 +35,11 @@ ErrCode executePreprocessor(MacroTable *macroTable, ErrorList *errorList, FILE *
             return PREPROCESSOR_FAILURE_S; 
         }
 
-        firstToken = getFirstToken(line, &errorCode); /* get the first token from the line */
-        
-        /* note preprocessor doesnt check if token is a valid label, it just checks if it is a label 
-        and if it is - it writes it to the .am file */
-        if(isLabel(firstToken)) { /* check if the first token is a label */
-            fputs(firstToken, amFile); /* write the label to the .am file as it is */
-            fputc(' ', amFile); /* add a space character after the label */
-            cutnChar(line, strlen(firstToken)); /* cut the label from the line */
-            free(firstToken); /* free the first token memory */
-            firstToken = getFirstToken(line, &errorCode);
-        }
-
+        firstToken = getFirstToken(line, &errorCode); /* get the first token from the line */    
         if(errorCode == END_OF_LINE_S){ /* if the line is empty or contains only whitespace */
             fputs(line, amFile);
             fputc('\n', amFile); /* write the empty line to the .am file */
-            free(line);
-            free(firstToken);
+            preprocessorFreeMemory(line, firstToken);
             continue; /* skip to the next line */
         }
         
@@ -143,10 +131,8 @@ ErrCode macroDef(MacroTable* macroTable, char* line) /* add a line to the macro 
 
 void preprocessorFreeMemory(char *line, char *firstToken)
 {
-    if (line != NULL) {
+    if (line != NULL) 
         free(line);
-    }
-    if (firstToken != NULL) {
+    if (firstToken != NULL)
         free(firstToken);
-    }
 }

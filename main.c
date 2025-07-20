@@ -23,6 +23,7 @@ int main(int argc, char const *argv[])
         ErrorList* errorList = createErrorList("test1"); /* error list to hold all the errors found */
         FILE *fp = openFile("test1", ".as", "r", &ec); /* open the file for reading */
         parsedLine *pLine;
+        printf("Running the debug: \n");
         errorList->stage = "lexer debug"; /* set the stage of the error list to lexer */      
         pLine = readParsedLine(fp, &ec, macroTable, errorList); /* read the parsed line from the file */
         if (ec != LEXER_SUCCESS_S) { /* check if an error occurred while reading the line */

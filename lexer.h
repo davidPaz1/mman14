@@ -6,13 +6,14 @@
 #include "tables.h"
 
 #define COLON_LENGTH 1 /* length of the colon character ':' */
+#define QUOTE_LENGTH 1 /* length of the quote character '"' */
 
 typedef enum lineType {
+    UNSET_LINE = 0, /* used for error handling */
     INSTRUCTION_LINE = 1, 
     DIRECTIVE_LINE, 
     COMMENT_LINE, 
-    EMPTY_LINE, 
-    UNSET_LINE = -1 /* used for error handling */
+    EMPTY_LINE
 } lineType;
 
 typedef struct parsedLine {
@@ -42,16 +43,19 @@ typedef struct parsedLine {
 #define INITIAL_DATA_ITEMS_SIZE 10 /* initial size of the dataItems array for directives */
 
 /* for first pass mainly */
-parsedLine* readParsedLine(FILE *fp, ErrCode *errorCode, MacroTable *table, ErrorList *errorList); /* read a line from the file and return a parsedLine structure */
+parsedLine* createParsedLine(); /* create a new parsedLine structure */
+parsedLine* readParsedLine(FILE *fp, ErrCode *errorCode, MacroTable *macroNames, ErrorList *errorList); /* read a line from the file and return a parsedLine structure */
 ErrCode getLabelFromLine(parsedLine *pline, char *line, MacroTable *macroNames, ErrorList *errorList); /* get the label from the line if it exists */
 ErrCode determineLineType(parsedLine *pLine, char *line); /* determine the type of the line and if it has a label */
-ErrCode parseDirectiveLine(parsedLine *pline, char *line, ErrorList *errorList); 
+ErrCode parseDirectiveLine(parsedLine *pline, char *line, MacroTable *macroNames, ErrorList *errorList);
 ErrCode parseDataDirectiveLine(parsedLine *pLine, char *line, ErrorList *errorList);
 ErrCode parseStrDirectiveLine(parsedLine *pLine, char *line, ErrorList *errorList);
 ErrCode parseMatDirectiveLine(parsedLine *pLine, char *line, ErrorList *errorList);
-ErrCode parseEntryDirectiveLine(parsedLine *pLine, char *line, ErrorList *errorList);
-ErrCode parseExternDirectiveLine(parsedLine *pLine, char *line, ErrorList *errorList);
+ErrCode parseEntryExternDirectiveLine(parsedLine *pLine, char *line, MacroTable *macroNames, ErrorList *errorList);
 ErrCode parseInstructionLine(parsedLine *pLine, char *line, ErrorList *errorList);
+
+short int numOfWordsInInstruction(parsedLine *pLine); /* return the number of words needed for the binary code of the instruction */
+short int numOfOperandsInInstruction(const char *instructionName); /* return the number of operands in the instruction */
 void freeParsedLine(parsedLine *pLine); /* free the memory allocated for the parsedLine structure */
 void printParsedLine(parsedLine *pLine);
 
@@ -64,10 +68,13 @@ Bool isDirective(const char* arg); /* check if the string is a directive */
 Bool isMacroStart(const char* arg); /* check if the string is a macro start */
 Bool isMacroEnd(const char* arg); /* check if the string is a macro end */
 Bool isKeywords(const char* arg); /* check if the string is a keyword */
-Bool isLabel(const char* str); /* check if the string is a label */
+Bool isColonLabel(const char* str); /* check if the string is a label with a colon at the end */
 Bool isValidInteger(int value); /* check if the integer value is valid for the assembler */
 
-ErrCode isValidLabel(MacroTable *table, const char *label); /* check if the label is valid */
+ErrCode isValidLabel(SymbolTable *symbolTable, const char *label); /* check if the label is valid */
+ErrCode isValidLabelColon(MacroTable *table, const char *label); /* check if the label is valid without the colon */
+ErrCode isValidLabelName(MacroTable *table, const char *label);
+char* delColonFromLabel(const char *label); /* remove the colon from the label if it exists */
 ErrCode isMacroNameValid(MacroTable* table , const char* macroName);
 
 #endif

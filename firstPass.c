@@ -32,21 +32,22 @@ ErrCode executeFirstPass(FILE* amFile, int *DCF, int *ICF, MacroTable* macroName
         if (errorCode == EOF_REACHED_S)
             break; /* end of file reached, exit the loop */
         
-        if (errorCode != LEXER_SUCCESS_S) { /* check if an error occurred while reading the line */
-            freeParsedLine(pLine); /* clean up and exit the first pass */
+        if (errorCode != LEXER_SUCCESS_S) /* check if an error occurred while reading the line */
             continue; /* continue to the next line */
-        }
 
         if (pLine->typesOfLine == EMPTY_LINE || pLine->typesOfLine == COMMENT_LINE) {
             freeParsedLine(pLine); /* free the parsed line structure */
             continue; /* skip empty or comment lines */
         }
 
+        printParsedLine(pLine); 
+
         if(pLine->label != NULL){ /* if the line has a label */
-            errorCode = isValidLabel(macroNames, pLine->label); /* check if the label is valid */
-            if (errorCode != LEXER_SUCCESS_S) { /* if the label is not valid */
-                firstPassErrorExit(pLine); /* clean up and exit the first pass */
-                return errorCode; /* return failure if an error occurred */
+            errorCode = isValidLabelColon(macroNames, pLine->label);  /* check if the label is valid */
+            if (errorCode != LEXER_SUCCESS_S) {
+                addErrorToList(errorList, errorCode);
+                freeParsedLine(pLine);
+                continue; /* continue to the next line */
             }
         }
         

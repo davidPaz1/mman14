@@ -4,10 +4,22 @@
 #include "util.h"
 #include "tables.h"
 
+parsedLine* createParsedLine()
+{
+    parsedLine* pLine = malloc(sizeof(parsedLine)); /* allocate memory for the parsedLine structure */
+    if (pLine == NULL)
+        return NULL; /* return NULL if memory allocation failed */
+    
+    pLine->label = NULL; /* initialize the label to NULL */
+    pLine->typesOfLine = UNSET_LINE;
+    memset(&pLine->lineContentUnion, 0, sizeof(pLine->lineContentUnion)); /* initialize the union to zero */
+    return pLine;
+}
+
 /* readParsedLine - reads a line from the file and returns a parsedLine structure
  * errorCode:  EOF_REACHED_S , MALLOC_ERROR_F, UTIL_SUCCESS_S
  */
-parsedLine* readParsedLine(FILE *fp, ErrCode *errorCode, MacroTable *table, ErrorList *errorList)
+parsedLine* readParsedLine(FILE *fp, ErrCode *errorCode, MacroTable *macroNames, ErrorList *errorList)
 {
     parsedLine* pLine;
     char* line;
@@ -16,12 +28,13 @@ parsedLine* readParsedLine(FILE *fp, ErrCode *errorCode, MacroTable *table, Erro
     if (*errorCode != UTIL_SUCCESS_S)  /* if an error occurred while reading the line */
         return NULL;
 
-    pLine = malloc(sizeof(parsedLine));
+    pLine = createParsedLine(); /* create a new parsedLine structure */
     if (pLine == NULL) {
         *errorCode = MALLOC_ERROR_F;
         free(line);
         return NULL;
     }
+
 
     if (isEndOfLine(line)) { /* if the line is empty */
         free(line);
@@ -36,10 +49,8 @@ parsedLine* readParsedLine(FILE *fp, ErrCode *errorCode, MacroTable *table, Erro
         return pLine; /* return the parsed line with type COMMENT_LINE */
     }
 
-    memset(&pLine->lineContentUnion, 0, sizeof(pLine->lineContentUnion)); /* initialize the union to zero */
-
     /* get the label from the line */
-    *errorCode = getLabelFromLine(pLine, line, table, errorList);
+    *errorCode = getLabelFromLine(pLine, line, macroNames, errorList);
     if (*errorCode != LEXER_SUCCESS_S) { /* if an error occurred while getting the label */
         freeParsedLine(pLine);
         free(line);
@@ -59,7 +70,7 @@ parsedLine* readParsedLine(FILE *fp, ErrCode *errorCode, MacroTable *table, Erro
     }
 
     if (pLine->typesOfLine == DIRECTIVE_LINE) {
-        *errorCode = parseDirectiveLine(pLine, line, errorList);
+        *errorCode = parseDirectiveLine(pLine, line, macroNames, errorList);
         if (*errorCode != LEXER_SUCCESS_S) { /* if an error occurred while parsing the directive line */
             freeParsedLine(pLine);
             free(line);
@@ -82,17 +93,18 @@ ErrCode getLabelFromLine(parsedLine *pLine, char *line, MacroTable *macroNames, 
     char *token;
     ErrCode errorCode = NULL_INITIAL;
     
+    pLine->label = NULL; /* initialize the label to NULL */
+    
     token = getFirstToken(line, &errorCode);
     if (errorCode != UTIL_SUCCESS_S) 
         return errorCode;
 
-    if (!isLabel(token)){
-        pLine->label = NULL; /* if the first token is not a label, set the label to NULL */
+    if (!isColonLabel(token)){
         free(token);
         return LEXER_SUCCESS_S; /* if the first token is not a label, return success */
     }
 
-    errorCode = isValidLabel(macroNames, token);
+    errorCode = isValidLabelColon(macroNames, token); /* check if the label is valid */
     if(errorCode != LEXER_SUCCESS_S) {
         addErrorToList(errorList, errorCode); /* add the error to the error list */
         free(token); /* free the allocated memory for the token */
@@ -127,13 +139,16 @@ ErrCode determineLineType(parsedLine *pLine, char *line)
         return LEXER_SUCCESS_S;
     }
 
-    if (token[0] == '.') /* if the line contains a dot, it is unknown directive */
-        return INVALID_DIRECTIVE_E; 
-    
+    if (token[0] == '.'){ /* if the line contains a dot, it is unknown directive */
+        free(token);
+        return INVALID_DIRECTIVE_E;
+    }
+
+    free(token); 
     return UNKNOWN_LINE_TYPE_E; /* the line is not an instruction or a directive */
 }
 
-ErrCode parseDirectiveLine(parsedLine *pLine, char *line, ErrorList *errorList){
+ErrCode parseDirectiveLine(parsedLine *pLine, char *line, MacroTable *macroNames, ErrorList *errorList){
 
     pLine->lineContentUnion.directive.dataCount = 0;
     pLine->lineContentUnion.directive.dataItems = NULL;
@@ -153,11 +168,9 @@ ErrCode parseDirectiveLine(parsedLine *pLine, char *line, ErrorList *errorList){
     if (strcmp(pLine->lineContentUnion.directive.directiveName, ".mat") == 0) 
       return parseMatDirectiveLine(pLine, line, errorList);
 
-    if (strcmp(pLine->lineContentUnion.directive.directiveName, ".entry") == 0) 
-        return parseEntryDirectiveLine(pLine, line, errorList);
-
-    if (strcmp(pLine->lineContentUnion.directive.directiveName, ".extern") == 0) 
-        return parseExternDirectiveLine(pLine, line, errorList);
+    if (strcmp(pLine->lineContentUnion.directive.directiveName, ".entry") == 0 ||
+        strcmp(pLine->lineContentUnion.directive.directiveName, ".extern") == 0) 
+        return parseEntryExternDirectiveLine(pLine, line, macroNames, errorList);
 
     return INVALID_DIRECTIVE_E; /* should not reach here */
 }
@@ -226,7 +239,6 @@ ErrCode parseDataDirectiveLine(parsedLine *pLine, char *line, ErrorList *errorLi
 
 ErrCode parseStrDirectiveLine(parsedLine *pLine, char *line, ErrorList *errorList)
 {
-    ErrCode errorCode = NULL_INITIAL;
     unsigned int startErrCount = errorList->count; /* save the current error count to check if any errors were added */
     unsigned int i, arrSize = INITIAL_DATA_ITEMS_SIZE;
     char *startQuote, *endQuote;
@@ -236,12 +248,14 @@ ErrCode parseStrDirectiveLine(parsedLine *pLine, char *line, ErrorList *errorLis
         return LEXER_FAILURE_S;
     }
 
-    if (errorCode == MALLOC_ERROR_F) { /* if memory allocation failed */
-        free(dataItems);
-        addErrorToList(errorList, errorCode);
+    printf("Parsing string directive: %s\n", line); /* debug print */
+
+    if (isEndOfLine(line)) { /* if the directive has no data */
+        addErrorToList(errorList, DIRECTIVE_DATA_MISSING_E);
         return LEXER_FAILURE_S;
     }
-    
+
+
     startQuote = strchr(line, '"'); /* find the first quote */
     endQuote = strrchr(line, '"'); /* find the last quote */
 
@@ -249,15 +263,13 @@ ErrCode parseStrDirectiveLine(parsedLine *pLine, char *line, ErrorList *errorLis
         addErrorToList(errorList, STR_MISSING_OPEN_QUOTE_E);
         addErrorToList(errorList, STR_MISSING_CLOSE_QUOTE_E);
     }
-    else if (startQuote != line) /* if the first character is not '"' */
+    else if (startQuote != line) /* if the first character is not '"' (line already skipped whitespace) */
         addErrorToList(errorList, STR_MISSING_OPEN_QUOTE_E);
-    else if (endQuote != line + strlen(line) - 1) /* if the last character is not '"' */
+    else if (endQuote == startQuote) /* if didn't find a closing quote */
         addErrorToList(errorList, STR_MISSING_CLOSE_QUOTE_E);
 
     for (i = 1; i < strlen(line) - 1; i++)
     {
-        if (line[i] == '"') /* if the string contains a quote in the middle */
-            addErrorToList(errorList, STR_QUOTE_IN_MIDDLE_E);
         if(!isAscii(line[i])) /* if the first character is not a valid ASCII character */
             addErrorToList(errorList, STR_INVALID_CHAR_E);
         
@@ -276,6 +288,15 @@ ErrCode parseStrDirectiveLine(parsedLine *pLine, char *line, ErrorList *errorLis
         dataItems[i - 1] = (int)line[i]; /* store the character in the dataItems array */
     }
 
+    /* if found a closing quote and there is extraneous text after the string */
+    if (endQuote != NULL && endQuote != startQuote && !isEndOfLine(endQuote + QUOTE_LENGTH))
+        addErrorToList(errorList, EXTRANEOUS_TEXT_E);
+
+    if (startErrCount < errorList->count){ /* if new errors were added we return failure */
+        free(dataItems);
+        return LEXER_FAILURE_S;
+    }
+
     if (i - 1 >= arrSize) { /* resize array if needed */
             int *temp;
             arrSize += 1; /* add one more space for the null terminator */
@@ -287,11 +308,8 @@ ErrCode parseStrDirectiveLine(parsedLine *pLine, char *line, ErrorList *errorLis
             }
             dataItems = temp;
     }
+
     dataItems[i - 1] = '\0'; /* add null terminator to the end of the string */
-    if (startErrCount < errorList->count){ /* if new errors were added */ 
-        free(dataItems);
-        return LEXER_FAILURE_S;
-    } 
     
     pLine->lineContentUnion.directive.dataItems = dataItems; /* set the data items in the parsed line */
     pLine->lineContentUnion.directive.dataCount = i; /* set the data count in the parsed line */
@@ -393,27 +411,36 @@ ErrCode parseMatDirectiveLine(parsedLine *pLine, char *line, ErrorList *errorLis
     return LEXER_SUCCESS_S;
 }
 
-ErrCode parseEntryDirectiveLine(parsedLine *pLine, char *line, ErrorList *errorList)
+ErrCode parseEntryExternDirectiveLine(parsedLine *pLine, char *line, MacroTable *macroNames, ErrorList *errorList)
 {
-    char *token;
     ErrCode errorCode = NULL_INITIAL;
 
-    if (FALSE){
-        (void)errorCode;
-        (void)token;
+    char* token = cutFirstToken(line, &errorCode); /* get the label from the line */
+    if (errorCode != UTIL_SUCCESS_S) {
+        addErrorToList(errorList, errorCode);
+        return LEXER_FAILURE_S;
     }
 
-    return LEXER_SUCCESS_S; 
-}
+    errorCode = isValidLabelName(macroNames, token);
+    if (errorCode != LEXER_SUCCESS_S) {  /* if the label is not valid */
+        addErrorToList(errorList, errorCode);
+        free(token);
+        return LEXER_FAILURE_S;
+    }
 
-ErrCode parseExternDirectiveLine(parsedLine *pLine, char *line, ErrorList *errorList)
-{
-    char *token;
-    ErrCode errorCode = NULL_INITIAL;
+    if (!isEndOfLine(line)) { /* if there is extraneous text after the label */
+        addErrorToList(errorList, EXTRANEOUS_TEXT_E); /* if the directive has no label */
+        free(token);
+        return LEXER_FAILURE_S;
+    }
 
-    if (FALSE){
-        (void)errorCode;
-        (void)token;
+    pLine->lineContentUnion.directive.directiveLabel = token; /* set the directive label */
+    pLine->lineContentUnion.directive.dataCount = 0; /* set the data count to 0 for extern directive */
+    pLine->lineContentUnion.directive.dataItems = NULL; /* set the data items to NULL for extern directive */
+
+    if (pLine->label != NULL){ /* if the line has a label */
+        free(pLine->label); /* free the label because it is not needed for entry/extern directives */
+        pLine->label = NULL;
     }
 
     return LEXER_SUCCESS_S;
@@ -431,12 +458,45 @@ ErrCode parseInstructionLine(parsedLine *pLine, char *line, ErrorList *errorList
     return LEXER_SUCCESS_S;
 }
 
-void freeParsedLine(parsedLine *pLine) {
+short int numOfWordsInInstruction(parsedLine *pLine)
+{
+    return 0; /* Not implemented yet */
+}
+
+short int numOfOperandsInInstruction(const char *instructionName)
+{
+    if (strcmp(instructionName, "mov") == 0 ||
+        strcmp(instructionName, "cmp") == 0 ||
+        strcmp(instructionName, "add") == 0 ||
+        strcmp(instructionName, "sub") == 0 ||
+        strcmp(instructionName, "lea") == 0)
+        return 2; /* mov, cmp, add, sub, lea have 2 operands */
+    else if (strcmp(instructionName, "clr") == 0 ||
+             strcmp(instructionName, "not") == 0 ||
+             strcmp(instructionName, "inc") == 0 ||
+             strcmp(instructionName, "dec") == 0 ||
+             strcmp(instructionName, "jmp") == 0 ||
+             strcmp(instructionName, "bne") == 0 ||
+             strcmp(instructionName, "jsr") == 0 ||
+             strcmp(instructionName, "red") == 0 ||
+             strcmp(instructionName, "prn") == 0)
+        return 1; /* clr, not, inc, dec, jmp, bne, jsr, red, prn have 1 operand */
+    else if (strcmp(instructionName, "rts") == 0 ||
+             strcmp(instructionName, "stop") == 0)
+        return 0; /* rts and stop have no operands */
+    
+    /* if the instruction name is not recognized, return -1 */
+    return -1;
+}
+
+void freeParsedLine(parsedLine *pLine)
+{
     if (!pLine)
         return;
 
-    free(pLine->label);
-    
+    if (pLine->label != NULL)
+        free(pLine->label);
+
     switch (pLine->typesOfLine) {
         case DIRECTIVE_LINE:
             if (pLine->lineContentUnion.directive.directiveName != NULL)
@@ -611,10 +671,10 @@ Bool isKeywords(const char *arg)
     return FALSE;
 }
 
-Bool isLabel(const char *str)
+Bool isColonLabel(const char *str)
 {
     char *labelEnd;
-    
+
     if (str == NULL || str[0] == '\0') /* check if the string is NULL or empty */
         return FALSE;
 
@@ -631,38 +691,66 @@ Bool isValidInteger(int value)
     return FALSE;
 }
 
-ErrCode isValidLabel(MacroTable *table, const char *label)
+ErrCode isValidLabelColon(MacroTable *table, const char *label)
+{
+    char* newLabel;
+    ErrCode errorCode;
+
+    if (label[strlen(label) - 1] != ':') /* check if the last character is ':' */
+        return LABEL_TEXT_AFTER_COLON_E; /* colon is in the middle of the label */
+    
+    newLabel = delColonFromLabel(label); /* remove the colon from the label for further checks */
+    if (newLabel == NULL) /* check if the label is NULL after removing the colon */
+        return MALLOC_ERROR_F;
+    
+    errorCode = isValidLabelName(table, newLabel); /* check if the label name is valid */
+    free(newLabel); /* free the allocated memory for the new label */
+
+    if (errorCode != LEXER_SUCCESS_S)  /* if the label name is not valid */
+        return errorCode; /* return the error that the new label caused */
+    
+    return LEXER_SUCCESS_S;
+}
+
+ErrCode isValidLabelName(MacroTable *macroNames, const char *label)
 {
     int i, len = strlen(label); /* start from 1 to skip the first character */
 
-    if (len == COLON_LENGTH) /* check if the label is empty (only contains ':') */
+    if (len == 0) /* check if the label is empty */
         return LABEL_EMPTY_E; /* label is too short */
 
-    if (len > (MAX_LABEL_LENGTH + COLON_LENGTH)) /* check if the label length is valid */
+    if (len > (MAX_LABEL_LENGTH)) /* check if the label length is valid */
         return LABEL_TOO_LONG_E; /* label is too long */
 
     if (!isalpha(label[0])) /* check if the first character is a valid letter */
         return LABEL_INVALID_START_CHAR_E; /* label must start with a letter */
 
-    if(isKeywords(label)) /* check if the label is a keyword */
-        return LABEL_NAME_IS_KEYWORD_E; /* label cannot be a keyword */
-
-    for (i = 1; i < len - 1; i++) {
-        if (!isalnum(label[i])){ /* check if the character is letter or digit */
-
-            if (label[i] == ':') /* if the character is ':' */
-                return LABEL_TEXT_AFTER_COLON_E; /* label cannot have text after the colon */
-
+    for (i = 1; i < len; i++) {
+        if (!isalnum(label[i])) /* check if the character is letter or digit */
             return LABEL_INVALID_CHAR_E; /* if char isnt alphanumeric or ':' its invalid */
-        }
     }
 
-    if(isMacroExists(table, label)) /* check if the label is a macro name */
+    if(isKeywords(label)) /* check if the label is a keyword */
+        return LABEL_NAME_IS_KEYWORD_E; /* label cannot be a keyword */
+    if (isMacroExists(macroNames, label)) /* check if the label already exists in the macro table */
         return LABEL_SAME_AS_MACRO_E; /* label cannot be a macro name */
 
-    /* note: we do not check the last character cas it is ':' (we only call isValidLabel() if there is
-     a colon and if we didn't find any other ':' in the range 1 to len-1 it must be in len) */
-    return LEXER_SUCCESS_S; /* valid label */
+    return LEXER_SUCCESS_S; 
+}
+
+char* delColonFromLabel(const char *label)
+{
+    int len = strlen(label);
+    char *newLabel;
+
+    newLabel = malloc(len - COLON_LENGTH + NULL_TERMINATOR);
+    if (newLabel == NULL)
+        return NULL;
+
+    strncpy(newLabel, label, len - COLON_LENGTH);
+    newLabel[len - COLON_LENGTH] = '\0';
+
+    return newLabel;
 }
 
 ErrCode isMacroNameValid(MacroTable* table , const char* macroName) {

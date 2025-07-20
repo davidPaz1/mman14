@@ -1,9 +1,10 @@
+STR: .string "abcdefg"
+M: .entry tesTa
 MAIN: mov M1[r2][r7],LENGTH
     add r2,STR
 
-M1: .mat [2][9] -1,2,3,4, 5,24,34,24
+M1: .mat [2][6] -1,2,3,4, 5,24,34,24
 TEST: .data 1, 2
-STR: .string "abcdef"
 
 .extern OutLabel
 
@@ -27,7 +28,7 @@ LOOP: jmp END
 END: stop
 
 TRY: a_mc
-    mcro tes_T
+    mcro tesT
     sub r1, r4
     inc K
     sub r1, r4
