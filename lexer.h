@@ -7,6 +7,12 @@
 
 #define COLON_LENGTH 1 /* length of the colon character ':' */
 #define QUOTE_LENGTH 1 /* length of the quote character '"' */
+#define REGISTER_LENGTH 2 /* length of the register name, e.g. r0, r1, ..., r7 */
+#define INITIAL_DATA_ITEMS_SIZE 10 /* initial size of the dataItems array for directives */
+#define ERROR_OPERAND_AMOUNT -1 /* used for error handling when the number of operands is not valid */
+#define NO_OPERANDS 0 /* used for instructions with no operands */
+#define ONE_OPERAND 1 /* used for instructions with one operand */
+#define TWO_OPERANDS 2 /* used for instructions with two operands */
 
 typedef enum lineType {
     UNSET_LINE = 0, /* used for error handling */
@@ -15,6 +21,14 @@ typedef enum lineType {
     COMMENT_LINE, 
     EMPTY_LINE
 } lineType;
+
+typedef enum operandType {
+    UNSET_OPERAND = 0, /* used for error handling */
+    REGISTER_OPERAND = 1, 
+    NUMBER_OPERAND, 
+    LABEL_OPERAND, 
+    MATRIX_OPERAND
+} operandType;
 
 typedef struct parsedLine {
     char* label; /* the label at the start of the line, if it doesn't have one it will be NULL */
@@ -34,13 +48,19 @@ typedef struct parsedLine {
             char* operationName; /* the name of the operation */
             unsigned int wordCount; /* number of words needed for the binary code of the instruction (to move IC) */
             unsigned int operandCount; /* number of operands in the instruction */
+            
+            operandType operand1Type; /* type of the first operand (e.g. register, immediate, label) */
+            operandType operand2Type; /* type of the second operand (e.g. register, immediate, label) */
             char* operand1; /* first operand */
+            char* col1; /* if first operand is a matrix element, this will hold the column in the line */
+            char* row1; /* if first operand is a matrix element, this will hold the row in the line */
             char* operand2; /* second operand */
+            char* col2; /* if second operand is a matrix element, this will hold the column in the line */
+            char* row2; /* if second operand is a matrix element, this will hold the row in the line */
         } instruction;
     }lineContentUnion; /* union to hold either directive or instruction data */
 } parsedLine;
 
-#define INITIAL_DATA_ITEMS_SIZE 10 /* initial size of the dataItems array for directives */
 
 /* for first pass mainly */
 parsedLine* createParsedLine(); /* create a new parsedLine structure */
@@ -53,6 +73,8 @@ ErrCode parseStrDirectiveLine(parsedLine *pLine, char *line, ErrorList *errorLis
 ErrCode parseMatDirectiveLine(parsedLine *pLine, char *line, ErrorList *errorList);
 ErrCode parseEntryExternDirectiveLine(parsedLine *pLine, char *line, MacroTable *macroNames, ErrorList *errorList);
 ErrCode parseInstructionLine(parsedLine *pLine, char *line, ErrorList *errorList);
+ErrCode determineOperandType(parsedLine *pLine, MacroTable *macroNames, SymbolTable *symbolTable, ErrorList *errorList);
+
 
 short int numOfWordsInInstruction(parsedLine *pLine); /* return the number of words needed for the binary code of the instruction */
 short int numOfOperandsInInstruction(const char *instructionName); /* return the number of operands in the instruction */
@@ -68,10 +90,12 @@ Bool isDirective(const char* arg); /* check if the string is a directive */
 Bool isMacroStart(const char* arg); /* check if the string is a macro start */
 Bool isMacroEnd(const char* arg); /* check if the string is a macro end */
 Bool isKeywords(const char* arg); /* check if the string is a keyword */
-Bool isColonLabel(const char* str); /* check if the string is a label with a colon at the end */
 Bool isValidInteger(int value); /* check if the integer value is valid for the assembler */
 
-ErrCode isValidLabel(SymbolTable *symbolTable, const char *label); /* check if the label is valid */
+ErrCode isNumberOperand(const char *operand); /* check if the operand is a valid number */
+ErrCode isMatrixOperand(const char *operand); /* check if the operand is a valid matrix element */
+
+
 ErrCode isValidLabelColon(MacroTable *table, const char *label); /* check if the label is valid without the colon */
 ErrCode isValidLabelName(MacroTable *table, const char *label);
 char* delColonFromLabel(const char *label); /* remove the colon from the label if it exists */

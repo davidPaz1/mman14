@@ -5,6 +5,7 @@
 
 /* utility functions prototypes */
 #define OVER_LENGTH  1 /* overlength should store \n or \r if line is under MAX_LINE_FILE_LENGTH */
+#define INCLUDE_LAST_CHAR 1
 
 /* scanning functions */
 char* readLine(FILE *fp, ErrCode *errorCode);
@@ -15,6 +16,7 @@ char* cutFirstToken(char *str, ErrCode *errorCode); /* cut the first token from 
 /* string manipulation and handling functions */
 Bool isAscii(int c);
 char* strDup(const char* src); /* string duplication */
+char* trimmedDup(const char *str); /* duplicate a string and trim leading and trailing spaces */
 char* mergeStrings(const char* str1, const char* str2); /* merge two strings */
 void cutnChar(char *str, int n); /* cut the first n characters from the string */
 

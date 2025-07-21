@@ -62,6 +62,10 @@ typedef enum ErrCode {
     MAT_INVALID_COL_E = 48, /* matrix directive has an invalid column */
     MAT_SIZE_ZERO_NEG_E = 49, /* matrix directive has a size of zero */
     MAT_SIZE_TOO_LARGE_E = 50, /* matrix directive has invalid data */
+    MISSING_FIRST_OPERAND_E = 51, /* missing first operand in the instruction */
+    MISSING_SECOND_OPERAND_E = 52, /* missing second operand in the instruction */
+    MISSING_NUM_OPERAND_E = 53, /* missing numeric operand in the instruction */
+    ONE_OPERAND_COMMA_E = 54, /* one operand but a comma was found */
 
     /* tables errors 80 - 99 */
     TABLES_SUCCESS_S = 70, /* macro operation was successful */

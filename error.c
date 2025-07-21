@@ -92,6 +92,15 @@ char* getErrorMessage(ErrCode code) {
             return "matrix has a size of zero or negative, should have positive row and column.";
         case MAT_SIZE_TOO_LARGE_E:
             return "matrix input is larger than the size entered, please increase the matrix size or reduce the input.";
+        case MISSING_FIRST_OPERAND_E:
+            return "missing first operand in the instruction, pls enter the operand.";
+        case MISSING_SECOND_OPERAND_E:
+            return "missing second operand in the instruction, pls enter the second operand for this instruction.";
+        case MISSING_NUM_OPERAND_E:
+            return "missing number after '#'.";
+        case ONE_OPERAND_COMMA_E:
+            return "instruction has one operand there was a comma found, should not have a comma if there is only one operand.";
+
 
         /* tables errors 50 - 69 */
         case SYMBOL_NAME_EXISTS_E:

@@ -91,6 +91,7 @@ parsedLine* readParsedLine(FILE *fp, ErrCode *errorCode, MacroTable *macroNames,
 ErrCode getLabelFromLine(parsedLine *pLine, char *line, MacroTable *macroNames, ErrorList *errorList)
 {
     char *token;
+    char *labelEnd; /* use to determine if the first token is a label */
     ErrCode errorCode = NULL_INITIAL;
     
     pLine->label = NULL; /* initialize the label to NULL */
@@ -99,9 +100,10 @@ ErrCode getLabelFromLine(parsedLine *pLine, char *line, MacroTable *macroNames, 
     if (errorCode != UTIL_SUCCESS_S) 
         return errorCode;
 
-    if (!isColonLabel(token)){
+    labelEnd = strchr(token, ':'); /* check if the string contains ':' only found in labels */
+    if (labelEnd == NULL) { /* if the first token is not a label (starting labels have a colon [at the end]) */
         free(token);
-        return LEXER_SUCCESS_S; /* if the first token is not a label, return success */
+        return LEXER_SUCCESS_S;
     }
 
     errorCode = isValidLabelColon(macroNames, token); /* check if the label is valid */
@@ -203,7 +205,7 @@ ErrCode parseDataDirectiveLine(parsedLine *pLine, char *line, ErrorList *errorLi
 
         if (endPtr == token) /* if no number was found */
             addErrorToList(errorList, DATA_INVALID_VALUE_E);
-        else if (*endPtr != '\0') /* if there are non-numeric and non-whitespace characters after the number */
+        else if (!isEndOfLine(endPtr)) /* if there are non-numeric and non-whitespace characters after the number */
             addErrorToList(errorList, MISSING_COMMA_E);
         else if (value != (int)value) /* if the value is not an integer */
             addErrorToList(errorList, DATA_ITEM_NOT_INTEGER_E);
@@ -446,16 +448,76 @@ ErrCode parseEntryExternDirectiveLine(parsedLine *pLine, char *line, MacroTable 
     return LEXER_SUCCESS_S;
 }
 
-ErrCode parseInstructionLine(parsedLine *pLine, char *line, ErrorList *errorList){
-    char *token;
-    ErrCode errorCode = NULL_INITIAL;
+ErrCode parseInstructionLine(parsedLine *pLine, char *line, ErrorList *errorList)
+{
+    char *operand1 = NULL, *operand2 = NULL;
+    char* commaExists = NULL; /* used to find the first comma in the line for error checking */
+    unsigned int operandLen = 0;
+    pLine->lineContentUnion.instruction.operandCount = numOfOperandsInInstruction(pLine->lineContentUnion.instruction.operationName);
 
-    if (FALSE){
-        (void)errorCode;
-        (void)token;
+    int len = strlen(line);
+
+    if (pLine->lineContentUnion.instruction.operandCount == NO_OPERANDS) { /* if the instruction has no operands */
+        if (!isEndOfLine(line)) { /* if there is extraneous text after the instruction */
+            addErrorToList(errorList, EXTRANEOUS_TEXT_E);
+            return LEXER_FAILURE_S;
+        }
     }
 
-    return LEXER_SUCCESS_S;
+    commaExists = strchr(line, ','); /* find the first comma in the line */
+
+    operand1 = strtok(line, ","); /* get the first operand */
+    if (operand1 == NULL) { /* if the first operand is missing */
+        addErrorToList(errorList, MISSING_FIRST_OPERAND_E);
+        return LEXER_FAILURE_S;
+    }
+
+    operandLen = strlen(operand1); /* to check */
+
+    operand1 = trimmedDup(operand1); /* making the first operand a dynamic string */
+    if (operand1 == NULL) { /* if memory allocation failed */
+        addErrorToList(errorList, MALLOC_ERROR_F);
+        return LEXER_FAILURE_S;
+    }
+
+    pLine->lineContentUnion.instruction.operand1 = operand1; /* set the first operand so we can check for more errors */
+    if (pLine->lineContentUnion.instruction.operandCount == ONE_OPERAND) { /* if the instruction has one operand */
+        if (commaExists != NULL) { /* if there was a comma after the first operand */
+            addErrorToList(errorList, ONE_OPERAND_COMMA_E); /* if the instruction has no second operand */
+            return LEXER_FAILURE_S;
+        }
+        return LEXER_SUCCESS_S; /* return success if the instruction has one operand */
+    }
+
+    operand2 = strtok(NULL, ","); /* get the second operand */
+    if (operand2 == NULL) { /* if the second operand is missing */
+        addErrorToList(errorList, MISSING_SECOND_OPERAND_E);
+        return LEXER_FAILURE_S;
+    }
+
+    operand2 = trimmedDup(operand2); /* making the second operand a dynamic string */
+    if (operand2 == NULL) { /* if memory allocation failed */
+        addErrorToList(errorList, MALLOC_ERROR_F);
+        return LEXER_FAILURE_S;
+    }
+
+    pLine->lineContentUnion.instruction.operand2 = operand2; /* set the second operand */
+    if (pLine->lineContentUnion.instruction.operandCount == TWO_OPERANDS)
+        return LEXER_SUCCESS_S;
+
+
+    return LEXER_FAILURE_S; /* should never reach here but if it does, return failure */
+}
+
+ErrCode determineOperandType(parsedLine *pLine, MacroTable *macroNames, SymbolTable *symbolTable, ErrorList *errorList)
+{
+    ErrCode errorCode = NULL_INITIAL;
+
+    /* logic goes here*/
+    if (FALSE)
+        errorCode = errorCode; 
+
+    return LEXER_FAILURE_S;
 }
 
 short int numOfWordsInInstruction(parsedLine *pLine)
@@ -470,7 +532,7 @@ short int numOfOperandsInInstruction(const char *instructionName)
         strcmp(instructionName, "add") == 0 ||
         strcmp(instructionName, "sub") == 0 ||
         strcmp(instructionName, "lea") == 0)
-        return 2; /* mov, cmp, add, sub, lea have 2 operands */
+        return TWO_OPERANDS; /* mov, cmp, add, sub, lea have 2 operands */
     else if (strcmp(instructionName, "clr") == 0 ||
              strcmp(instructionName, "not") == 0 ||
              strcmp(instructionName, "inc") == 0 ||
@@ -480,13 +542,13 @@ short int numOfOperandsInInstruction(const char *instructionName)
              strcmp(instructionName, "jsr") == 0 ||
              strcmp(instructionName, "red") == 0 ||
              strcmp(instructionName, "prn") == 0)
-        return 1; /* clr, not, inc, dec, jmp, bne, jsr, red, prn have 1 operand */
+        return ONE_OPERAND; /* clr, not, inc, dec, jmp, bne, jsr, red, prn have 1 operand */
     else if (strcmp(instructionName, "rts") == 0 ||
              strcmp(instructionName, "stop") == 0)
-        return 0; /* rts and stop have no operands */
-    
+        return NO_OPERANDS; /* rts and stop have no operands */
+
     /* if the instruction name is not recognized, return -1 */
-    return -1;
+    return ERROR_OPERAND_AMOUNT; /* should never happen in parseInstructionLine */
 }
 
 void freeParsedLine(parsedLine *pLine)
@@ -636,8 +698,20 @@ Bool isRegister(const char* arg) {
     return FALSE;
 }
 
-Bool isDirective(const char* arg) {
+ErrCode isRegisterOperand(const char* arg) {
+    if (arg[0] == 'r')
+        return LEXER_FAILURE_S;
+    if (arg[1] < '0' && arg[1] > '7') 
+        return invalid;
+        
+    if(!isEndOfLine(arg + REGISTER_LENGTH)) /* check if the operand is a valid register */
+        return EXTRANEOUS_TEXT_E;
 
+    return FALSE;
+}
+
+Bool isDirective(const char* arg)
+{
     if (strcmp(arg, ".data") == 0 ||
         strcmp(arg, ".string") == 0 ||
         strcmp(arg, ".mat") == 0 ||
@@ -671,25 +745,51 @@ Bool isKeywords(const char *arg)
     return FALSE;
 }
 
-Bool isColonLabel(const char *str)
-{
-    char *labelEnd;
-
-    if (str == NULL || str[0] == '\0') /* check if the string is NULL or empty */
-        return FALSE;
-
-    labelEnd = strchr(str, ':'); /* check if the string contains ':' only found in labels */
-    if (labelEnd == NULL) 
-        return FALSE; /* if ':' is not found, it is not a label */
-    return TRUE; /* if ':' is found, it is a label */
-}
-
 Bool isValidInteger(int value)
 {
     if (value >= MIN_10BIT && value <= MAX_10BIT) /* check if the integer value can fit in 10 bits (-512 to 511) */
         return TRUE;
     return FALSE;
 }
+
+/* Check if the operand is a valid label (doesnt check in the symbol table!) */
+ErrCode isLabelOperand(const char *operand) {
+    if (!isalpha(operand[0])) /* check if the first character is a letter */
+        return LEXER_FAILURE_S;
+
+    while (*operand != '\0') { /* iterate through the operand until the end */
+        if (!isalnum(*operand)) /* check if the character is alphanumeric */
+            return LEXER_FAILURE_S;
+        operand++;
+    }
+
+    return LEXER_SUCCESS_S;
+}
+
+ErrCode isNumberOperand(const char *operand) {
+    if (operand[0] != '#') /* check if the operand starts with '#' */
+        return LEXER_FAILURE_S;
+    operand++; /* move the pointer to the next character */
+
+    if (*operand == '-' || *operand == '+') /* check if the operand starts with a sign */
+        operand++; 
+
+    if (!isdigit(*operand)) /* check if the first character after the sign is a digit */
+        return MISSING_NUM_OPERAND_E;
+
+    /* iterate through the operand until the end or until a non-digit character is found */
+    while (*operand != '\0'){
+        if(isalnum(*operand)) /* check if the character is a digit */
+            operand++;
+        else if (isspace(*operand) && isEndOfLine(operand))
+            return LEXER_SUCCESS_S; /* if there are no characters after the number, return success */                
+        else
+            return EXTRANEOUS_TEXT_E; /* if there are non-digit characters after the number, return error */
+    }
+
+    return LEXER_SUCCESS_S;
+}
+
 
 ErrCode isValidLabelColon(MacroTable *table, const char *label)
 {

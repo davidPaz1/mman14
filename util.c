@@ -128,6 +128,48 @@ char* strDup(const char *src)
     return dest;
 }
 
+/* trimmedDup - duplicates a string and removes leading and trailing whitespace. */
+char* trimmedDup(const char* str)
+{
+    const char* start;
+    const char* end;
+    char* result;
+    unsigned int len;
+
+    if (str == NULL)
+        return NULL;
+
+    start = str;
+
+    /* Skip leading whitespace */
+    while (*start != '\0' && isspace(*start))
+        start++;
+
+    /* If string is all spaces */
+    if (*start == '\0') 
+        return strDup(""); /* return an empty string */
+    
+
+    /* Find the end of the non-whitespace content */
+    end = start + strlen(start) - NULL_TERMINATOR;
+    while (end > start && isspace(*end))
+        end--;
+
+    /* Length of trimmed string */
+    len = end - start + INCLUDE_LAST_CHAR;
+
+    /* Allocate and copy */
+    result = malloc(len + NULL_TERMINATOR); 
+    if (result == NULL)
+    return NULL;
+
+    strncpy(result, start, len);
+    result[len] = '\0';
+
+    return result;
+}
+
+
 char* mergeStrings(const char *start, const char *end)
 {
     char *merged;
@@ -153,13 +195,13 @@ void cutnChar(char *str, int n)
     
     cuttingLength += spacesCount; /* adjust the length to cut based on leading spaces */
 
-    memmove(str, str + cuttingLength, strlen(str) - cuttingLength + 1); /* Move the string left by n characters */
+    memmove(str, str + cuttingLength, strlen(str) - cuttingLength + NULL_TERMINATOR); /* Move the string left by n characters */
 
     cuttingLength = 0; /* reset cutting length to 0 for deleting trailing spaces */
     while (isspace(str[cuttingLength])) 
         cuttingLength++;
 
-    memmove(str, str + cuttingLength, strlen(str) - cuttingLength + 1); /* Move the string left by the number of leading spaces */
+    memmove(str, str + cuttingLength, strlen(str) - cuttingLength + NULL_TERMINATOR); /* Move the string left by the number of leading spaces */
 }
 
 /* file management functions */
