@@ -39,13 +39,13 @@ ErrCode executePreprocessor(MacroTable *macroTable, ErrorList *errorList, FILE *
         if(errorCode == END_OF_LINE_S){ /* if the line is empty or contains only whitespace */
             fputs(line, amFile);
             fputc('\n', amFile); /* write the empty line to the .am file */
-            preprocessorFreeMemory(line, firstToken);
+            freeStrings(line, firstToken, NULL); /* free the memory allocated for the line and first token */
             continue; /* skip to the next line */
         }
         
         if (errorCode != UTIL_SUCCESS_S) { /* check if an error occurred in getFirstToken() */
             addErrorToList(errorList, errorCode);
-            preprocessorFreeMemory(line, NULL); /* clean up and exit the preprocessor */
+            free(line); /* clean up and exit the preprocessor */
             /* all other errors we didn't check in getFirstToken() are fatal */
             return PREPROCESSOR_FAILURE_S; 
         }
@@ -84,7 +84,7 @@ ErrCode executePreprocessor(MacroTable *macroTable, ErrorList *errorList, FILE *
             fputc('\n', amFile); /* add a newline character after the line */
         }
 
-        preprocessorFreeMemory(line, firstToken); /* free the line memory */
+        freeStrings(line, firstToken, NULL); /* free the line memory */
 
     } /* end of while loop */
 
@@ -127,12 +127,4 @@ ErrCode macroDef(MacroTable* macroTable, char* line) /* add a line to the macro 
     }
     free(macroName);
     return TABLES_SUCCESS_S;
-}
-
-void preprocessorFreeMemory(char *line, char *firstToken)
-{
-    if (line != NULL) 
-        free(line);
-    if (firstToken != NULL)
-        free(firstToken);
 }

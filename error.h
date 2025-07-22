@@ -35,7 +35,7 @@ typedef enum ErrCode {
     LEXER_SUCCESS_S = 20, 
     LEXER_FAILURE_S = 21,
     INVALID_DIRECTIVE_E = 22, /* invalid directive */
-    UNKNOWN_LINE_TYPE_E = 23, /* unknown line type */
+
     LABEL_INVALID_START_CHAR_E = 24, /* invalid start character */
     LABEL_INVALID_CHAR_E = 25, /* invalid character in the line */
     LABEL_TOO_LONG_E = 26, /* label is too long */
@@ -66,6 +66,14 @@ typedef enum ErrCode {
     MISSING_SECOND_OPERAND_E = 52, /* missing second operand in the instruction */
     MISSING_NUM_OPERAND_E = 53, /* missing numeric operand in the instruction */
     ONE_OPERAND_COMMA_E = 54, /* one operand but a comma was found */
+    REGISTER_OUT_OF_RANGE_E = 55, /* register number is out of range (0-7) */
+    MAT_INVALID_NAME_START = 56, /* matrix name starts with an invalid character */
+    MAT_MISSING_FIRST_BRACKET = 57, /* matrix is missing the first bracket */
+    MAT_EMPTY_ROW_INDEX = 58, /* matrix row index is empty */
+    MAT_MISSING_FIRST_CLOSING_BRACKET = 59, /* matrix is missing the first closing bracket */
+    MAT_MISSING_SECOND_BRACKET = 60, /* matrix is missing the second bracket */
+    MAT_EMPTY_COLUMN_INDEX = 61, /* matrix column index is empty */
+    MAT_MISSING_SECOND_CLOSING_BRACKET = 62, /* matrix is missing the second closing bracket */
 
     /* tables errors 80 - 99 */
     TABLES_SUCCESS_S = 70, /* macro operation was successful */

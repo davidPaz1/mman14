@@ -38,8 +38,7 @@ char* getErrorMessage(ErrCode code) {
         /* lexer errors 20 - 39 */
         case INVALID_DIRECTIVE_E:
             return "invalid directive, should be one of the valid directives (.data, .string, .mat, .entry, .extern).";
-        case UNKNOWN_LINE_TYPE_E: 
-            return "unknown line type found, should be one of the four types (instruction, directive, comment, empty).";
+
         case LABEL_INVALID_START_CHAR_E: 
             return "label starts with an invalid character, should start with a letter.";
         case LABEL_INVALID_CHAR_E: 
@@ -100,8 +99,23 @@ char* getErrorMessage(ErrCode code) {
             return "missing number after '#'.";
         case ONE_OPERAND_COMMA_E:
             return "instruction has one operand there was a comma found, should not have a comma if there is only one operand.";
-
-
+        case REGISTER_OUT_OF_RANGE_E:
+            return "register number is out of range (0-7), should be between 0 and 7.";
+        case MAT_INVALID_NAME_START:
+            return "matrix name starts with an invalid character, should start with a letter.";
+        case MAT_MISSING_FIRST_BRACKET:
+            return "matrix is missing the first bracket, should start with a [ character.";
+        case MAT_EMPTY_ROW_INDEX:
+            return "matrix row index is empty, should have a row index after the [ character.";
+        case MAT_MISSING_FIRST_CLOSING_BRACKET:
+            return "matrix is missing the first closing bracket, should end with a ] character after the row index.";
+        case MAT_MISSING_SECOND_BRACKET:
+            return "matrix is missing the second bracket, should have a [ character after the first closing bracket.";
+        case MAT_EMPTY_COLUMN_INDEX:
+            return "matrix column index is empty, should have a column index after the [ character.";
+        case MAT_MISSING_SECOND_CLOSING_BRACKET:
+            return "matrix is missing the second closing bracket, should end with a ] character after the column index.";
+        
         /* tables errors 50 - 69 */
         case SYMBOL_NAME_EXISTS_E:
             return "symbol name already exists.";

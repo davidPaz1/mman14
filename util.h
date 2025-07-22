@@ -16,9 +16,11 @@ char* cutFirstToken(char *str, ErrCode *errorCode); /* cut the first token from 
 /* string manipulation and handling functions */
 Bool isAscii(int c);
 char* strDup(const char* src); /* string duplication */
+char* strnDup(const char *src, unsigned int n); /* duplicate the first n characters of a string */
 char* trimmedDup(const char *str); /* duplicate a string and trim leading and trailing spaces */
 char* mergeStrings(const char* str1, const char* str2); /* merge two strings */
 void cutnChar(char *str, int n); /* cut the first n characters from the string */
+void freeStrings(char *str1, char *str2, char *str3); /* free the memory allocated for the strings */
 
 /* file management functions */
 FILE* openFile(const char *filename, const char *ending, const char *mode, ErrCode *errorCode);

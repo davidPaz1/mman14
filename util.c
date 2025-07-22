@@ -8,7 +8,7 @@
  * if the line is longer than MAX_LINE_FILE_LENGTH, it will return NULL and set errorCode to LINE_TOO_LONG_E.
  * if memory allocation fails, returns NULL and sets errorCode to MALLOC_ERROR_F.
  * if end of file is reached, returns NULL and sets errorCode to EOF_REACHED_S.
- * errorCode:  EOF_REACHED_S , FILE_READ_ERROR_F , LINE_TOO_LONG_E , FILE_READ_ERROR_F, UTIL_SUCCESS_S
+ * errorCode:  EOF_REACHED_S , LINE_TOO_LONG_E, MALLOC_ERROR_F, FILE_READ_ERROR_F, UTIL_SUCCESS_S
  */
 char* readLine(FILE *fp, ErrCode *errorCode) {
 
@@ -128,11 +128,21 @@ char* strDup(const char *src)
     return dest;
 }
 
+char* strnDup(const char *src, unsigned int n)
+{
+    char* dest = malloc(n + NULL_TERMINATOR);
+    if (dest == NULL) 
+        return NULL;
+    
+    strncpy(dest, src, n);  
+    dest[n] = '\0';
+    return dest;
+}
+
 /* trimmedDup - duplicates a string and removes leading and trailing whitespace. */
 char* trimmedDup(const char* str)
 {
-    const char* start;
-    const char* end;
+    const char *start, *end;
     char* result;
     unsigned int len;
 
@@ -141,24 +151,23 @@ char* trimmedDup(const char* str)
 
     start = str;
 
-    /* Skip leading whitespace */
+    /* skip leading whitespace */
     while (*start != '\0' && isspace(*start))
         start++;
 
-    /* If string is all spaces */
+    /* if string is all spaces */
     if (*start == '\0') 
         return strDup(""); /* return an empty string */
     
 
-    /* Find the end of the non-whitespace content */
+    /* find the end of the non-whitespace content */
     end = start + strlen(start) - NULL_TERMINATOR;
     while (end > start && isspace(*end))
         end--;
 
-    /* Length of trimmed string */
+    /* length of trimmed string */
     len = end - start + INCLUDE_LAST_CHAR;
 
-    /* Allocate and copy */
     result = malloc(len + NULL_TERMINATOR); 
     if (result == NULL)
     return NULL;
@@ -168,7 +177,6 @@ char* trimmedDup(const char* str)
 
     return result;
 }
-
 
 char* mergeStrings(const char *start, const char *end)
 {
@@ -202,6 +210,22 @@ void cutnChar(char *str, int n)
         cuttingLength++;
 
     memmove(str, str + cuttingLength, strlen(str) - cuttingLength + NULL_TERMINATOR); /* Move the string left by the number of leading spaces */
+}
+
+void freeStrings(char *str1, char *str2, char *str3)
+{
+    if (str1 != NULL){
+        free(str1);
+        str1 = NULL;
+    }
+    if (str2 != NULL){
+        free(str2);
+        str2 = NULL;
+    }
+    if (str3 != NULL){
+        free(str3);
+        str3 = NULL;
+    }
 }
 
 /* file management functions */

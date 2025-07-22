@@ -12,7 +12,9 @@
         "firstpass.h": "c",
         "lexer.h": "c",
         "cstdlib": "c",
-        "secondpass.h": "c"
+        "secondpass.h": "c",
+        "compare": "c",
+        "type_traits": "c"
     },
     "cSpell.words": [
         "cutn",

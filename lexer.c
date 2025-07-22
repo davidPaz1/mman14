@@ -17,7 +17,7 @@ parsedLine* createParsedLine()
 }
 
 /* readParsedLine - reads a line from the file and returns a parsedLine structure
- * errorCode:  EOF_REACHED_S , MALLOC_ERROR_F, UTIL_SUCCESS_S
+ * errorCode:  EOF_REACHED_S, LEXER_SUCCESS_S, LEXER_FAILURE_S
  */
 parsedLine* readParsedLine(FILE *fp, ErrCode *errorCode, MacroTable *macroNames, ErrorList *errorList)
 {
@@ -25,13 +25,19 @@ parsedLine* readParsedLine(FILE *fp, ErrCode *errorCode, MacroTable *macroNames,
     char* line;
 
     line = readLine(fp, errorCode); /* we will delete the parsed parts from this line */
-    if (*errorCode != UTIL_SUCCESS_S)  /* if an error occurred while reading the line */
+    if (*errorCode == EOF_REACHED_S) 
+        return NULL; /* end of file reached, return NULL */
+    
+    if (*errorCode != UTIL_SUCCESS_S){
+        addErrorToList(errorList, *errorCode); /* add the error to the error list */
         return NULL;
+    }
 
     pLine = createParsedLine(); /* create a new parsedLine structure */
     if (pLine == NULL) {
-        *errorCode = MALLOC_ERROR_F;
+        addErrorToList(errorList, MALLOC_ERROR_F); /* add the error to the error list */
         free(line);
+        *errorCode = LEXER_FAILURE_S;
         return NULL;
     }
 
@@ -51,13 +57,13 @@ parsedLine* readParsedLine(FILE *fp, ErrCode *errorCode, MacroTable *macroNames,
 
     /* get the label from the line */
     *errorCode = getLabelFromLine(pLine, line, macroNames, errorList);
-    if (*errorCode != LEXER_SUCCESS_S) { /* if an error occurred while getting the label */
+    if (*errorCode == LEXER_FAILURE_S) { /* if getting the label from the line failed */
         freeParsedLine(pLine);
         free(line);
         return NULL;
     }
 
-    *errorCode = determineLineType(pLine, line); /* determine the type of the line */
+    *errorCode = determineLineType(pLine, line, errorList); /* determine the type of the line */
     if (*errorCode != LEXER_SUCCESS_S) {
         freeParsedLine(pLine);
         free(line); 
@@ -71,7 +77,7 @@ parsedLine* readParsedLine(FILE *fp, ErrCode *errorCode, MacroTable *macroNames,
 
     if (pLine->typesOfLine == DIRECTIVE_LINE) {
         *errorCode = parseDirectiveLine(pLine, line, macroNames, errorList);
-        if (*errorCode != LEXER_SUCCESS_S) { /* if an error occurred while parsing the directive line */
+        if (*errorCode == LEXER_FAILURE_S) { /* if an error occurred while parsing the directive line */
             freeParsedLine(pLine);
             free(line);
             return NULL; /* return NULL if an error occurred */
@@ -84,10 +90,15 @@ parsedLine* readParsedLine(FILE *fp, ErrCode *errorCode, MacroTable *macroNames,
             return NULL; /* return NULL if an error occurred */
         }
     }
+
+    *errorCode = LEXER_SUCCESS_S; 
     free(line); 
     return pLine;
 }
 
+/* gets the label from the line and sets it in the parsedLine structure
+ * errorCode:  LEXER_SUCCESS_S, LEXER_FAILURE_S
+ */
 ErrCode getLabelFromLine(parsedLine *pLine, char *line, MacroTable *macroNames, ErrorList *errorList)
 {
     char *token;
@@ -97,8 +108,10 @@ ErrCode getLabelFromLine(parsedLine *pLine, char *line, MacroTable *macroNames, 
     pLine->label = NULL; /* initialize the label to NULL */
     
     token = getFirstToken(line, &errorCode);
-    if (errorCode != UTIL_SUCCESS_S) 
-        return errorCode;
+    if (errorCode != UTIL_SUCCESS_S){
+        addErrorToList(errorList, errorCode); /* add the error to the error list */
+        return LEXER_FAILURE_S;
+    }
 
     labelEnd = strchr(token, ':'); /* check if the string contains ':' only found in labels */
     if (labelEnd == NULL) { /* if the first token is not a label (starting labels have a colon [at the end]) */
@@ -118,7 +131,10 @@ ErrCode getLabelFromLine(parsedLine *pLine, char *line, MacroTable *macroNames, 
     return LEXER_SUCCESS_S;
 }
 
-ErrCode determineLineType(parsedLine *pLine, char *line) 
+/* determines the type of the line and sets it in the parsedLine structure
+ * errorCode:  LEXER_SUCCESS_S, LEXER_FAILURE_S
+ */
+ErrCode determineLineType(parsedLine *pLine, char *line, ErrorList *errorList) 
 {
     char *token;
     ErrCode errorCode = NULL_INITIAL; /* reset error code to initial state */
@@ -126,8 +142,10 @@ ErrCode determineLineType(parsedLine *pLine, char *line)
     pLine->typesOfLine = UNSET_LINE; /* initialize the type of line to UNSET_LINE */
 
     token = cutFirstToken(line, &errorCode); /* cut the first token from the line */
-    if (errorCode == MALLOC_ERROR_F)
-        return MALLOC_ERROR_F;
+    if (errorCode == MALLOC_ERROR_F){
+        addErrorToList(errorList, errorCode); /* add the error to the error list */
+        return LEXER_FAILURE_S; /* return failure if memory allocation failed */
+    }
     
     if (isOperationName(token)){   /* if the line is an instruction */
         pLine->typesOfLine = INSTRUCTION_LINE;
@@ -143,13 +161,17 @@ ErrCode determineLineType(parsedLine *pLine, char *line)
 
     if (token[0] == '.'){ /* if the line contains a dot, it is unknown directive */
         free(token);
-        return INVALID_DIRECTIVE_E;
+        addErrorToList(errorList, INVALID_DIRECTIVE_E);
+        return LEXER_FAILURE_S;
     }
 
-    free(token); 
-    return UNKNOWN_LINE_TYPE_E; /* the line is not an instruction or a directive */
+    free(token);
+    return LEXER_FAILURE_S; /* the line is not an instruction or a directive */
 }
 
+/* parses a directive line and sets directive structure
+ * errorCode:  LEXER_SUCCESS_S, LEXER_FAILURE_S
+ */
 ErrCode parseDirectiveLine(parsedLine *pLine, char *line, MacroTable *macroNames, ErrorList *errorList){
 
     pLine->lineContentUnion.directive.dataCount = 0;
@@ -174,7 +196,7 @@ ErrCode parseDirectiveLine(parsedLine *pLine, char *line, MacroTable *macroNames
         strcmp(pLine->lineContentUnion.directive.directiveName, ".extern") == 0) 
         return parseEntryExternDirectiveLine(pLine, line, macroNames, errorList);
 
-    return INVALID_DIRECTIVE_E; /* should not reach here */
+    return INVALID_DIRECTIVE_E; /* cannot reach here because all directives are handled */
 }
 
 ErrCode parseDataDirectiveLine(parsedLine *pLine, char *line, ErrorList *errorList)
@@ -249,8 +271,6 @@ ErrCode parseStrDirectiveLine(parsedLine *pLine, char *line, ErrorList *errorLis
         addErrorToList(errorList, MALLOC_ERROR_F);
         return LEXER_FAILURE_S;
     }
-
-    printf("Parsing string directive: %s\n", line); /* debug print */
 
     if (isEndOfLine(line)) { /* if the directive has no data */
         addErrorToList(errorList, DIRECTIVE_DATA_MISSING_E);
@@ -448,20 +468,83 @@ ErrCode parseEntryExternDirectiveLine(parsedLine *pLine, char *line, MacroTable 
     return LEXER_SUCCESS_S;
 }
 
+/* parses an instruction line and sets the instruction structure
+ * errorCode:  LEXER_SUCCESS_S, LEXER_FAILURE_S
+ */
 ErrCode parseInstructionLine(parsedLine *pLine, char *line, ErrorList *errorList)
+{
+    ErrCode errorCode = NULL_INITIAL;
+    char *matLabel = NULL, *row = NULL, *col = NULL; /* pointers to hold the matrix label, row and column when parsing */
+    unsigned int currErrCount = errorList->count; /* save the current error count to check if any errors were added */
+    unsigned int wordCount = 0; /* the amount of binary lines the instruction will take */
+
+    /* get the number of operands in the instruction */
+    pLine->lineContentUnion.instruction.operandCount = numOfOperandsInInstruction(pLine->lineContentUnion.instruction.operationName);
+
+    errorCode = parseInstructionLineOperand(pLine, line, errorList); /* parse the operands of the instruction line */
+    if (errorCode != LEXER_SUCCESS_S)
+        return errorCode;
+    
+    if (pLine->lineContentUnion.instruction.operandCount == NO_OPERANDS) { /* if the instruction has no operands */
+        if (currErrCount < errorList->count) /* if new errors were added */
+            return LEXER_FAILURE_S;
+        pLine->lineContentUnion.instruction.wordCount = 0; /* if it has no operands, the word count is 0 */
+        return LEXER_SUCCESS_S; /* return success if the instruction has no operands */
+    }
+
+    /* the instruction has at least one operand - lets check if the first operand is a matrix */
+    errorCode = parseMatrixOperand(pLine->lineContentUnion.instruction.operand1, &matLabel, &row, &col);
+    if (errorCode == LEXER_SUCCESS_S){
+        wordCount += MATRIX_OPERAND_BIN_LINES; /* if the first operand is a matrix, it will take (2) binary lines */
+        pLine->lineContentUnion.instruction.operand1Type = MATRIX_OPERAND; 
+        free(pLine->lineContentUnion.instruction.operand1); /* free the raw first operand */
+        pLine->lineContentUnion.instruction.operand1 = matLabel; /* set the first operand to the label of the matrix */
+        pLine->lineContentUnion.instruction.row1 = row; /* set the row of the first operand */
+        pLine->lineContentUnion.instruction.col1 = col; /* set the column of the first operand */
+    }
+    else{
+        wordCount += NON_MATRIX_OPERAND_BIN_LINES; /* if the first operand is a non-matrix, it will take (1) binary lines */
+        pLine->lineContentUnion.instruction.operand1Type = UNKNOWN_OPERAND;
+    }
+
+    if (pLine->lineContentUnion.instruction.operandCount == ONE_OPERAND) { /* if the instruction has only one operand */
+        pLine->lineContentUnion.instruction.wordCount = wordCount; 
+        return LEXER_SUCCESS_S;
+    }
+    
+    /* the instruction has two operands, we need to check the second operand */
+    errorCode = parseMatrixOperand(pLine->lineContentUnion.instruction.operand2, &matLabel, &row, &col);
+    if (errorCode == LEXER_SUCCESS_S){
+        wordCount += MATRIX_OPERAND_BIN_LINES; /* if the second operand is a matrix, it will take (2) binary lines */
+        pLine->lineContentUnion.instruction.operand2Type = MATRIX_OPERAND; 
+        free(pLine->lineContentUnion.instruction.operand2); /* free the raw second operand */
+        pLine->lineContentUnion.instruction.operand2 = matLabel; /* set the second operand to the label of the matrix */
+        pLine->lineContentUnion.instruction.row2 = row; /* set the row of the second operand */
+        pLine->lineContentUnion.instruction.col2 = col; /* set the column of the second operand */
+    }
+    else{
+        wordCount += NON_MATRIX_OPERAND_BIN_LINES; /* if the second operand is a non-matrix, it will take (1) binary lines */
+        pLine->lineContentUnion.instruction.operand2Type = UNKNOWN_OPERAND;
+    }
+
+    pLine->lineContentUnion.instruction.wordCount = wordCount; /* set the word count of the instruction */
+    return LEXER_SUCCESS_S;
+}
+
+/* Parses an instruction line and sets the the raw unprocessed operands in the parsedLine structure
+ * errorCode:  LEXER_SUCCESS_S, LEXER_FAILURE_S
+ */
+ErrCode parseInstructionLineOperand(parsedLine *pLine, char *line, ErrorList *errorList)
 {
     char *operand1 = NULL, *operand2 = NULL;
     char* commaExists = NULL; /* used to find the first comma in the line for error checking */
-    unsigned int operandLen = 0;
-    pLine->lineContentUnion.instruction.operandCount = numOfOperandsInInstruction(pLine->lineContentUnion.instruction.operationName);
-
-    int len = strlen(line);
 
     if (pLine->lineContentUnion.instruction.operandCount == NO_OPERANDS) { /* if the instruction has no operands */
         if (!isEndOfLine(line)) { /* if there is extraneous text after the instruction */
             addErrorToList(errorList, EXTRANEOUS_TEXT_E);
             return LEXER_FAILURE_S;
         }
+        return LEXER_SUCCESS_S;
     }
 
     commaExists = strchr(line, ','); /* find the first comma in the line */
@@ -471,8 +554,6 @@ ErrCode parseInstructionLine(parsedLine *pLine, char *line, ErrorList *errorList
         addErrorToList(errorList, MISSING_FIRST_OPERAND_E);
         return LEXER_FAILURE_S;
     }
-
-    operandLen = strlen(operand1); /* to check */
 
     operand1 = trimmedDup(operand1); /* making the first operand a dynamic string */
     if (operand1 == NULL) { /* if memory allocation failed */
@@ -486,7 +567,7 @@ ErrCode parseInstructionLine(parsedLine *pLine, char *line, ErrorList *errorList
             addErrorToList(errorList, ONE_OPERAND_COMMA_E); /* if the instruction has no second operand */
             return LEXER_FAILURE_S;
         }
-        return LEXER_SUCCESS_S; /* return success if the instruction has one operand */
+        return LEXER_SUCCESS_S;
     }
 
     operand2 = strtok(NULL, ","); /* get the second operand */
@@ -504,7 +585,6 @@ ErrCode parseInstructionLine(parsedLine *pLine, char *line, ErrorList *errorList
     pLine->lineContentUnion.instruction.operand2 = operand2; /* set the second operand */
     if (pLine->lineContentUnion.instruction.operandCount == TWO_OPERANDS)
         return LEXER_SUCCESS_S;
-
 
     return LEXER_FAILURE_S; /* should never reach here but if it does, return failure */
 }
@@ -573,8 +653,16 @@ void freeParsedLine(parsedLine *pLine)
                 free(pLine->lineContentUnion.instruction.operationName);
             if (pLine->lineContentUnion.instruction.operand1 != NULL)
                 free(pLine->lineContentUnion.instruction.operand1);
+            if (pLine->lineContentUnion.instruction.row1 != NULL)
+                free(pLine->lineContentUnion.instruction.row1);
+            if (pLine->lineContentUnion.instruction.col1 != NULL)
+                free(pLine->lineContentUnion.instruction.col1);
             if (pLine->lineContentUnion.instruction.operand2 != NULL)
                 free(pLine->lineContentUnion.instruction.operand2);
+            if (pLine->lineContentUnion.instruction.row2 != NULL)
+                free(pLine->lineContentUnion.instruction.row2);
+            if (pLine->lineContentUnion.instruction.col2 != NULL)
+                free(pLine->lineContentUnion.instruction.col2);
             break;
 
         default: /* For COMMENT_LINE and EMPTY_LINE, no additional memory to free */
@@ -589,18 +677,37 @@ void printParsedLine(parsedLine *pLine)
         return;
 
     printf("\nParsed Line:\n");
-    if (pLine->label != NULL)
-        printf("%s", pLine->label);
-    
+
     switch (pLine->typesOfLine) {
         case INSTRUCTION_LINE:
+            printf("Instruction Line:\n");
+            printf("operand number: %d  , ", pLine->lineContentUnion.instruction.operandCount);
+            printf("word count: %d\n", pLine->lineContentUnion.instruction.wordCount);
+            printf("operand1 type: %d, operand2 type: %d\n", pLine->lineContentUnion.instruction.operand1Type, pLine->lineContentUnion.instruction.operand2Type);
+            
+            if (pLine->label != NULL)
+                printf("%s", pLine->label);
+            
             printf(" %s ", pLine->lineContentUnion.instruction.operationName);
             if (pLine->lineContentUnion.instruction.operand1 != NULL)
-                printf(" %s", pLine->lineContentUnion.instruction.operand1);
+                printf(">>%s<<", pLine->lineContentUnion.instruction.operand1);
+            if (pLine->lineContentUnion.instruction.row1 != NULL)
+                printf(" [>>%s<<]", pLine->lineContentUnion.instruction.row1);
+            if (pLine->lineContentUnion.instruction.col1 != NULL)
+                printf("[>>%s<<]", pLine->lineContentUnion.instruction.col1);
             if (pLine->lineContentUnion.instruction.operand2 != NULL)
-                printf(" , %s", pLine->lineContentUnion.instruction.operand2);
+                printf(", >>%s<<", pLine->lineContentUnion.instruction.operand2);
+            if (pLine->lineContentUnion.instruction.row2 != NULL)
+                printf(" [>>%s<<]", pLine->lineContentUnion.instruction.row2);
+            if (pLine->lineContentUnion.instruction.col2 != NULL)
+                printf("[>>%s<<]", pLine->lineContentUnion.instruction.col2);
             break;
         case DIRECTIVE_LINE:
+            printf("Directive Line:\n");
+
+            if (pLine->label != NULL)
+            printf("%s", pLine->label);
+
             if (strcmp(pLine->lineContentUnion.directive.directiveName, ".string") == 0)
             {
                 printf(" %s \"", pLine->lineContentUnion.directive.directiveName);
@@ -698,18 +805,6 @@ Bool isRegister(const char* arg) {
     return FALSE;
 }
 
-ErrCode isRegisterOperand(const char* arg) {
-    if (arg[0] == 'r')
-        return LEXER_FAILURE_S;
-    if (arg[1] < '0' && arg[1] > '7') 
-        return invalid;
-        
-    if(!isEndOfLine(arg + REGISTER_LENGTH)) /* check if the operand is a valid register */
-        return EXTRANEOUS_TEXT_E;
-
-    return FALSE;
-}
-
 Bool isDirective(const char* arg)
 {
     if (strcmp(arg, ".data") == 0 ||
@@ -747,7 +842,7 @@ Bool isKeywords(const char *arg)
 
 Bool isValidInteger(int value)
 {
-    if (value >= MIN_10BIT && value <= MAX_10BIT) /* check if the integer value can fit in 10 bits (-512 to 511) */
+    if (value >= MIN_10BIT_INT && value <= MAX_10BIT_INT) /* check if the integer value can fit in 10 bits (-512 to 511) */
         return TRUE;
     return FALSE;
 }
@@ -762,6 +857,24 @@ ErrCode isLabelOperand(const char *operand) {
             return LEXER_FAILURE_S;
         operand++;
     }
+
+    return LEXER_SUCCESS_S;
+}
+
+ErrCode isRegisterOperand(const char* operand) {
+    if (operand[0] == 'r') /* check if the first character is 'r' */
+        return LEXER_FAILURE_S;
+
+     /* if the second character isn't a digit */
+    if (!isdigit(operand[1])) 
+        return LEXER_FAILURE_S; /* if the second character is not a digit */
+
+    /* check if the register number is bigger then 7 */
+    if (isdigit(operand[2]) || operand[1] == '8' || operand[1] == '9')
+        return REGISTER_OUT_OF_RANGE_E; /* return error for out of range register */    
+
+    if(!isEndOfLine(operand + REGISTER_LENGTH)) /* check if the operand is a valid register */
+        return EXTRANEOUS_TEXT_E;
 
     return LEXER_SUCCESS_S;
 }
@@ -790,7 +903,84 @@ ErrCode isNumberOperand(const char *operand) {
     return LEXER_SUCCESS_S;
 }
 
+ErrCode parseMatrixOperand(const char *operandStr, char **name, char **row, char **col) {
+    const char *p = operandStr;
+    const char *start;
+    unsigned int len;
 
+    /* clear the former address of the pointers */
+    *name = NULL;
+    *row = NULL;
+    *col = NULL;
+
+    while (isspace(*p)) p++;
+
+    if (!isalpha(*p) && *p != '_')
+        return MAT_INVALID_NAME_START;
+
+    start = p;
+    while (isalnum(*p) || *p == '_') p++;
+    len = p - start;
+    *name = strnDup(start, len);
+
+    while (isspace(*p)) p++;
+    if (*p != '[') {
+        freeStrings(*name, *row, *col);
+        return MAT_MISSING_FIRST_BRACKET;
+    }
+    p++;
+
+    while (isspace(*p)) p++;
+    if (*p == '\0' || *p == ']') {
+        freeStrings(*name, *row, *col);
+        return MAT_EMPTY_ROW_INDEX;
+    }
+
+    start = p;
+    while (*p != '\0' && *p != ']') p++;
+    if (*p != ']') {
+        freeStrings(*name, *row, *col);
+        return MAT_MISSING_FIRST_CLOSING_BRACKET;
+    }
+    len = p - start;
+    *row = strnDup(start, len);
+    p++;
+
+    while (isspace(*p)) p++;
+    if (*p != '[') {
+        freeStrings(*name, *row, *col);
+        return MAT_MISSING_SECOND_BRACKET;
+    }
+    p++;
+
+    while (isspace(*p)) p++;
+    if (*p == '\0' || *p == ']') {
+        freeStrings(*name, *row, *col);
+        return MAT_EMPTY_COLUMN_INDEX;
+    }
+
+    start = p;
+    while (*p != '\0' && *p != ']') p++;
+    if (*p != ']') {
+        freeStrings(*name, *row, *col);
+        return MAT_MISSING_SECOND_CLOSING_BRACKET;
+    }
+    len = p - start;
+    *col = strnDup(start, len);
+    p++;
+
+    while (isspace(*p)) p++;
+    if (*p != '\0') {
+        freeStrings(*name, *row, *col);
+        return EXTRANEOUS_TEXT_E;
+    }
+
+    return LEXER_SUCCESS_S;
+}
+
+/* checks if the label is valid and ends with a colon
+ * Returns: isValidLabelName(), LABEL_TEXT_AFTER_COLON_E, MALLOC_ERROR_F, LEXER_SUCCESS_S
+ */
 ErrCode isValidLabelColon(MacroTable *table, const char *label)
 {
     char* newLabel;
@@ -812,6 +1002,9 @@ ErrCode isValidLabelColon(MacroTable *table, const char *label)
     return LEXER_SUCCESS_S;
 }
 
+/* isValidLabelName - checks if the label name is valid (doesn't check in symbol table)
+ * Returns: LEXER_SUCCESS_S, LABEL_EMPTY_E, LABEL_TOO_LONG_E, LABEL_INVALID_START_CHAR_E, LABEL_INVALID_CHAR_E, LABEL_NAME_IS_KEYWORD_E, LABEL_SAME_AS_MACRO_E
+ */
 ErrCode isValidLabelName(MacroTable *macroNames, const char *label)
 {
     int i, len = strlen(label); /* start from 1 to skip the first character */

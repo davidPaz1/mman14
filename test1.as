@@ -1,6 +1,7 @@
+MAIN: mov M1[ r2][r7 ], M2[ r2][r7 ]
+inc M1   [   r1   ]   [   r3   ]
 STR: .string "abcdefg"
 M: .entry tesTa
-MAIN: mov M1[r2][r7],LENGTH
     add r2,STR
 
 M1: .mat [2][6] -1,2,3,4, 5,24,34,24

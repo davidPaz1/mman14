@@ -23,7 +23,7 @@ typedef enum lineType {
 } lineType;
 
 typedef enum operandType {
-    UNSET_OPERAND = 0, /* used for error handling */
+    UNKNOWN_OPERAND = 0, /* used for error handling */
     REGISTER_OPERAND = 1, 
     NUMBER_OPERAND, 
     LABEL_OPERAND, 
@@ -52,11 +52,12 @@ typedef struct parsedLine {
             operandType operand1Type; /* type of the first operand (e.g. register, immediate, label) */
             operandType operand2Type; /* type of the second operand (e.g. register, immediate, label) */
             char* operand1; /* first operand */
-            char* col1; /* if first operand is a matrix element, this will hold the column in the line */
             char* row1; /* if first operand is a matrix element, this will hold the row in the line */
+            char* col1; /* if first operand is a matrix element, this will hold the column in the line */
             char* operand2; /* second operand */
-            char* col2; /* if second operand is a matrix element, this will hold the column in the line */
             char* row2; /* if second operand is a matrix element, this will hold the row in the line */
+            char* col2; /* if second operand is a matrix element, this will hold the column in the line */
+       
         } instruction;
     }lineContentUnion; /* union to hold either directive or instruction data */
 } parsedLine;
@@ -66,14 +67,17 @@ typedef struct parsedLine {
 parsedLine* createParsedLine(); /* create a new parsedLine structure */
 parsedLine* readParsedLine(FILE *fp, ErrCode *errorCode, MacroTable *macroNames, ErrorList *errorList); /* read a line from the file and return a parsedLine structure */
 ErrCode getLabelFromLine(parsedLine *pline, char *line, MacroTable *macroNames, ErrorList *errorList); /* get the label from the line if it exists */
-ErrCode determineLineType(parsedLine *pLine, char *line); /* determine the type of the line and if it has a label */
+ErrCode determineLineType(parsedLine *pLine, char *line, ErrorList *errorList); /* determine the type of the line and if it has a label */
 ErrCode parseDirectiveLine(parsedLine *pline, char *line, MacroTable *macroNames, ErrorList *errorList);
 ErrCode parseDataDirectiveLine(parsedLine *pLine, char *line, ErrorList *errorList);
 ErrCode parseStrDirectiveLine(parsedLine *pLine, char *line, ErrorList *errorList);
 ErrCode parseMatDirectiveLine(parsedLine *pLine, char *line, ErrorList *errorList);
 ErrCode parseEntryExternDirectiveLine(parsedLine *pLine, char *line, MacroTable *macroNames, ErrorList *errorList);
+
 ErrCode parseInstructionLine(parsedLine *pLine, char *line, ErrorList *errorList);
+ErrCode parseInstructionLineOperand(parsedLine *pLine, char *line, ErrorList *errorList); /* parse the operands of the instruction line */
 ErrCode determineOperandType(parsedLine *pLine, MacroTable *macroNames, SymbolTable *symbolTable, ErrorList *errorList);
+ErrCode parseMatrixOperand(const char *operandStr, char **name, char **row, char **col); /* check if the operand is a valid matrix operand */
 
 
 short int numOfWordsInInstruction(parsedLine *pLine); /* return the number of words needed for the binary code of the instruction */
@@ -93,8 +97,6 @@ Bool isKeywords(const char* arg); /* check if the string is a keyword */
 Bool isValidInteger(int value); /* check if the integer value is valid for the assembler */
 
 ErrCode isNumberOperand(const char *operand); /* check if the operand is a valid number */
-ErrCode isMatrixOperand(const char *operand); /* check if the operand is a valid matrix element */
-
 
 ErrCode isValidLabelColon(MacroTable *table, const char *label); /* check if the label is valid without the colon */
 ErrCode isValidLabelName(MacroTable *table, const char *label);

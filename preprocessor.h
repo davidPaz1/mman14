@@ -11,6 +11,4 @@ ErrCode executePreprocessor(MacroTable* macroTable, ErrorList* errorList, FILE* 
 void spreadMacro(MacroTable* macroTable, const char* macroName, FILE* amFile); /* spread the macro body into the .am file */
 ErrCode macroDef(MacroTable* macroTable, char* line); /* add a line to the macro body */
 
-void preprocessorFreeMemory(char* line, char* firstToken); /* free the memory allocated from the preprocessor */
-
 #endif

@@ -4,6 +4,8 @@
 #include "global.h"
 #include "error.h"
 
+/* MacroTable definitions */
+
 typedef struct MacroBody{ /* linked list of all of the macro lines */
     char* line; /* 1 line from the macro */
     struct MacroBody* nextLine; /* pointer to the next line in the body of the macro */
@@ -34,6 +36,9 @@ Bool isMacroExists(MacroTable* macroTable, const char* macroName);
 void freeMacroNode(MacroNode* node);
 void freeMacroBody(MacroBody* body);
 
+
+/* SymbolTable definitions */
+
 typedef enum Symbol_Type{
     UNDEFINED_SYMBOL = -1, /* symbol is not defined */
     DATA_SYMBOL = 1,
@@ -56,7 +61,6 @@ typedef struct SymbolTable {
     unsigned int haveExtern : 1; /* flag to indicate if there is an extern symbol */
     unsigned int count; /* number of symbols in the table */
 } SymbolTable;
-
 
 /* "public" symbol functions */
 SymbolTable* createSymbolTable();

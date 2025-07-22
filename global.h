@@ -17,8 +17,13 @@
 #define BASE4_INSTRUCTION_LENGTH 5
 
 #define REGISTER_SIZE 10
-#define MAX_10BIT 511
-#define MIN_10BIT -512
+#define MAX_10BIT_INT 511
+#define MIN_10BIT_INT -512
+#define MAX_8BIT_INT 127
+#define MIN_8BIT_INT -128
+
+#define MATRIX_OPERAND_BIN_LINES 2 /* number of binary lines needed for a matrix operand */
+#define NON_MATRIX_OPERAND_BIN_LINES 1 /* number of bits needed for a non-matrix operand */
 
 /*enums*/
 typedef enum boolean {

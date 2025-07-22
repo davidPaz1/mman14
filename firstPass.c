@@ -32,7 +32,7 @@ ErrCode executeFirstPass(FILE* amFile, int *DCF, int *ICF, MacroTable* macroName
         if (errorCode == EOF_REACHED_S)
             break; /* end of file reached, exit the loop */
         
-        if (errorCode != LEXER_SUCCESS_S) /* check if an error occurred while reading the line */
+        if (errorCode == LEXER_FAILURE_S) /* if reading the line failed */
             continue; /* continue to the next line */
 
         if (pLine->typesOfLine == EMPTY_LINE || pLine->typesOfLine == COMMENT_LINE) {
