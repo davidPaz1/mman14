@@ -38,7 +38,8 @@ char* getErrorMessage(ErrCode code) {
         /* lexer errors 20 - 39 */
         case INVALID_DIRECTIVE_E:
             return "invalid directive, should be one of the valid directives (.data, .string, .mat, .entry, .extern).";
-
+        case MACRO_AFTER_LABEL_E:
+            return "can not have a macro after a label, please remove the macro from the line.";
         case LABEL_INVALID_START_CHAR_E: 
             return "label starts with an invalid character, should start with a letter.";
         case LABEL_INVALID_CHAR_E: 
@@ -53,6 +54,8 @@ char* getErrorMessage(ErrCode code) {
             return "label and a macro name cannot be the same.";
         case LABEL_NAME_IS_KEYWORD_E:
             return "label name is a keyword, should not be a keyword.";
+        case LABEL_NAME_IS_REGISTER_E:
+            return "label name is a register, should not be a register.";
         case LABEL_ALREADY_EXISTS_E:
             return "label already exists in symbol table.";
         case MACRO_NAME_EXISTS_E:
@@ -67,6 +70,8 @@ char* getErrorMessage(ErrCode code) {
             return "macro name contains invalid characters.";
         case MACRO_NAME_IS_KEYWORD_E:
             return "macro name is a set keyword by the assembly language.";
+        case MACRO_NAME_IS_REGISTER_E:
+            return "macro name is a register, pls use a different name.";
         case DIRECTIVE_DATA_MISSING_E:
             return "directive is missing data items, should have at least one data item.";
         case MISSING_COMMA_E:
@@ -99,12 +104,12 @@ char* getErrorMessage(ErrCode code) {
             return "missing number after '#'.";
         case ONE_OPERAND_COMMA_E:
             return "instruction has one operand there was a comma found, should not have a comma if there is only one operand.";
+        case REGISTER_NO_R_E:
+            return "register does not start with 'r', should start with 'r' followed by a digit.";
+        case REGISTER_NO_DIGIT_E:
+            return "register does not have a digit after 'r', should be in the format r0, r1, r2, ..., r7.";
         case REGISTER_OUT_OF_RANGE_E:
             return "register number is out of range (0-7), should be between 0 and 7.";
-        case MAT_INVALID_NAME_START:
-            return "matrix name starts with an invalid character, should start with a letter.";
-        case MAT_MISSING_FIRST_BRACKET:
-            return "matrix is missing the first bracket, should start with a [ character.";
         case MAT_EMPTY_ROW_INDEX:
             return "matrix row index is empty, should have a row index after the [ character.";
         case MAT_MISSING_FIRST_CLOSING_BRACKET:
@@ -115,6 +120,18 @@ char* getErrorMessage(ErrCode code) {
             return "matrix column index is empty, should have a column index after the [ character.";
         case MAT_MISSING_SECOND_CLOSING_BRACKET:
             return "matrix is missing the second closing bracket, should end with a ] character after the column index.";
+        case MAT_ROW_NOT_REGISTER:
+            return "matrix row is not a register, note the next error will tell you the problem with the register.";
+        case MAT_COL_NOT_REGISTER:
+            return "matrix column is not a register, note the next error will tell you the problem with the register.";
+        case OPERAND_IS_KEYWORD_E:
+            return "operand can not be a keyword (e.g. mov, .data , mcroend).";
+        case OPERAND_IS_MACRO_E:
+            return "operand can not be a macro, should be a register, number, label or matrix.";
+        case OPERAND1_UNKNOWN_E:
+            return "first operand is unknown, should be a register, number, label or matrix.";
+        case OPERAND2_UNKNOWN_E:
+            return "second operand is unknown, should be a register, number, label or matrix.";
         
         /* tables errors 50 - 69 */
         case SYMBOL_NAME_EXISTS_E:

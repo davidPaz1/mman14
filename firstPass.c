@@ -40,7 +40,8 @@ ErrCode executeFirstPass(FILE* amFile, int *DCF, int *ICF, MacroTable* macroName
             continue; /* skip empty or comment lines */
         }
 
-        printParsedLine(pLine); 
+        if (pLine->typesOfLine == INSTRUCTION_LINE)
+            printParsedLine(pLine); 
 
         if(pLine->label != NULL){ /* if the line has a label */
             errorCode = isValidLabelColon(macroNames, pLine->label);  /* check if the label is valid */

@@ -26,8 +26,9 @@ typedef enum operandType {
     UNKNOWN_OPERAND = 0, /* used for error handling */
     REGISTER_OPERAND = 1, 
     NUMBER_OPERAND, 
-    LABEL_OPERAND, 
-    MATRIX_OPERAND
+    MATRIX_OPERAND,
+    SYNTAX_LABEL_OPERAND, /* label - unchecked in symbol table */
+    TABLE_LABEL_OPERAND /* label - valid in symbol table */
 } operandType;
 
 typedef struct parsedLine {
@@ -67,23 +68,22 @@ typedef struct parsedLine {
 parsedLine* createParsedLine(); /* create a new parsedLine structure */
 parsedLine* readParsedLine(FILE *fp, ErrCode *errorCode, MacroTable *macroNames, ErrorList *errorList); /* read a line from the file and return a parsedLine structure */
 ErrCode getLabelFromLine(parsedLine *pline, char *line, MacroTable *macroNames, ErrorList *errorList); /* get the label from the line if it exists */
-ErrCode determineLineType(parsedLine *pLine, char *line, ErrorList *errorList); /* determine the type of the line and if it has a label */
+ErrCode determineLineType(parsedLine *pLine, char *line, MacroTable *macroNames,ErrorList *errorList); /* determine the type of the line and if it has a label */
 ErrCode parseDirectiveLine(parsedLine *pline, char *line, MacroTable *macroNames, ErrorList *errorList);
 ErrCode parseDataDirectiveLine(parsedLine *pLine, char *line, ErrorList *errorList);
 ErrCode parseStrDirectiveLine(parsedLine *pLine, char *line, ErrorList *errorList);
 ErrCode parseMatDirectiveLine(parsedLine *pLine, char *line, ErrorList *errorList);
 ErrCode parseEntryExternDirectiveLine(parsedLine *pLine, char *line, MacroTable *macroNames, ErrorList *errorList);
 
-ErrCode parseInstructionLine(parsedLine *pLine, char *line, ErrorList *errorList);
+ErrCode parseInstructionLine(parsedLine *pLine, char *line, MacroTable *macroNames, ErrorList *errorList);
 ErrCode parseInstructionLineOperand(parsedLine *pLine, char *line, ErrorList *errorList); /* parse the operands of the instruction line */
-ErrCode determineOperandType(parsedLine *pLine, MacroTable *macroNames, SymbolTable *symbolTable, ErrorList *errorList);
+ErrCode determineOperandType(const char *operand, operandType *opType, char **matLabel, char **row, char **col, MacroTable *macroNames, ErrorList *errorList);
 ErrCode parseMatrixOperand(const char *operandStr, char **name, char **row, char **col); /* check if the operand is a valid matrix operand */
 
-
-short int numOfWordsInInstruction(parsedLine *pLine); /* return the number of words needed for the binary code of the instruction */
 short int numOfOperandsInInstruction(const char *instructionName); /* return the number of operands in the instruction */
 void freeParsedLine(parsedLine *pLine); /* free the memory allocated for the parsedLine structure */
 void printParsedLine(parsedLine *pLine);
+char* printOpType(operandType opType); /* print the operand type */
 
 /* is X functions prototypes */
 /* keyword functions prototypes */
@@ -91,13 +91,14 @@ Bool isEndOfLine(const char* str); /* check if the string is an end of line */
 Bool isOperationName(const char* arg); /* check if the string is an operation name */
 Bool isRegister(const char* arg); /* check if the string is a register name */
 Bool isDirective(const char* arg); /* check if the string is a directive */
-Bool isMacroStart(const char* arg); /* check if the string is a macro start */
+Bool isMacroDef(const char* arg); /* check if the string is a macro start */
 Bool isMacroEnd(const char* arg); /* check if the string is a macro end */
 Bool isKeywords(const char* arg); /* check if the string is a keyword */
 Bool isValidInteger(int value); /* check if the integer value is valid for the assembler */
 
+ErrCode isRegisterOperand(const char* operand); /* check if the operand is a valid register */
 ErrCode isNumberOperand(const char *operand); /* check if the operand is a valid number */
-
+ErrCode isValidLabelSyntax(const char *operand); /* check if the operand is a valid label (doesn't check in the symbol table) */
 ErrCode isValidLabelColon(MacroTable *table, const char *label); /* check if the label is valid without the colon */
 ErrCode isValidLabelName(MacroTable *table, const char *label);
 char* delColonFromLabel(const char *label); /* remove the colon from the label if it exists */

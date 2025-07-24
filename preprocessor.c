@@ -57,7 +57,7 @@ ErrCode executePreprocessor(MacroTable *macroTable, ErrorList *errorList, FILE *
             else /* if the line is just a macro use line */
                 spreadMacro(macroTable, firstToken, amFile); /* spread the macro body into the .am file */
         }
-        else if (strcmp(firstToken, "mcro") == 0) { /* check if the line is a macro definition line 3 */
+        else if (isMacroDef(firstToken)) { /* check if the line is a macro definition line 3 */
             cutnChar(line, strlen(firstToken)); /* cut the first word from the line for processing */
             errorCode = macroDef(macroTable, line); /* add the macro definition to the macro table */
             if (errorCode != TABLES_SUCCESS_S) /* check if the macro definition was added successfully */
@@ -65,7 +65,7 @@ ErrCode executePreprocessor(MacroTable *macroTable, ErrorList *errorList, FILE *
             else
                 inMacroDef = TRUE; /* set the flag to indicate that we are in a macro definition 4 */
         }
-        else if (strcmp(firstToken, "mcroend") == 0) { /* check if the line is a macro end line 7 */
+        else if (isMacroEnd(firstToken)) { /* check if the line is a macro end line 7 */
             cutnChar(line, strlen(firstToken)); /* cut the first word from the line for processing */
             if (!isEndOfLine(line)) /* if there are some extraneous text after the mcroend */
                 addErrorToList(errorList, EXTRANEOUS_TEXT_E); 

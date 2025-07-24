@@ -85,4 +85,10 @@ typedef struct word { /* bitfield struct */
 } word;
 
 
+typedef struct word1 { /* bitfield struct */
+    unsigned int ARE: 2;
+    unsigned int labelAddress: 8;
+} word1;
+
+
 #endif
