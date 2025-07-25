@@ -141,21 +141,25 @@ void executeAssembler(char* fileName)
     }
     printf("starting second pass...\n");
     errorList->stage = "second pass";
-    
+
+    errCode = executeSecondPass(amFile, macroTable, symbolTable, errorList); /* execute the second pass */
+    if (errCode == SECOND_PASS_FAILURE_S) {
+        freeFiles(amFile, obFile, NULL);
+        printErrors(errorList); /* print the errors found */
+        freeTableAndLists(macroTable, symbolTable , errorList); /* free the macro table and error list */
+        return; /* exit if the second pass failed */
+    }
+
+    if (ICF + DCF > 164){
+        printf("Warning: ICF + DCF exceeds 164\n");
+    }
+
     obFile = openFile(fileName, ".ob", "w", &errCode); /* open the .ob file for writing */
     if (errCode != UTIL_SUCCESS_S) {
         printf("Error opening file %s.ob: %s\n", fileName, getErrorMessage(errCode));
         freeTableAndLists(macroTable, symbolTable , errorList); /* free the macro table and error list */
         freeFiles(amFile, NULL, NULL);
         return; /* exit if the file cannot be opened */
-    }
-
-    errCode = executeSecondPass(amFile, obFile, macroTable, symbolTable, errorList); /* execute the second pass */
-    if (errCode == SECOND_PASS_FAILURE_S) {
-        freeFiles(amFile, obFile, NULL);
-        printErrors(errorList); /* print the errors found */
-        freeTableAndLists(macroTable, symbolTable , errorList); /* free the macro table and error list */
-        return; /* exit if the second pass failed */
     }
 
     /* still need to handle .ent and .ext files */

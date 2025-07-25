@@ -3,8 +3,6 @@
 
 #include "global.h"
 
-#define MAX_ERROR_MSG_LENGTH 150 /* maximum length of an error message */
-
 /* error codes are sorted by the files they are mainly needed in,
 they also are divided into categories of severity and meaning:
 _S = signal or success, _F = fatal - halt immediately, _E = error - will halt at the end of the stage
@@ -85,6 +83,10 @@ typedef enum ErrCode {
     OPERAND_IS_MACRO_E = 70, /* operand is a macro */
     OPERAND1_UNKNOWN_E = 71, /* first operand is unknown */
     OPERAND2_UNKNOWN_E = 72, /* second operand is unknown */
+    OPERAND1_LABEL_DOES_NOT_EXIST_E = 73, /* first operand label does not exist */
+    OPERAND2_LABEL_DOES_NOT_EXIST_E = 74, /* second operand label does not exist */
+    OPERAND1_NON_MAT_SYMBOL_E = 75, /* first operand is a non-matrix symbol used */
+    OPERAND2_NON_MAT_SYMBOL_E = 76, /* second operand is a non-matrix symbol used */
 
     /* tables errors 90 - 99 */
     TABLES_SUCCESS_S = 90, /* macro operation was successful */
@@ -102,13 +104,14 @@ typedef enum ErrCode {
 
     /* secondPass errors 120 - 129 */
     SECOND_PASS_SUCCESS_S = 120, /* second pass was successful */
-    SECOND_PASS_FAILURE_S = 121 /* second pass error */
+    SECOND_PASS_FAILURE_S = 121, /* second pass error */
+    ENTRY_LABEL_DOES_NOT_EXIST_E = 122 /* label does not exist error */
 
 } ErrCode;
 
 typedef struct ErrorNode {
     ErrCode errCode;
-    unsigned int line;              
+    unsigned int line;
     struct ErrorNode *next;
 } ErrorNode;
 

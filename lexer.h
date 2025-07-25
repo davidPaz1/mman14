@@ -26,9 +26,10 @@ typedef enum operandType {
     UNKNOWN_OPERAND = 0, /* used for error handling */
     REGISTER_OPERAND = 1, 
     NUMBER_OPERAND, 
-    MATRIX_OPERAND,
-    SYNTAX_LABEL_OPERAND, /* label - unchecked in symbol table */
-    TABLE_LABEL_OPERAND /* label - valid in symbol table */
+    MATRIX_SYNTAX_OPERAND, /* matrix - syntax check only */
+    MATRIX_TABLE_OPERAND, /* matrix - valid matrix in symbol table */
+    LABEL_SYNTAX_OPERAND, /* label - unchecked in symbol table */
+    LABEL_TABLE_OPERAND /* label - valid in symbol table */
 } operandType;
 
 typedef struct parsedLine {
@@ -78,7 +79,7 @@ ErrCode parseEntryExternDirectiveLine(parsedLine *pLine, char *line, MacroTable 
 ErrCode parseInstructionLine(parsedLine *pLine, char *line, MacroTable *macroNames, ErrorList *errorList);
 ErrCode parseInstructionLineOperand(parsedLine *pLine, char *line, ErrorList *errorList); /* parse the operands of the instruction line */
 ErrCode determineOperandType(const char *operand, operandType *opType, char **matLabel, char **row, char **col, MacroTable *macroNames, ErrorList *errorList);
-ErrCode parseMatrixOperand(const char *operandStr, char **name, char **row, char **col); /* check if the operand is a valid matrix operand */
+ErrCode parseLabelOperandsValid(parsedLine *pLine, SymbolTable *symbolTable, ErrorList *errorList); /* parse the label operands and check if it is valid */
 
 short int numOfOperandsInInstruction(const char *instructionName); /* return the number of operands in the instruction */
 void freeParsedLine(parsedLine *pLine); /* free the memory allocated for the parsedLine structure */
@@ -98,6 +99,7 @@ Bool isValidInteger(int value); /* check if the integer value is valid for the a
 
 ErrCode isRegisterOperand(const char* operand); /* check if the operand is a valid register */
 ErrCode isNumberOperand(const char *operand); /* check if the operand is a valid number */
+ErrCode parseMatrixOperand(const char *operandStr, char **name, char **row, char **col); /* check if the operand is a valid matrix operand */
 ErrCode isValidLabelSyntax(const char *operand); /* check if the operand is a valid label (doesn't check in the symbol table) */
 ErrCode isValidLabelColon(MacroTable *table, const char *label); /* check if the label is valid without the colon */
 ErrCode isValidLabelName(MacroTable *table, const char *label);

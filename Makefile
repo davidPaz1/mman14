@@ -36,7 +36,8 @@ pre:
 	make c
 	clear 
 r:
-	make pre
+	make
+	rm -rf *.am *.ob *.ent *.ext
 	clear
 	./run test1
 r2:

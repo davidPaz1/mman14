@@ -517,7 +517,7 @@ ErrCode parseInstructionLine(parsedLine *pLine, char *line, MacroTable *macroNam
         errorOccurred = TRUE; /* set the error flag to true */
         addErrorToList(errorList, OPERAND1_UNKNOWN_E); /* add the error to the error list */
     }
-    else if (opType == MATRIX_OPERAND) { /* if the operand type is a matrix */
+    else if (opType == MATRIX_SYNTAX_OPERAND) { /* if the operand type is a matrix */
         wordCount += MATRIX_OPERAND_BIN_LINES; /* if the first operand is a matrix, it will take (2) binary lines */
         free(pLine->lineContentUnion.instruction.operand1); /* free the raw first operand */
         pLine->lineContentUnion.instruction.operand1 = matLabel; /* set the first operand to the label of the matrix */
@@ -542,7 +542,7 @@ ErrCode parseInstructionLine(parsedLine *pLine, char *line, MacroTable *macroNam
         errorOccurred = TRUE; /* set the error flag to true */
         addErrorToList(errorList, OPERAND2_UNKNOWN_E); /* add the error to the error list */
     }
-    else if (opType == MATRIX_OPERAND) { /* if the operand type is a matrix */
+    else if (opType == MATRIX_SYNTAX_OPERAND) { /* if the operand type is a matrix */
         wordCount += MATRIX_OPERAND_BIN_LINES; /* if the first operand is a matrix, it will take (2) binary lines */
         free(pLine->lineContentUnion.instruction.operand2); /* free the raw second operand */
         pLine->lineContentUnion.instruction.operand2 = matLabel; /* set the second operand to the label of the matrix */
@@ -684,7 +684,7 @@ ErrCode determineOperandType(const char *operand, operandType *opType, char **ma
             return LEXER_FAILURE_S; /* return failure if the operand is not a valid matrix */
 
         /* if both row and column are valid registers, set the operand type to matrix */
-        *opType = MATRIX_OPERAND; /* set the operand type to MATRIX_OPERAND */
+        *opType = MATRIX_SYNTAX_OPERAND; /* set the operand type to MATRIX_SYNTAX_OPERAND */
         return LEXER_SUCCESS_S;
     }
     else if (errorCode != LEXER_FAILURE_S) { /* if op is a matrix with an error */
@@ -698,9 +698,58 @@ ErrCode determineOperandType(const char *operand, operandType *opType, char **ma
         *opType = UNKNOWN_OPERAND; /* set the operand type to UNKNOWN_OPERAND */
         return LEXER_FAILURE_S; /* return failure if the operand is not a valid label */
     }
-    *opType = SYNTAX_LABEL_OPERAND; /* set the operand type to SYNTAX_LABEL_OPERAND */
+    *opType = LABEL_SYNTAX_OPERAND; /* set the operand type to LABEL_SYNTAX_OPERAND */
     return LEXER_SUCCESS_S;
 }
+
+ErrCode parseLabelOperandsValid(parsedLine *pLine, SymbolTable *symbolTable, ErrorList *errorList)
+{
+    Bool errorOccurred = FALSE; /* flag to check if an error occurred */
+    operandType op1 = pLine->lineContentUnion.instruction.operand1Type; /* first operand */
+    operandType op2 = pLine->lineContentUnion.instruction.operand2Type; /* second operand */
+    if (pLine == NULL || symbolTable == NULL)
+        return LEXER_FAILURE_S;
+
+    /* if the first operand is a label or matrix element, we need to check if it exists in the symbol table */
+    if (op1 == LABEL_SYNTAX_OPERAND || op1 == MATRIX_SYNTAX_OPERAND) {
+        SymbolNode *refSymbol1 = findSymbol(symbolTable, pLine->lineContentUnion.instruction.operand1); /* find the symbol in the symbol table */
+        if (refSymbol1 == NULL) { /* if the label does not exist in the symbol table */
+            addErrorToList(errorList, OPERAND1_LABEL_DOES_NOT_EXIST_E); /* add an error to the error list */
+            errorOccurred = TRUE; /* set the error flag to true */
+        }
+        else if (op1 == LABEL_SYNTAX_OPERAND) /* if the first operand is a label */
+            pLine->lineContentUnion.instruction.operand1Type = LABEL_TABLE_OPERAND; /* change the operand type to LABEL_TABLE_OPERAND */   
+        else if (!refSymbol1->isMat) { /* if the first operand is not a matrix element */
+            addErrorToList(errorList, OPERAND1_NON_MAT_SYMBOL_E); /* add an error to the error list */
+            errorOccurred = TRUE; /* set the error flag to true */
+        }
+        else /* if the first operand is a matrix element */
+            pLine->lineContentUnion.instruction.operand1Type = MATRIX_TABLE_OPERAND;
+    }
+
+    /* if the second operand is a label or matrix element, we need to check if it exists in the symbol table */
+    if (op2 == LABEL_SYNTAX_OPERAND || op2 == MATRIX_SYNTAX_OPERAND) {
+        SymbolNode *refSymbol2 = findSymbol(symbolTable, pLine->lineContentUnion.instruction.operand2); /* find the symbol in the symbol table */
+        if (refSymbol2 == NULL) { /* if the label does not exist in the symbol table */
+            addErrorToList(errorList, OPERAND2_LABEL_DOES_NOT_EXIST_E); /* add an error to the error list */
+            errorOccurred = TRUE; /* set the error flag to true */
+        }
+        else if (op1 == LABEL_SYNTAX_OPERAND) /* if the first operand is a label */
+            pLine->lineContentUnion.instruction.operand2Type = LABEL_TABLE_OPERAND; /* change the operand type to LABEL_TABLE_OPERAND */   
+        else if (!refSymbol2->isMat) { /* if the first operand is not a matrix element */
+            addErrorToList(errorList, OPERAND2_NON_MAT_SYMBOL_E); /* add an error to the error list */
+            errorOccurred = TRUE; /* set the error flag to true */
+        }
+        else /* if the first operand is a matrix element */
+            pLine->lineContentUnion.instruction.operand2Type = MATRIX_TABLE_OPERAND;
+    }
+
+    if (errorOccurred) /* if an error occurred while parsing the operands */
+        return LEXER_FAILURE_S;
+
+    return LEXER_SUCCESS_S;
+}
+
 
 short int numOfOperandsInInstruction(const char *instructionName)
 {
@@ -861,11 +910,11 @@ char* printOpType(operandType opType)
             return "Register";
         case NUMBER_OPERAND:
             return "Number";
-        case MATRIX_OPERAND:
+        case MATRIX_SYNTAX_OPERAND:
             return "Matrix";
-        case SYNTAX_LABEL_OPERAND:
+        case LABEL_SYNTAX_OPERAND:
             return "Syntax Label";
-        case TABLE_LABEL_OPERAND:
+        case LABEL_TABLE_OPERAND:
             return "Table Label";
         default:
             return "Unknown Operand Type";

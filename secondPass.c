@@ -5,7 +5,7 @@
 #include "tables.h"
 #include "util.h"
 
-ErrCode executeSecondPass(FILE* amFile, FILE* obFile, MacroTable* macroNames, SymbolTable* symbolTable, ErrorList* errorList){
+ErrCode executeSecondPass(FILE* amFile, MacroTable* macroNames, SymbolTable* symbolTable, ErrorList* errorList){
     ErrCode errorCode = NULL_INITIAL; /* initialize error code to NULL_INITIAL */
     parsedLine *pLine; /* parsed line structure to hold the line and its type */
 
@@ -23,18 +23,22 @@ ErrCode executeSecondPass(FILE* amFile, FILE* obFile, MacroTable* macroNames, Sy
 
         if (errorCode == LEXER_FAILURE_S) /* if reading the line failed */
             continue; /* continue to the next line */
+
+        if (pLine->typesOfLine == DIRECTIVE_LINE && strcmp(pLine->lineContentUnion.directive.directiveName, ".entry") == 0) {
+            SymbolNode* symbol = findSymbol(symbolTable, pLine->lineContentUnion.directive.directiveLabel);
+            if (symbol == NULL) {
+                addErrorToList(errorList, ENTRY_LABEL_DOES_NOT_EXIST_E); /* add error if the label does not exist */
+            } else {
+                symbol->isEntry = TRUE; /* mark the symbol as an entry */
+                symbolTable->haveEntry = TRUE; /* set the flag that there is an entry symbol */
+            }
+        }
+        else if (pLine->typesOfLine == INSTRUCTION_LINE) {
+            secPassInstructionLine(pLine, errorList); /* process the instruction line */
+        }
         
-        if (pLine->typesOfLine == EMPTY_LINE || pLine->typesOfLine == COMMENT_LINE)
-            continue; /* skip empty or comment lines */
-        else if (pLine->typesOfLine == INSTRUCTION_LINE)
-            secPassInstructionLine(pLine, macroNames, symbolTable, errorList); /* process the instruction line */
-        else /* the line is a directive */
-            secPassDirectiveLine(pLine, macroNames, symbolTable, errorList); /* process the directive line */
-        
+        /* if the line is a directive empty or a comment, we skip it */
         freeParsedLine(pLine); /* free the parsed line structure */
-
-        
-
     } /* end of while loop */
 
     if (errorList->count > 0) /* if there were any errors during the second pass */
@@ -43,18 +47,11 @@ ErrCode executeSecondPass(FILE* amFile, FILE* obFile, MacroTable* macroNames, Sy
     return SECOND_PASS_SUCCESS_S; /* return success if no errors occurred */
 }
 
-void secPassInstructionLine(parsedLine *pLine, MacroTable* macroNames, SymbolTable* symbolTable, ErrorList* errorList) {
+void secPassInstructionLine(parsedLine *pLine, ErrorList* errorList) {
     /* This function is not implemented yet, so we return immediately */
     
     return;
 }
-
-void secPassDirectiveLine(parsedLine *pLine, MacroTable* macroNames, SymbolTable* symbolTable, ErrorList* errorList) {
-    /* This function is not implemented yet, so we return immediately */
-    
-    return;
-}
-
 
 
 void writeEntryFile(FILE* entFile, SymbolTable* symbolTable) {
@@ -69,9 +66,4 @@ void writeExternFile(FILE* extFile, SymbolTable* symbolTable) {
     /* this function is not implemented yet, so we return immediately */
 
     return;
-}
-
-void secPassFreeMemory(parsedLine *pLine)
-{
-    freeParsedLine(pLine); /* free the parsed line structure */
 }

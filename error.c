@@ -132,7 +132,15 @@ char* getErrorMessage(ErrCode code) {
             return "first operand is unknown, should be a register, number, label or matrix.";
         case OPERAND2_UNKNOWN_E:
             return "second operand is unknown, should be a register, number, label or matrix.";
-        
+        case OPERAND1_LABEL_DOES_NOT_EXIST_E:
+            return "first operand is an unknown operand (though it was a label but it is not in the symbol table).";
+        case OPERAND2_LABEL_DOES_NOT_EXIST_E:
+            return "second operand is an unknown operand (though it was a label but it is not in the symbol table).";
+        case OPERAND1_NON_MAT_SYMBOL_E:
+            return "first operand has a matrix syntax but a non-matrix symbol used.";
+        case OPERAND2_NON_MAT_SYMBOL_E:
+            return "second operand has a matrix syntax but a non-matrix symbol used.";
+
         /* tables errors 50 - 69 */
         case SYMBOL_NAME_EXISTS_E:
             return "symbol name already exists.";
@@ -146,10 +154,8 @@ char* getErrorMessage(ErrCode code) {
             return "first pass failed.";
 
         /* secondPass errors 80 - 89 */
-        case SECOND_PASS_SUCCESS_S:
-            return "second pass was successful.";
-        case SECOND_PASS_FAILURE_S:
-            return "second pass failed.";
+        case ENTRY_LABEL_DOES_NOT_EXIST_E:
+            return "entry label does not exist in Symbol Table, should be defined before use.";
 
         /* it should never reach here */
         default:
