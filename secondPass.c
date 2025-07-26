@@ -5,10 +5,10 @@
 #include "tables.h"
 #include "util.h"
 
-ErrCode executeSecondPass(FILE* amFile, MacroTable* macroNames, SymbolTable* symbolTable, ErrorList* errorList){
+ErrCode executeSecondPass(FILE* amFile, CodeWord instructionImage, MacroTable* macroNames, SymbolTable* symbolTable, ErrorList* errorList){
     ErrCode errorCode = NULL_INITIAL; /* initialize error code to NULL_INITIAL */
     parsedLine *pLine; /* parsed line structure to hold the line and its type */
-
+    unsigned int ic = 0; /* instruction counter */
     errorList->currentLine = 0; /* reset the current line number */
 
     while (errorCode != EOF_REACHED_S) {
@@ -34,7 +34,7 @@ ErrCode executeSecondPass(FILE* amFile, MacroTable* macroNames, SymbolTable* sym
             }
         }
         else if (pLine->typesOfLine == INSTRUCTION_LINE) {
-            secPassInstructionLine(pLine, errorList); /* process the instruction line */
+            secPassInstructionLine(pLine, &ic, instructionImage, errorList); /* process the instruction line */
         }
         
         /* if the line is a directive empty or a comment, we skip it */
@@ -47,7 +47,7 @@ ErrCode executeSecondPass(FILE* amFile, MacroTable* macroNames, SymbolTable* sym
     return SECOND_PASS_SUCCESS_S; /* return success if no errors occurred */
 }
 
-void secPassInstructionLine(parsedLine *pLine, ErrorList* errorList) {
+void secPassInstructionLine(parsedLine *pLine, unsigned int *ic, CodeWord instructionImage, ErrorList* errorList) {
     /* This function is not implemented yet, so we return immediately */
     
     return;

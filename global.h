@@ -16,14 +16,11 @@
 #define BASE2_INSTRUCTION_LENGTH 10
 #define BASE4_INSTRUCTION_LENGTH 5
 
-#define REGISTER_SIZE 10
 #define MAX_10BIT_INT 511
 #define MIN_10BIT_INT -512
 #define MAX_8BIT_INT 127
 #define MIN_8BIT_INT -128
 
-#define MATRIX_OPERAND_BIN_LINES 2 /* number of binary lines needed for a matrix operand */
-#define NON_MATRIX_OPERAND_BIN_LINES 1 /* number of bits needed for a non-matrix operand */
 
 /*enums*/
 typedef enum boolean {
@@ -31,64 +28,52 @@ typedef enum boolean {
     TRUE = 1
 } Bool;
 
-/* may be used idk */
-typedef enum opCode {
-    mov = 0,
-    cmp = 1,
-    add = 2,
-    sub = 3,
-    lea = 4,
-    clr = 5,
-    not = 6,
-    inc = 7,
-    dec = 8,
-    jmp = 9,
-    bne = 10,
-    jsr = 11,
-    red = 12,
-    prn = 13,
-    rts = 14,
-    stop = 15,
-    invalid = -1
-} opCode;
+/* code image structs */
 
-typedef enum directiveLineType {
-    DATA_LINE = 0, /* data line */
-    STRING_LINE,   /* string line */
-    ENTRY_LINE,    /* entry line */
-    EXTERN_LINE    /* extern line */
-} directiveLineType;
-/* stop */
-
-/* registers */
-typedef enum registers{
-    r0 = 0, 
-    r1,
-    r2,
-    r3,
-    r4,
-    r5,
-    r6,
-    r7,
-    NOT_REG = -1
-} registers;
-
-
-/* struct */
-
-/* Defines a first word in an instruction */
-typedef struct word { /* bitfield struct */
+typedef struct FirstWord { /* first word of an instruction */
     unsigned int ARE: 2;
-    unsigned int dest_op_addr: 2;
-    unsigned int src_op_addr: 2;
-    unsigned int op_code: 4;
-} word;
+    unsigned int destAddress: 2;
+    unsigned int srcAddress: 2;
+    unsigned int opCode: 4;
+} FirstWord;
 
+#define SRC_REGISTER_ADDRESS_SIZE 4
+#define DEST_REG_SHIFT(x) (x << SRC_REGISTER_ADDRESS_SIZE) /* macro to shift the destination register to the correct position (bits 6 - 9) */
 
-typedef struct word1 { /* bitfield struct */
+typedef struct NumberWord { /* defines a word that contains a number */
+    unsigned int ARE: 2;
+    signed int numberVal: 8;
+} NumberWord;
+
+typedef struct RegisterWord { /* defines a word that contains a register */
+    unsigned int ARE: 2;
+    unsigned int registerSrc: 4; /* source register */
+    unsigned int registerDest: 4; /* destination register */
+} RegisterWord;
+
+typedef struct MatrixRegistersWord { /* defines a word that contains a matrix registers */
+    unsigned int ARE: 2;
+    unsigned int registerRow: 4; /* row number in the matrix */
+    unsigned int registerCol: 4; /* column number in the matrix */
+} MatrixRegistersWord;
+
+typedef struct LabelWord { /* defines a word that contains a label */
     unsigned int ARE: 2;
     unsigned int labelAddress: 8;
-} word1;
+} LabelWord;
+
+typedef union CodeWord {
+    FirstWord firstWord;
+    NumberWord numberWord;
+    RegisterWord registerWord;
+    MatrixRegistersWord matrixRegistersWord;
+    LabelWord labelWord;
+    unsigned int allBits : 10;
+} CodeWord;
+
+typedef struct DataWord {
+    unsigned int value : 10; /* number of data items in the directive */
+} DataWord;
 
 
 #endif

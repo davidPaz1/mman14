@@ -496,7 +496,7 @@ ErrCode parseInstructionLine(parsedLine *pLine, char *line, MacroTable *macroNam
     ErrCode errorCode = NULL_INITIAL;
     char *matLabel = NULL, *row = NULL, *col = NULL; /* pointers to hold the matrix label, row and column when parsing */
     unsigned int wordCount = 0; /* the amount of binary lines the instruction will take */
-    operandType opType = UNKNOWN_OPERAND;
+    operandType opType1 = UNKNOWN_OPERAND, opType2 = UNKNOWN_OPERAND;
     Bool errorOccurred = FALSE; /* flag to indicate if an error occurred while parsing */
 
     /* get the number of operands in the instruction */
@@ -512,12 +512,12 @@ ErrCode parseInstructionLine(parsedLine *pLine, char *line, MacroTable *macroNam
     }
 
     /* the instruction has at least one operand - lets check the first operand type */
-    errorCode = determineOperandType(pLine->lineContentUnion.instruction.operand1, &opType, &matLabel, &row, &col, macroNames, errorList);
+    errorCode = determineOperandType(pLine->lineContentUnion.instruction.operand1, &opType1, &matLabel, &row, &col, macroNames, errorList);
     if (errorCode == LEXER_FAILURE_S){ /* if the operand type is not valid */
         errorOccurred = TRUE; /* set the error flag to true */
         addErrorToList(errorList, OPERAND1_UNKNOWN_E); /* add the error to the error list */
     }
-    else if (opType == MATRIX_SYNTAX_OPERAND) { /* if the operand type is a matrix */
+    else if (opType1 == MATRIX_SYNTAX_OPERAND) { /* if the operand type is a matrix */
         wordCount += MATRIX_OPERAND_BIN_LINES; /* if the first operand is a matrix, it will take (2) binary lines */
         free(pLine->lineContentUnion.instruction.operand1); /* free the raw first operand */
         pLine->lineContentUnion.instruction.operand1 = matLabel; /* set the first operand to the label of the matrix */
@@ -527,7 +527,7 @@ ErrCode parseInstructionLine(parsedLine *pLine, char *line, MacroTable *macroNam
     else
         wordCount += NON_MATRIX_OPERAND_BIN_LINES; /* if the first operand is a non-matrix, it will take (1) binary lines */
 
-    pLine->lineContentUnion.instruction.operand1Type = opType;
+    pLine->lineContentUnion.instruction.operand1Type = opType1;
 
     if (pLine->lineContentUnion.instruction.operandCount == ONE_OPERAND) { /* if the instruction has only one operand */
         if (errorOccurred) /* if an error occurred while parsing the first operand */
@@ -537,25 +537,28 @@ ErrCode parseInstructionLine(parsedLine *pLine, char *line, MacroTable *macroNam
     }
     
     /* the instruction has two operands, we need to check the second operand */
-    errorCode = determineOperandType(pLine->lineContentUnion.instruction.operand2, &opType, &matLabel, &row, &col, macroNames, errorList);
+    errorCode = determineOperandType(pLine->lineContentUnion.instruction.operand2, &opType2, &matLabel, &row, &col, macroNames, errorList);
     if (errorCode == LEXER_FAILURE_S){ /* if the operand type is not valid */
         errorOccurred = TRUE; /* set the error flag to true */
         addErrorToList(errorList, OPERAND2_UNKNOWN_E); /* add the error to the error list */
     }
-    else if (opType == MATRIX_SYNTAX_OPERAND) { /* if the operand type is a matrix */
+    else if (opType2 == MATRIX_SYNTAX_OPERAND) { /* if the operand type is a matrix */
         wordCount += MATRIX_OPERAND_BIN_LINES; /* if the first operand is a matrix, it will take (2) binary lines */
         free(pLine->lineContentUnion.instruction.operand2); /* free the raw second operand */
         pLine->lineContentUnion.instruction.operand2 = matLabel; /* set the second operand to the label of the matrix */
         pLine->lineContentUnion.instruction.row2 = row; /* set the row of the second operand */
         pLine->lineContentUnion.instruction.col2 = col; /* set the column of the second operand */
     }
-    else
+    else if (opType1 == REGISTER_OPERAND && opType2 == REGISTER_OPERAND)  /* if both operands are registers */
+        wordCount = BOTH_REGISTER_OPERAND_BIN_LINES; /* if both operands are registers, they will take (1) binary lines */
+    else 
         wordCount += NON_MATRIX_OPERAND_BIN_LINES; /* if the first operand is a non-matrix, it will take (1) binary lines */
+    
 
     if (errorOccurred) /* if an error occurred while parsing the one of the operands */
         return LEXER_FAILURE_S;
     
-    pLine->lineContentUnion.instruction.operand2Type = opType; /* set the type of the second operand */
+    pLine->lineContentUnion.instruction.operand2Type = opType2; /* set the type of the second operand */
     pLine->lineContentUnion.instruction.wordCount = wordCount; /* set the word count of the instruction */
     return LEXER_SUCCESS_S;
 }
@@ -1225,4 +1228,58 @@ ErrCode isMacroNameValid(MacroTable* table , const char* macroName) {
         return MACRO_NAME_EXISTS_E; /* exit if the macro name already exists */
     
     return TABLES_SUCCESS_S; /* Macro name is valid */
+}
+
+registersNumber getRegisterNumber(const char *registerName)
+{
+    int regNum;
+    if (registerName[0] != 'r')
+        return NOT_REG;
+
+    regNum = atoi(&(registerName[1])); /* look at the number after 'r' */
+    if (regNum < 0 || regNum > 7)
+        return NOT_REG;
+
+    return (registersNumber)regNum;
+}
+
+OpCodeNumber getOpCodeNumber(const char *opName)
+{
+    if (opName == NULL)
+        return invalid;
+
+    if (strcmp(opName, "mov") == 0)
+        return mov;
+    else if (strcmp(opName, "cmp") == 0)
+        return cmp;
+    else if (strcmp(opName, "add") == 0)
+        return add;
+    else if (strcmp(opName, "sub") == 0)
+        return sub;
+    else if (strcmp(opName, "lea") == 0)
+        return lea;
+    else if (strcmp(opName, "clr") == 0)
+        return clr;
+    else if (strcmp(opName, "not") == 0)
+        return not;
+    else if (strcmp(opName, "inc") == 0)
+        return inc;
+    else if (strcmp(opName, "dec") == 0)
+        return dec;
+    else if (strcmp(opName, "jmp") == 0)
+        return jmp;
+    else if (strcmp(opName, "bne") == 0)
+        return bne;
+    else if (strcmp(opName, "jsr") == 0)
+        return jsr;
+    else if (strcmp(opName, "red") == 0)
+        return red;
+    else if (strcmp(opName, "prn") == 0)
+        return prn;
+    else if (strcmp(opName, "rts") == 0)
+        return rts;
+    else if (strcmp(opName, "stop") == 0)
+        return stop;
+
+    return invalid;
 }

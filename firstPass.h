@@ -6,8 +6,7 @@
 #include "tables.h"
 
 /* Preprocessor functions prototypes */
-ErrCode executeFirstPass(FILE* amFile, int *DCF, int *ICF, MacroTable* macroTable, SymbolTable* symbolTable, ErrorList* errorList); /* main function for the preprocessor */
-
+ErrCode executeFirstPass(FILE* amFile, DataWord directiveImage, int *DCF, int *ICF, MacroTable* macroTable, SymbolTable* symbolTable, ErrorList* errorList); /* main function for the preprocessor */
 
 void firstPassErrorExit(parsedLine* pLine); /* clean up and exit the first pass */
 void firstPassFreeMemory(parsedLine* pLine); /* free the memory allocated from the first pass */

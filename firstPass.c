@@ -9,7 +9,7 @@
 /* 17 has an explanation for the first pass */
 /*page 19 or 31 for algorithm for preprocessing */
 
-ErrCode executeFirstPass(FILE* amFile, int *DCF, int *ICF, MacroTable* macroNames, SymbolTable* symbolTable, ErrorList* errorList)
+ErrCode executeFirstPass(FILE* amFile, DataWord directiveImage, int *DCF, int *ICF, MacroTable* macroNames, SymbolTable* symbolTable, ErrorList* errorList)
 {
     int DC = 0; /* data counter */
     int IC = 100; /* instruction counter */

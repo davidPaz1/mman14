@@ -13,6 +13,9 @@
 #define NO_OPERANDS 0 /* used for instructions with no operands */
 #define ONE_OPERAND 1 /* used for instructions with one operand */
 #define TWO_OPERANDS 2 /* used for instructions with two operands */
+#define BOTH_REGISTER_OPERAND_BIN_LINES 1 /* the wordLine amount needed (1) if both operands are registers */
+#define MATRIX_OPERAND_BIN_LINES 2 /* number of binary lines needed for a matrix operand */
+#define NON_MATRIX_OPERAND_BIN_LINES 1 /* number of bits needed for a non-matrix operand */
 
 typedef enum lineType {
     UNSET_LINE = 0, /* used for error handling */
@@ -80,8 +83,8 @@ ErrCode parseInstructionLine(parsedLine *pLine, char *line, MacroTable *macroNam
 ErrCode parseInstructionLineOperand(parsedLine *pLine, char *line, ErrorList *errorList); /* parse the operands of the instruction line */
 ErrCode determineOperandType(const char *operand, operandType *opType, char **matLabel, char **row, char **col, MacroTable *macroNames, ErrorList *errorList);
 ErrCode parseLabelOperandsValid(parsedLine *pLine, SymbolTable *symbolTable, ErrorList *errorList); /* parse the label operands and check if it is valid */
-
 short int numOfOperandsInInstruction(const char *instructionName); /* return the number of operands in the instruction */
+
 void freeParsedLine(parsedLine *pLine); /* free the memory allocated for the parsedLine structure */
 void printParsedLine(parsedLine *pLine);
 char* printOpType(operandType opType); /* print the operand type */
@@ -105,5 +108,41 @@ ErrCode isValidLabelColon(MacroTable *table, const char *label); /* check if the
 ErrCode isValidLabelName(MacroTable *table, const char *label);
 char* delColonFromLabel(const char *label); /* remove the colon from the label if it exists */
 ErrCode isMacroNameValid(MacroTable* table , const char* macroName);
+
+typedef enum opCode {
+    mov = 0,
+    cmp = 1,
+    add = 2,
+    sub = 3,
+    lea = 4,
+    clr = 5,
+    not = 6,
+    inc = 7,
+    dec = 8,
+    jmp = 9,
+    bne = 10,
+    jsr = 11,
+    red = 12,
+    prn = 13,
+    rts = 14,
+    stop = 15,
+    invalid = -1
+} OpCodeNumber;
+
+/* registers */
+typedef enum registers{
+    r0 = 0, 
+    r1,
+    r2,
+    r3,
+    r4,
+    r5,
+    r6,
+    r7,
+    NOT_REG = -1
+} registersNumber;
+
+registersNumber getRegisterNumber(const char *regName);
+OpCodeNumber getOpCodeNumber(const char *opName); /* get the opcode number from the operation name */
 
 #endif

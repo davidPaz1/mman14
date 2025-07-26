@@ -39,4 +39,28 @@ char* base4(const int *word)
     return base4; /* return the base4 string */
 }
 
+void printBin(CodeWord word) {
+    int i;
+    int h, l;
+    for (i = 9; i >= 0; i = i - 2) {
+
+        h = (word.allBits >> i) & 1;
+        l = (word.allBits >> (i - 1)) & 1;
+        printf("%d", h * 2 + l);
+    }
+    printf("\n");
+}
+
+void printBin(DataWord word) {
+    int i;
+    int h, l;
+    for (i = 9; i >= 0; i = i - 2) {
+
+        h = (word.value >> i) & 1;
+        l = (word.value >> (i - 1)) & 1;
+        printf("%d", h * 2 + l);
+    }
+    printf("\n");
+}
+
 /* test for github */

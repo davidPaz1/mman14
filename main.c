@@ -67,6 +67,8 @@ void executeAssembler(char* fileName)
     ErrCode errCode = NULL_INITIAL; /* initialize error code to NULL_INITIAL */
     FILE *asFile = NULL, *amFile = NULL, *obFile = NULL, *entFile = NULL, *extFile = NULL;
     int DCF = 0, ICF = 0;
+    CodeWord codeImage = {0};
+    DataWord dataImage = {0};
     MacroTable* macroTable = createMacroTable(); /* create a macro table to hold all the macros found */
     SymbolTable* symbolTable  = createSymbolTable(); /* create a symbol table to hold all the symbols found */
     ErrorList* errorList = createErrorList(fileName); /* create an error list to hold errors */
@@ -124,7 +126,7 @@ void executeAssembler(char* fileName)
         return; /* exit if the file cannot be opened */
     }
 
-    errCode = executeFirstPass(amFile, &DCF, &ICF, macroTable, symbolTable , errorList); /* execute the first pass */
+    errCode = executeFirstPass(amFile, dataImage, &DCF, &ICF, macroTable, symbolTable , errorList); /* execute the first pass */
     if (errCode == FIRSTPASS_FAILURE_S) {
         printErrors(errorList);
         freeTableAndLists(macroTable, symbolTable , errorList); /* free the macro table and error list */
@@ -142,7 +144,7 @@ void executeAssembler(char* fileName)
     printf("starting second pass...\n");
     errorList->stage = "second pass";
 
-    errCode = executeSecondPass(amFile, macroTable, symbolTable, errorList); /* execute the second pass */
+    errCode = executeSecondPass(amFile, codeImage, macroTable, symbolTable, errorList); /* execute the second pass */
     if (errCode == SECOND_PASS_FAILURE_S) {
         freeFiles(amFile, obFile, NULL);
         printErrors(errorList); /* print the errors found */
