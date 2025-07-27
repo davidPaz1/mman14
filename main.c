@@ -67,8 +67,8 @@ void executeAssembler(char* fileName)
     ErrCode errCode = NULL_INITIAL; /* initialize error code to NULL_INITIAL */
     FILE *asFile = NULL, *amFile = NULL, *obFile = NULL, *entFile = NULL, *extFile = NULL;
     int DCF = 0, ICF = 0;
-    CodeWord codeImage = {0};
-    DataWord dataImage = {0};
+    CodeWord codeImage[MAX_MEMORY_SIZE] = {0};
+    DataWord dataImage[MAX_MEMORY_SIZE] = {0};
     MacroTable* macroTable = createMacroTable(); /* create a macro table to hold all the macros found */
     SymbolTable* symbolTable  = createSymbolTable(); /* create a symbol table to hold all the symbols found */
     ErrorList* errorList = createErrorList(fileName); /* create an error list to hold errors */

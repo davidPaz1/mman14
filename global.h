@@ -10,6 +10,7 @@
 
 #define MAX_LINE_FILE_LENGTH 80 /* maximum length of a line in the file */
 #define MAX_OB_FILE_LENGTH 256 /* maximum length of an object file name */
+#define MAX_MEMORY_SIZE 256 /* maximum memory size */
 #define MAX_LABEL_LENGTH 30 /* maximum length of a label name */
 #define MAX_MACRO_LENGTH 30 /* maximum length of a macro name */
 

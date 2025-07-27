@@ -5,7 +5,7 @@
 #include "tables.h"
 #include "util.h"
 
-ErrCode executeSecondPass(FILE* amFile, CodeWord instructionImage, MacroTable* macroNames, SymbolTable* symbolTable, ErrorList* errorList){
+ErrCode executeSecondPass(FILE* amFile, CodeWord* instructionImage, MacroTable* macroNames, SymbolTable* symbolTable, ErrorList* errorList){
     ErrCode errorCode = NULL_INITIAL; /* initialize error code to NULL_INITIAL */
     parsedLine *pLine; /* parsed line structure to hold the line and its type */
     unsigned int ic = 0; /* instruction counter */
@@ -47,7 +47,7 @@ ErrCode executeSecondPass(FILE* amFile, CodeWord instructionImage, MacroTable* m
     return SECOND_PASS_SUCCESS_S; /* return success if no errors occurred */
 }
 
-void secPassInstructionLine(parsedLine *pLine, unsigned int *ic, CodeWord instructionImage, ErrorList* errorList) {
+void secPassInstructionLine(parsedLine *pLine, unsigned int *ic, CodeWord* instructionImage, ErrorList* errorList) {
     /* This function is not implemented yet, so we return immediately */
     
     return;
