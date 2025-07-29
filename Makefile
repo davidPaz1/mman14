@@ -40,6 +40,11 @@ r:
 	rm -rf *.am *.ob *.ent *.ext
 	clear
 	./run test1
+ra:
+	make
+	rm -rf *.am *.ob *.ent *.ext *.o
+	clear
+	./run test1
 r2:
 	make pre
 	clear

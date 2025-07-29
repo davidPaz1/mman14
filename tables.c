@@ -40,6 +40,35 @@ MacroNode* createMacroNode(const char* macroName, ErrCode* errorCode) {
     return newMacro;
 }
 
+void printMacroTable(MacroTable *macroTable)
+{
+    MacroNode* current;
+    printf("\n");
+    if (macroTable == NULL) { /* check if the macro table is NULL */
+        printf("Macro table is NULL.\n");
+        return; /* exit if the macro table is NULL */
+    }
+
+    current = macroTable->macroHead;
+    
+    if (current == NULL) {
+        printf("Macro table is empty.\n");
+        return; /* exit if the macro table is empty */
+    }
+
+    printf("Macro Table:\n");
+    while (current != NULL) { /* iterate through the macro list */
+        MacroBody* bodyLine = current->bodyHead; /* get the first line in the body */
+        printf("Macro Name: %s\n", current->macroName);
+        while (bodyLine != NULL) { /* iterate through the body lines */
+            printf("  Line: %s\n", bodyLine->line);
+            bodyLine = bodyLine->nextLine; /* move to the next line in the body */
+        }
+        current = current->nextMacro; /* move to the next macro in the list */
+    }
+    printf("\n");
+}
+
 MacroBody* createMacroBody(const char* line, ErrCode* errorCode) {
     MacroBody* newBody = malloc(sizeof(MacroBody));  /* returned body */
     *errorCode = NULL_INITIAL; /* initialize error code to NULL_INITIAL */
@@ -245,6 +274,76 @@ void freeSymbolTable(SymbolTable* table){
         current = next; /* move to the next node */
     }
     free(table); /* free the table itself */
+}
+
+void printSymbolTable(SymbolTable* table) 
+{
+    SymbolNode* current; /* used to iterate through the symbol nodes */
+    printf("\n");
+    if (table == NULL || table->head == NULL) {
+        printf("Symbol table is empty.\n");
+        return;
+    }
+
+    printf("Symbol Table:\n");
+    printf("Name\tAddress\tType\n");
+
+    current = table->head;
+    while (current != NULL) {
+        printf("%s\t%u\t%s\n", current->symbolName, current->address, 
+                (current->type == CODE_SYMBOL) ? "Code" :
+                (current->type == DATA_SYMBOL) ? "Data" :
+                (current->type == EXTERN_SYMBOL) ? "Extern" : "Undefined");
+        current = current->next;
+    }
+    printf("\n");
+}
+
+void printSymbolTableSorted(SymbolTable* symbolTable) 
+{
+    SymbolNode* current; /* used to iterate through the symbol nodes */
+    SymbolNode* currentSmallest; /* used to find the smallest address */
+    unsigned int lastSmallest = 0, biggest = 0, count = 0, totalSymbols = 0; /* used to find the smallest address */
+    printf("\n");
+    if (symbolTable == NULL || symbolTable->head == NULL) {
+        printf("Symbol table is empty.\n");
+        return;
+    }
+
+    printf("Symbol Table (Sorted) :\n");
+    
+
+    current = symbolTable->head;
+    while (current != NULL) {
+        if (current->address > biggest)
+            biggest = current->address; /* find the biggest address */
+        current = current->next;
+        count++; /* count the number of symbols */
+    }
+    totalSymbols = count; /* save the total number of symbols */
+    printf("Total symbols: %u\n", totalSymbols);
+    printf("Name\tAddress\tType\n");
+    
+    count = 0;
+    while (count < totalSymbols) { /* while there are symbols left to print */
+        currentSmallest = NULL;
+        current = symbolTable->head;
+        while (current != NULL) {
+            if (current->address > lastSmallest) 
+                if (currentSmallest == NULL || current->address < currentSmallest->address) 
+                    currentSmallest = current; /* find the smallest address greater than lastSmallest */
+            current = current->next;
+        }
+        if (currentSmallest != NULL) {
+            printf("%s\t%u\t%s\n", currentSmallest->symbolName, currentSmallest->address,
+                        (currentSmallest->type == CODE_SYMBOL) ? "Code" :
+                        (currentSmallest->type == DATA_SYMBOL) ? "Data" :
+                        (currentSmallest->type == EXTERN_SYMBOL) ? "Extern" : "Undefined");
+            lastSmallest = currentSmallest->address; /* update the last smallest address */
+        }
+        count++;
+    }
+    printf("\n");
 }
 
 /* SymbolTable private functions */

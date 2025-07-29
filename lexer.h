@@ -98,7 +98,9 @@ Bool isDirective(const char* arg); /* check if the string is a directive */
 Bool isMacroDef(const char* arg); /* check if the string is a macro start */
 Bool isMacroEnd(const char* arg); /* check if the string is a macro end */
 Bool isKeywords(const char* arg); /* check if the string is a keyword */
-Bool isValidInteger(int value); /* check if the integer value is valid for the assembler */
+Bool isValidInteger10bits(int value); /* check if the integer value is valid for the assembler */
+Bool isValidInteger8bits(int value); /* check if the integer value is valid for the assembler */
+
 
 ErrCode isRegisterOperand(const char* operand); /* check if the operand is a valid register */
 ErrCode isNumberOperand(const char *operand); /* check if the operand is a valid number */

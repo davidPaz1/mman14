@@ -10,7 +10,6 @@
 void freeFiles(FILE* file1, FILE* file2, FILE* file3);
 void freeTableAndLists(MacroTable* macroTable, SymbolTable* symbolTable, ErrorList* errorList); /* free the macro table and error list */
 void executeAssembler(char* fileName); /* main function to execute the file */
-void deleteFileErrorExit(ErrorList* errorList, char* fileExtension);
 
 int main(int argc, char const *argv[])
 {
@@ -66,14 +65,15 @@ void executeAssembler(char* fileName)
 {
     ErrCode errCode = NULL_INITIAL; /* initialize error code to NULL_INITIAL */
     FILE *asFile = NULL, *amFile = NULL, *obFile = NULL, *entFile = NULL, *extFile = NULL;
-    int DCF = 0, ICF = 0;
+    unsigned int DCF = 0, ICF = 0;
     CodeWord codeImage[MAX_MEMORY_SIZE] = {0};
     DataWord dataImage[MAX_MEMORY_SIZE] = {0};
     MacroTable* macroTable = createMacroTable(); /* create a macro table to hold all the macros found */
     SymbolTable* symbolTable  = createSymbolTable(); /* create a symbol table to hold all the symbols found */
     ErrorList* errorList = createErrorList(fileName); /* create an error list to hold errors */
+    
     if (errorList == NULL || macroTable == NULL || symbolTable == NULL) { /* check if memory allocation was successful */
-        printErrorMsg(MALLOC_ERROR_F, "preprocessor", 0);
+        printErrorMsg(MALLOC_ERROR_F, "tables", 0);
         return; /* exit if memory allocation fails */
     }
 
@@ -102,7 +102,9 @@ void executeAssembler(char* fileName)
     errCode = executePreprocessor(macroTable, errorList, asFile, amFile, fileName); /* test with a sample file name */
     if (errCode == PREPROCESSOR_FAILURE_S) {
         freeFiles(asFile, amFile, NULL); /* close the files if they were opened */
-        deleteFileErrorExit(errorList, ".am"); /* clean up and exit the preprocessor */
+        errCode = delFile(errorList->filename, ".am"); 
+        if (errCode != UTIL_SUCCESS_S) /* check if there was an error deleting the file */
+            addErrorToList(errorList, errCode); /* add the error to the list */
         printErrors(errorList); /* print the errors found */
         freeTableAndLists(macroTable, symbolTable , errorList); /* free the macro table and error list */
         return;
@@ -111,7 +113,7 @@ void executeAssembler(char* fileName)
     freeFiles(asFile, amFile, NULL);
 
     if (FALSE) { /* we want to test up to the end of the preprocessor */
-        printf("Skipping first pass for testing.\n");
+        printf("Skipping first pass for debugging.\n");
         freeTableAndLists(macroTable, symbolTable , errorList);
         return;
     }
@@ -134,9 +136,10 @@ void executeAssembler(char* fileName)
         return;
     }
     printf("\nFirst pass executed successfully.\n"); /* print success message */
-    
-    if (TRUE) { /* we want to test up to the end of the first pass */
-        printf("Skipping second pass for testing.\n");
+
+    if (FALSE) { /* we want to test up to the end of the first pass */
+        printf("Skipping first pass for debugging.\n");
+        printSymbolTableSorted(symbolTable);
         freeFiles(amFile, NULL, NULL); /* close the files if they were opened */
         freeTableAndLists(macroTable, symbolTable , errorList); /* free the macro table and error list */
         return; /* exit after the first pass */
@@ -146,7 +149,7 @@ void executeAssembler(char* fileName)
 
     errCode = executeSecondPass(amFile, codeImage, macroTable, symbolTable, errorList); /* execute the second pass */
     if (errCode == SECOND_PASS_FAILURE_S) {
-        freeFiles(amFile, obFile, NULL);
+        freeFiles(amFile, NULL, NULL);
         printErrors(errorList); /* print the errors found */
         freeTableAndLists(macroTable, symbolTable , errorList); /* free the macro table and error list */
         return; /* exit if the second pass failed */
@@ -154,6 +157,14 @@ void executeAssembler(char* fileName)
 
     if (ICF + DCF > 164){
         printf("Warning: ICF + DCF exceeds 164\n");
+    }
+
+    if (TRUE) { /* we want to test up to the end of the second pass */
+        printf("Skipping writing files for debugging.\n");
+        printSymbolTableSorted(symbolTable);
+        freeFiles(amFile, NULL, NULL); /* close the files if they were opened */
+        freeTableAndLists(macroTable, symbolTable , errorList); /* free the macro table and error list */
+        return; /* exit after the second pass */
     }
 
     obFile = openFile(fileName, ".ob", "w", &errCode); /* open the .ob file for writing */
@@ -180,22 +191,15 @@ void executeAssembler(char* fileName)
         if (errCode != UTIL_SUCCESS_S) {
             printf("Error opening file %s.ext: %s\n", fileName, getErrorMessage(errCode));
             freeTableAndLists(macroTable, symbolTable , errorList); /* free the macro table and error list */
-            freeFiles(amFile, obFile, NULL);
+            freeFiles(amFile, obFile, extFile);
             return; /* exit if the file cannot be opened */
         }
         writeExternFile(extFile, symbolTable); /* write the entry symbols to the .ext file */
     }
-
+    freeFiles(amFile, obFile, extFile);
+    freeFiles(entFile, NULL, NULL); /* close the files if they were opened */
     freeTableAndLists(macroTable, symbolTable , errorList); /* free the macro table and error list */
-    freeFiles(asFile, amFile, NULL); /* close the files if they were opened */
     printf("successfully executed file %s\n", fileName); 
-}
-
-void deleteFileErrorExit(ErrorList* errorList, char* fileExtension)
-{
-    ErrCode errorCode = delFile(errorList->filename, fileExtension); /* delete the specified file if it was created */
-    if (errorCode != UTIL_SUCCESS_S) /* check if there was an error deleting the file */
-        addErrorToList(errorList, errorCode); /* add the error to the list */
 }
 
 void freeTableAndLists(MacroTable* macroTable, SymbolTable* symbolTable, ErrorList* errorList) {

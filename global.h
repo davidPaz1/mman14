@@ -7,6 +7,7 @@
 
 /* defines */
 #define NULL_TERMINATOR 1
+#define FIRST_INSTRUCTION_WORD 1 /* the first word of an instruction */
 
 #define MAX_LINE_FILE_LENGTH 80 /* maximum length of a line in the file */
 #define MAX_OB_FILE_LENGTH 256 /* maximum length of an object file name */
@@ -73,7 +74,7 @@ typedef union CodeWord {
 } CodeWord;
 
 typedef struct DataWord {
-    unsigned int value : 10; /* number of data items in the directive */
+    int value : 10; /* 10-bit signed data value */
 } DataWord;
 
 

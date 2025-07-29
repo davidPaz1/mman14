@@ -29,6 +29,8 @@ ErrCode addMacroLine(MacroTable* macroTable, const char* line);
 MacroBody* findMacro(MacroTable* macroTable, const char* macroName);
 void freeMacroTable(MacroTable* macroTable);
 
+void printMacroTable(MacroTable* macroTable); /* print the macro table for debugging purposes */
+
 /* "private" macro functions */
 MacroNode* createMacroNode(const char* macroName, ErrCode* errorCode);
 MacroBody* createMacroBody(const char* line, ErrCode* errorCode);
@@ -69,6 +71,9 @@ SymbolNode* findSymbol(SymbolTable* table, const char* name);
 Bool isSymbolExists(SymbolTable* table, const char* name);
 void addToAddress(SymbolTable* table, unsigned int addAddress, const char* typeToAdd);
 void freeSymbolTable(SymbolTable* table);
+
+void printSymbolTable(SymbolTable* table);
+void printSymbolTableSorted(SymbolTable* table); /* print the symbol table sorted by address for debugging purposes */
 
 /* "private" symbol functions */
 SymbolNode* createSymbolNode(const char* name, unsigned int address, const char* firstToken);

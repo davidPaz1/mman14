@@ -36,9 +36,11 @@ char* getErrorMessage(ErrCode code) {
             return "could not delete file pls ignore the half built files.";
 
         /* lexer errors 20 - 39 */
+        case LABEL_EMPTY_LINE_E:
+            return "the line is empty after the label pls remove the label or add some text after it.";
         case INVALID_DIRECTIVE_E:
             return "invalid directive, should be one of the valid directives (.data, .string, .mat, .entry, .extern).";
-        case MACRO_AFTER_LABEL_E:
+        case MACRO_AFTER_LABEL_E: 
             return "can not have a macro after a label, please remove the macro from the line.";
         case LABEL_INVALID_START_CHAR_E: 
             return "label starts with an invalid character, should start with a letter.";
@@ -80,7 +82,7 @@ char* getErrorMessage(ErrCode code) {
             return "data item can only contain numbers.";
         case DATA_ITEM_NOT_INTEGER_E:
             return "doubles are not allowed, please use integers instead.";
-        case INTEGER_OUT_OF_RANGE_E:
+        case INTEGER_OUT_OF_RANGE10_BITS_E:
             return "integer value is out of range of a word (10 bits) should be between -512 and 511.";
         case STR_MISSING_OPEN_QUOTE_E:
             return "string directive is missing an opening quotation mark, should start with a \" character.";
@@ -100,8 +102,14 @@ char* getErrorMessage(ErrCode code) {
             return "missing first operand in the instruction, pls enter the operand.";
         case MISSING_SECOND_OPERAND_E:
             return "missing second operand in the instruction, pls enter the second operand for this instruction.";
+        case THIRD_OPERAND_DETECTED_E:
+            return "found another comma after the second operand.";
         case MISSING_NUM_OPERAND_E:
             return "missing number after '#'.";
+        case NUMBER_OPERAND_IS_NOT_INTEGER_E:
+            return "number is not an integer, should be an integer.";
+        case INTEGER_OPERAND_OUT_OF_RANGE8_BITS_E:
+            return "integer value is out of range of a byte (8 bits) should be between -128 and 127.";
         case ONE_OPERAND_COMMA_E:
             return "instruction has one operand there was a comma found, should not have a comma if there is only one operand.";
         case REGISTER_NO_R_E:
@@ -110,24 +118,28 @@ char* getErrorMessage(ErrCode code) {
             return "register does not have a digit after 'r', should be in the format r0, r1, r2, ..., r7.";
         case REGISTER_OUT_OF_RANGE_E:
             return "register number is out of range (0-7), should be between 0 and 7.";
-        case MAT_EMPTY_ROW_INDEX:
+        case MAT_EMPTY_ROW_INDEX_E:
             return "matrix row index is empty, should have a row index after the [ character.";
-        case MAT_MISSING_FIRST_CLOSING_BRACKET:
+        case MAT_MISSING_FIRST_CLOSING_BRACKET_E:
             return "matrix is missing the first closing bracket, should end with a ] character after the row index.";
-        case MAT_MISSING_SECOND_BRACKET:
+        case MAT_MISSING_SECOND_BRACKET_E:
             return "matrix is missing the second bracket, should have a [ character after the first closing bracket.";
-        case MAT_EMPTY_COLUMN_INDEX:
+        case MAT_EMPTY_COLUMN_INDEX_E:
             return "matrix column index is empty, should have a column index after the [ character.";
-        case MAT_MISSING_SECOND_CLOSING_BRACKET:
+        case MAT_MISSING_SECOND_CLOSING_BRACKET_E:
             return "matrix is missing the second closing bracket, should end with a ] character after the column index.";
-        case MAT_ROW_NOT_REGISTER:
-            return "matrix row is not a register, note the next error will tell you the problem with the register.";
-        case MAT_COL_NOT_REGISTER:
-            return "matrix column is not a register, note the next error will tell you the problem with the register.";
+        case MAT_ROW_NOT_REGISTER_N:
+            return "note the previous error was about the matrix row.";
+        case MAT_COL_NOT_REGISTER_N:
+            return "note the previous error was about the matrix column.";
         case OPERAND_IS_KEYWORD_E:
             return "operand can not be a keyword (e.g. mov, .data , mcroend).";
         case OPERAND_IS_MACRO_E:
             return "operand can not be a macro, should be a register, number, label or matrix.";
+        case OPERAND1_ERROR_N:
+            return "the last error was an error in the first operand";
+        case OPERAND2_ERROR_N:
+            return "the last error was an error in the second operand";
         case OPERAND1_UNKNOWN_E:
             return "first operand is unknown, should be a register, number, label or matrix.";
         case OPERAND2_UNKNOWN_E:
@@ -182,9 +194,24 @@ Bool isFatalErr(ErrCode code) {
     }        
 }
 
-void printErrorMsg(ErrCode Ecode, const char *stage, unsigned int line)
+Bool isNoteErr(ErrCode code)
 {
-    fprintf(stderr, "Ecode: %d - ", Ecode);
+    switch (code) {
+        case OPERAND1_ERROR_N:
+        case OPERAND2_ERROR_N:
+        case MAT_ROW_NOT_REGISTER_N:
+        case MAT_COL_NOT_REGISTER_N:
+            return TRUE; /* these are note errors */
+        default:
+            return FALSE; /* all other errors are not note errors */
+    }
+}
+
+void printErrorMsg(ErrCode code, const char *stage, unsigned int line)
+{
+    if (isFatalErr(code))
+        fprintf(stderr, "FATAL ERROR: ");
+    fprintf(stderr, "code: %d - ", code);
     if (line != 0)
         fprintf(stderr, "line %u ", line);
     if (stage != NULL)
@@ -193,7 +220,7 @@ void printErrorMsg(ErrCode Ecode, const char *stage, unsigned int line)
     if (line != 0 || stage != NULL)
         fprintf(stderr, "- ");
         
-    fprintf(stderr, "%s\n", getErrorMessage(Ecode));
+    fprintf(stderr, "%s\n", getErrorMessage(code));
 }
 
 ErrorList* createErrorList(char *filename)
@@ -239,14 +266,23 @@ void addErrorToList(ErrorList *list, ErrCode code)
 
     if (isFatalErr(code)) /* if the error is fatal */
         list->fatalError = TRUE; /* set fatal error flag if isFatal is TRUE */
+
+    if (isNoteErr(code)) {
+        newNode->line = 0; /* will fix the printing of note error message */
+        list->count--; /* do not count note errors */
+    }
 }
 
 void printErrors(ErrorList *list) {
     ErrorNode *curr = list->head;
     fprintf(stderr, "there were %d error(s) in file %s during the %s:\n", list->count, list->filename, list->stage);
     while (curr != NULL) {
+        if (!isNoteErr(curr->errCode))
+            fprintf(stderr, "\n"); /* print a new line for better readability */
+
         printErrorMsg(curr->errCode, NULL, curr->line); /* print each error message */
         curr = curr->next;
+    
     }
 }
 

@@ -14,6 +14,9 @@ LOOP: jmp END
     
     mov  r1 , #5
     cmp #7 , #5
+;    mov  #-1999  , 
+;    cmp #71.5 , #5! , as
+;    inc #a , 
 
     mcro a_mc
     mov M1[r3][r3] , r3
@@ -27,8 +30,6 @@ LOOP: jmp END
 
 
 END: stop
-
-TRY: a_mc
     mcro tesT
     sub r1, r4
     inc K
