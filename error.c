@@ -153,6 +153,12 @@ char* getErrorMessage(ErrCode code)
             return "first operand has a matrix syntax but a non-matrix symbol used.";
         case OPERAND2_NON_MAT_SYMBOL_E:
             return "second operand has a matrix syntax but a non-matrix symbol used.";
+        case INSTRUCTION_SRC_OP_CANT_REGISTER_E:
+            return "lea source operand cannot be a register, pls enter a matrix or a label.";
+        case INSTRUCTION_SRC_OP_CANT_NUM_E:
+            return "lea source operand cannot be a number, pls enter a matrix or a label.";
+        case INSTRUCTION_DST_OP_CANT_NUM_E:
+            return "instruction destination operand cannot be a number, pls enter a register, matrix or a label.";
 
         /* tables errors 50 - 69 */
         case SYMBOL_NAME_EXISTS_E:

@@ -540,7 +540,8 @@ ErrCode parseInstructionLine(parsedLine *pLine, char *line, MacroTable *macroNam
 
     /* if the instruction has only one operand */
     if (pLine->lineContentUnion.instruction.operandCount == ONE_OPERAND || pLine->lineContentUnion.instruction.operand2 == NULL) {
-        if (errorOccurred) /* if an error occurred while parsing the first operand */
+        errorCode = isOperandTypesCompatible(pLine, errorList); /* check if the operand types are compatible */
+        if (errorOccurred || errorCode == LEXER_FAILURE_S) /* if an error occurred while parsing operand */
             return LEXER_FAILURE_S;
         pLine->lineContentUnion.instruction.wordCount = wordCount; 
         return LEXER_SUCCESS_S;
@@ -568,12 +569,14 @@ ErrCode parseInstructionLine(parsedLine *pLine, char *line, MacroTable *macroNam
     else 
         wordCount += NON_MATRIX_OPERAND_BIN_LINES; /* if the first operand is a non-matrix, it will take (1) binary lines */
     
-
-    if (errorOccurred) /* if an error occurred while parsing the one of the operands */
-        return LEXER_FAILURE_S;
-    
     pLine->lineContentUnion.instruction.operand2Type = opType2; /* set the type of the second operand */
     pLine->lineContentUnion.instruction.wordCount = wordCount; /* set the word count of the instruction */
+    
+    errorCode = areOperandsTypesCompatible(pLine , errorList); /* check if the operand types are compatible */    
+    if (errorOccurred || errorCode == LEXER_FAILURE_S) /* if an error occurred while parsing the one of the operands */
+        return LEXER_FAILURE_S;
+    
+    
     return LEXER_SUCCESS_S;
 }
 
@@ -718,6 +721,56 @@ ErrCode determineOperandType(const char *operand, operandType *opType, char **ma
         *opType = UNKNOWN_OPERAND; /* set the operand type to UNKNOWN_OPERAND */
     else
         *opType = LABEL_SYNTAX_OPERAND; /* set the operand type to label valid (for now) */
+    return LEXER_SUCCESS_S;
+}
+
+/* checks one operand instructions to see if the operand type is compatible for the instruction
+ * like inc #1 is invalid
+ * return: LEXER_SUCCESS_S if the operand types are compatible, LEXER_FAILURE_S otherwise
+ */
+ErrCode isOperandTypesCompatible(parsedLine *pLine, ErrorList *errorList)
+{
+    char *operationName = pLine->lineContentUnion.instruction.operationName; /* instruction name */
+    operandType op1 = pLine->lineContentUnion.instruction.operand1Type; /* first operand type */
+    Bool errorOccurred = FALSE; /* flag to check if an error occurred while checking the operand types */
+
+    if (op1 == NUMBER_OPERAND && strcmp(operationName, "prn") != 0) { /* if the instruction is not prn and the destination operand is a number */
+        errorOccurred = TRUE;
+        addErrorToList(errorList, INSTRUCTION_DST_OP_CANT_NUM_E); /* destination operand cannot be a number */
+    }
+
+    if(errorOccurred)
+        return LEXER_FAILURE_S;
+    return LEXER_SUCCESS_S; /* return success if the operand types are compatible */
+}
+
+/* checks two operands instructions to see if the operands type is compatible for the instruction
+ * like mov #1 , r1 is invalid
+ * return: LEXER_SUCCESS_S if the operand types are compatible, LEXER_FAILURE_S not
+ */
+ErrCode areOperandsTypesCompatible(parsedLine *pLine, ErrorList *errorList)
+{
+    char *operationName = pLine->lineContentUnion.instruction.operationName; /* instruction name */
+    operandType op1 = pLine->lineContentUnion.instruction.operand1Type; /* first operand type */
+    operandType op2 = pLine->lineContentUnion.instruction.operand2Type;
+    Bool errorOccurred = FALSE; /* flag to check if an error occurred while checking the operand types */
+
+    if (op1 == NUMBER_OPERAND && strcmp(operationName, "cmp") != 0) { /* if the instruction is not cmp and the destination operand is a number */
+        errorOccurred = TRUE;
+        addErrorToList(errorList, INSTRUCTION_DST_OP_CANT_NUM_E); /* destination operand cannot be a number */
+    }
+
+    /* all other instructions allow destination operand to be whatever */
+    /* so we move on to the src operand */
+
+    if (strcmp(operationName, "lea") == 0 && (op2 == NUMBER_OPERAND || op2 == REGISTER_OPERAND) ) { /* if the instruction is lea and the src operand is a number */
+        ErrCode errorCode = op2 == NUMBER_OPERAND ? INSTRUCTION_SRC_OP_CANT_NUM_E : INSTRUCTION_SRC_OP_CANT_REGISTER_E; /* set the error code for the src operand */
+        errorOccurred = TRUE;
+        addErrorToList(errorList, errorCode); /* src operand cannot be a number or a register */
+    }
+
+    if(errorOccurred)
+        return LEXER_FAILURE_S;
     return LEXER_SUCCESS_S;
 }
 

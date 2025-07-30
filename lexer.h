@@ -82,6 +82,8 @@ ErrCode parseEntryExternDirectiveLine(parsedLine *pLine, char *line, MacroTable 
 ErrCode parseInstructionLine(parsedLine *pLine, char *line, MacroTable *macroNames, ErrorList *errorList);
 ErrCode parseInstructionLineOperand(parsedLine *pLine, char *line, ErrorList *errorList); /* parse the operands of the instruction line */
 ErrCode determineOperandType(const char *operand, operandType *opType, char **matLabel, char **row, char **col, MacroTable *macroNames, ErrorList *errorList);
+ErrCode isOperandTypesCompatible(parsedLine *pLine, ErrorList *errorList); /* check if the operand types are compatible with the instruction */
+ErrCode areOperandsTypesCompatible(parsedLine *pLine, ErrorList *errorList); /* check if the operand types are compatible with the instruction */
 ErrCode parseLabelOperandsValid(parsedLine *pLine, SymbolTable *symbolTable, ErrorList *errorList); /* parse the label operands and check if it is valid */
 short int numOfOperandsInInstruction(const char *instructionName); /* return the number of operands in the instruction */
 

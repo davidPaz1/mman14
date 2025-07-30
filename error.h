@@ -93,6 +93,9 @@ typedef enum ErrCode {
     OPERAND2_LABEL_DOES_NOT_EXIST_E = 80, /* second operand label does not exist */
     OPERAND1_NON_MAT_SYMBOL_E = 81, /* first operand is a non-matrix symbol used */
     OPERAND2_NON_MAT_SYMBOL_E = 82, /* second operand is a non-matrix symbol used */
+    INSTRUCTION_SRC_OP_CANT_REGISTER_E = 83, /* instruction source operand cannot be a register */
+    INSTRUCTION_SRC_OP_CANT_NUM_E = 84, /* instruction source operand cannot be a number */
+    INSTRUCTION_DST_OP_CANT_NUM_E = 86, /* instruction destination operand cannot be a number */
 
     /* tables errors 90 - 99 */
     TABLES_SUCCESS_S = 90, /* macro operation was successful */

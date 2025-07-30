@@ -18,10 +18,10 @@ ErrCode executeFirstPass(FILE* amFile, DataWord dataImage[], unsigned int* DC, u
     
     while (errorCode != EOF_REACHED_S) {
         parsedLine *pLine; /* parsed line structure to hold the line and its type */
-        
         if (errorList->fatalError) /* check if there was a fatal error in previous iterations */
             return FIRSTPASS_FAILURE_S;
         
+        errorList->currentLine++; /* increase the current line number */
         pLine = readParsedLine(amFile, &errorCode, macroNames, errorList); /* read a line from the .as file 1 */
         if (errorCode == EOF_REACHED_S)
             break; /* end of file reached, exit the loop */

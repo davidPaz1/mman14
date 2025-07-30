@@ -264,7 +264,7 @@ void addToAddress(SymbolTable *table, unsigned int addAddress, const char *typeT
 
     while (current != NULL) {
         /* check if the type to add matches the current symbol type */
-        if (strcmp(typeToAdd, "data") == 0 && (current->type == DATA_SYMBOL || current->type == EXTERN_SYMBOL))
+        if (strcmp(typeToAdd, "data") == 0 && (current->type == DATA_SYMBOL))
             current->address += addAddress;
         else if (strcmp(typeToAdd, "code") == 0 && current->type == CODE_SYMBOL)
             current->address += addAddress;
@@ -333,13 +333,27 @@ void printSymbolTableSorted(SymbolTable* symbolTable)
         if (current->address > biggest)
             biggest = current->address; /* find the biggest address */
         current = current->next;
-        count++; /* count the number of symbols */
+        totalSymbols++; /* count the number of symbols */
     }
-    totalSymbols = count; /* save the total number of symbols */
     printf("Total symbols: %u\n", totalSymbols);
     printf("Name\tAddress\tType\n");
-    
+
+    current = symbolTable->head;
     count = 0;
+
+    while (current != NULL) { /* iterate through the symbol nodes */
+        SymbolNode* next = current->next; /* save the next node */
+        if (current->type == EXTERN_SYMBOL) { /* if the symbol is an entry symbol */
+            printf("%s\t%u\t%s\n", current->symbolName, current->address,
+                (current->type == CODE_SYMBOL) ? "Code" :
+                (current->type == DATA_SYMBOL) ? "Data" :
+                (current->type == EXTERN_SYMBOL) ? "Extern" : "Undefined");
+            count++;
+        }
+        current = next; /* move to the next node */
+    }
+
+
     while (count < totalSymbols) { /* while there are symbols left to print */
         currentSmallest = NULL;
         current = symbolTable->head;
