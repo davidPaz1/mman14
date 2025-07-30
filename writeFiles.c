@@ -1,15 +1,13 @@
 #include "global.h"
-#define a 0
-#define b 1
-#define c 2
-#define d 3
+#include "writeFiles.h"
+#include "tables.h"
 
-char* base4(const int *word);
 
 char* base4(const int *word)
 {
     char *base4 = malloc(BASE4_INSTRUCTION_LENGTH + NULL_TERMINATOR);
-    int i = 0, first_digit, second_digit, result;
+    int i = 0, first_digit, second_digit;
+    Base4 result;
     char letter;
 
     for (i = 0; i < BASE2_INSTRUCTION_LENGTH; i = i + 2) { 
@@ -39,7 +37,8 @@ char* base4(const int *word)
     return base4; /* return the base4 string */
 }
 
-void printBin(CodeWord word) {
+void printBinCodeWord(CodeWord word)
+{
     int i;
     int h, l;
     for (i = 9; i >= 0; i = i - 2) {
@@ -51,7 +50,8 @@ void printBin(CodeWord word) {
     printf("\n");
 }
 
-void printBin(DataWord word) {
+void printBinDataWord(DataWord word)
+{
     int i;
     int h, l;
     for (i = 9; i >= 0; i = i - 2) {
@@ -63,4 +63,26 @@ void printBin(DataWord word) {
     printf("\n");
 }
 
-/* test for github */
+
+void writeObjectFile(FILE *obFile, DataWord dataImage[], unsigned int DC, CodeWord codeImage[], unsigned int IC, SymbolTable *symbolTable)
+{
+
+    /* this function is not implemented yet, so we return immediately */
+    
+    return;
+}
+
+void writeEntryFile(FILE* entFile, SymbolTable* symbolTable) {
+
+    /* this function is not implemented yet, so we return immediately */
+    
+    return;
+}
+
+void writeExternFile(FILE* extFile, SymbolTable* symbolTable)
+{
+
+    /* this function is not implemented yet, so we return immediately */
+
+    return;
+}

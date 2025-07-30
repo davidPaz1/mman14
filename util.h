@@ -2,6 +2,7 @@
 #define UTIL_H
 #include "global.h"
 #include "error.h"
+#include "tables.h" /* for freeing tables */
 
 /* utility functions prototypes */
 #define OVER_LENGTH  1 /* overlength should store \n or \r if line is under MAX_LINE_FILE_LENGTH */
@@ -20,10 +21,13 @@ char* strnDup(const char *src, unsigned int n); /* duplicate the first n charact
 char* trimmedDup(const char *str); /* duplicate a string and trim leading and trailing spaces */
 char* mergeStrings(const char* str1, const char* str2); /* merge two strings */
 void cutnChar(char *str, int n); /* cut the first n characters from the string */
-void freeStrings(char *str1, char *str2, char *str3); /* free the memory allocated for the strings */
 
 /* file management functions */
 FILE* openFile(const char *filename, const char *ending, const char *mode, ErrCode *errorCode);
 ErrCode delFile(const char *filename, const char *ending);
 
+/* freeing memory functions */
+void freeStrings(char *str1, char *str2, char *str3); /* free the memory allocated for the strings */
+void freeFiles(FILE* file1, FILE* file2, FILE* file3);
+void freeTableAndLists(MacroTable* macroTable, SymbolTable* symbolTable, ErrorList* errorList); /* free the macro table and error list */
 #endif

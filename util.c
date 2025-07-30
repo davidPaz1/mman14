@@ -10,8 +10,8 @@
  * if end of file is reached, returns NULL and sets errorCode to EOF_REACHED_S.
  * errorCode:  EOF_REACHED_S , LINE_TOO_LONG_E, MALLOC_ERROR_F, FILE_READ_ERROR_F, UTIL_SUCCESS_S
  */
-char* readLine(FILE *fp, ErrCode *errorCode) {
-
+char* readLine(FILE *fp, ErrCode *errorCode)
+{
     /* overlength should store \n or \r if line is under MAX_LINE_FILE_LENGTH */
     char *line = malloc(MAX_LINE_FILE_LENGTH + OVER_LENGTH  + NULL_TERMINATOR);
     char next; 
@@ -212,22 +212,6 @@ void cutnChar(char *str, int n)
     memmove(str, str + cuttingLength, strlen(str) - cuttingLength + NULL_TERMINATOR); /* Move the string left by the number of leading spaces */
 }
 
-void freeStrings(char *str1, char *str2, char *str3)
-{
-    if (str1 != NULL){
-        free(str1);
-        str1 = NULL;
-    }
-    if (str2 != NULL){
-        free(str2);
-        str2 = NULL;
-    }
-    if (str3 != NULL){
-        free(str3);
-        str3 = NULL;
-    }
-}
-
 /* file management functions */
 
 FILE* openFile(const char *filename,const char *ending, const char *mode, ErrCode *errorCode)
@@ -278,4 +262,49 @@ ErrCode delFile(const char *filename, const char *ending)
 
     free(fullFileName);
     return UTIL_SUCCESS_S;
+}
+
+/* freeing memory functions */
+
+void freeStrings(char *str1, char *str2, char *str3)
+{
+    if (str1 != NULL){
+        free(str1);
+        str1 = NULL;
+    }
+    if (str2 != NULL){
+        free(str2);
+        str2 = NULL;
+    }
+    if (str3 != NULL){
+        free(str3);
+        str3 = NULL;
+    }
+}
+
+void freeFiles(FILE* file1, FILE* file2, FILE* file3)
+{
+    if (file1 != NULL){
+        fclose(file1); 
+        file1 = NULL;
+    }
+    if (file2 != NULL){
+        fclose(file2); 
+        file2 = NULL;
+    }
+    if (file3 != NULL){
+        fclose(file3); 
+        file3 = NULL;
+    }
+}
+
+void freeTableAndLists(MacroTable* macroTable, SymbolTable* symbolTable, ErrorList* errorList)
+{
+    freeMacroTable(macroTable); /* free the macro table */
+    freeSymbolTable(symbolTable); /* free the symbol table */
+    freeErrorsList(errorList); /* free the error list */
+    /* set pointers to NULL after freeing */
+    macroTable = NULL;
+    symbolTable = NULL;
+    errorList = NULL; 
 }

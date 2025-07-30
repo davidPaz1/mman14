@@ -1,7 +1,8 @@
 #include "global.h"
 #include "error.h"
 
-char* getErrorMessage(ErrCode code) {
+char* getErrorMessage(ErrCode code)
+{
     switch (code) {
 
         /* VERY GENERAL error codes 0 - 5 */
@@ -175,7 +176,8 @@ char* getErrorMessage(ErrCode code) {
     }
 }
 
-Bool isFatalErr(ErrCode code) {
+Bool isFatalErr(ErrCode code)
+{
     switch (code) {
         /* These are clearly fatal errors */
         case UNKNOWN_ERROR: /* is for debugging purposes, should not be used in production */
@@ -273,7 +275,8 @@ void addErrorToList(ErrorList *list, ErrCode code)
     }
 }
 
-void printErrors(ErrorList *list) {
+void printErrors(ErrorList *list)
+{
     ErrorNode *curr = list->head;
     fprintf(stderr, "there were %d error(s) in file %s during the %s:\n", list->count, list->filename, list->stage);
     while (curr != NULL) {
@@ -286,7 +289,8 @@ void printErrors(ErrorList *list) {
     }
 }
 
-void freeErrorsList(ErrorList *list) {
+void freeErrorsList(ErrorList *list)
+{
     ErrorNode* curr;
     if (list == NULL)
         return;

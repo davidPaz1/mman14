@@ -196,8 +196,8 @@ ErrCode determineLineType(parsedLine *pLine, char *line, MacroTable *macroNames,
 /* parses a directive line and sets directive structure
  * errorCode:  LEXER_SUCCESS_S, LEXER_FAILURE_S
  */
-ErrCode parseDirectiveLine(parsedLine *pLine, char *line, MacroTable *macroNames, ErrorList *errorList){
-
+ErrCode parseDirectiveLine(parsedLine *pLine, char *line, MacroTable *macroNames, ErrorList *errorList)
+{
     pLine->lineContentUnion.directive.dataCount = 0;
     pLine->lineContentUnion.directive.dataItems = NULL;
     pLine->lineContentUnion.directive.directiveLabel = NULL;
@@ -769,7 +769,6 @@ ErrCode parseLabelOperandsValid(parsedLine *pLine, SymbolTable *symbolTable, Err
     return LEXER_SUCCESS_S;
 }
 
-
 short int numOfOperandsInInstruction(const char *instructionName)
 {
     if (strcmp(instructionName, "mov") == 0 ||
@@ -951,7 +950,7 @@ Bool isEndOfLine(const char *str){
     return (str[i] == '\0'); /* return TRUE if the string is empty or contains only whitespace */
 }
 
-Bool isOperationName(const char* arg) {
+Bool isOperationName(const char* arg){
     return (strcmp(arg, "mov") == 0 ||
         strcmp(arg, "cmp") == 0 ||
         strcmp(arg, "add") == 0 ||
@@ -970,7 +969,7 @@ Bool isOperationName(const char* arg) {
         strcmp(arg, "stop") == 0);
 }
 
-Bool isRegister(const char* arg) {
+Bool isRegister(const char* arg){
     return (strcmp(arg, "r0") == 0 ||
         strcmp(arg, "r1") == 0 ||
         strcmp(arg, "r2") == 0 ||
@@ -989,16 +988,15 @@ Bool isDirective(const char* arg){
         strcmp(arg, ".extern") == 0);
 }
 
-Bool isMacroDef(const char* arg) {
+Bool isMacroDef(const char* arg){
     return (strcmp(arg, "mcro") == 0);
 }
 
-Bool isMacroEnd(const char* arg) {
+Bool isMacroEnd(const char* arg){
     return (strcmp(arg, "mcroend") == 0);
 }
 
-Bool isKeywords(const char *arg)
-{
+Bool isKeywords(const char *arg){
     return (isOperationName(arg) ||
         isDirective(arg) ||
         isMacroDef(arg) ||
@@ -1006,20 +1004,19 @@ Bool isKeywords(const char *arg)
 }
 
 /* check if the integer value can fit in 10 bits (-512 to 511) */
-Bool isValidInteger10bits(int value)
-{
+Bool isValidInteger10bits(int value){
     return (value >= MIN_10BIT_INT && value <= MAX_10BIT_INT); 
 }
 
-Bool isValidInteger8bits(int value)
-{
+Bool isValidInteger8bits(int value){
     return (value >= MIN_8BIT_INT && value <= MAX_8BIT_INT);
 }
 
 /* Check if the label is a valid label Syntax
  * returns: LEXER_SUCCESS_S, LEXER_FAILURE_S, LABEL_TEXT_AFTER_COLON_E, MALLOC_ERROR_F
  */
-ErrCode isValidLabelSyntax(const char *operand) {
+ErrCode isValidLabelSyntax(const char *operand)
+{
     if (strlen(operand) > MAX_LABEL_LENGTH) /* check if the operand is empty */
         return LABEL_TOO_LONG_E;
     
@@ -1038,7 +1035,8 @@ ErrCode isValidLabelSyntax(const char *operand) {
 /* Check if the operand is a valid register
  * returns: LEXER_SUCCESS_S, EXTRANEOUS_TEXT_E, LEXER_FAILURE_S
  */
-ErrCode isRegisterOperand(const char* operand) {
+ErrCode isRegisterOperand(const char* operand)
+{
     if (operand[0] != 'r') /* check if the first character is not 'r' */
         return REGISTER_NO_R_E;
 
@@ -1059,7 +1057,8 @@ ErrCode isRegisterOperand(const char* operand) {
 /* Check if the operand is a number
  * returns: LEXER_SUCCESS_S, MISSING_NUM_OPERAND_E, NUMBER_OPERAND_IS_NOT_INTEGER_E, EXTRANEOUS_TEXT_E, INTEGER_OPERAND_OUT_OF_RANGE8_BITS_E, LEXER_FAILURE_S
  */
-ErrCode isNumberOperand(const char *operand) {
+ErrCode isNumberOperand(const char *operand)
+{
     double value;
     char *endPtr;
 
@@ -1086,7 +1085,8 @@ ErrCode isNumberOperand(const char *operand) {
     return LEXER_SUCCESS_S;
 }
 
-ErrCode parseMatrixOperand(const char *operandStr, char **name, char **row, char **col) {
+ErrCode parseMatrixOperand(const char *operandStr, char **name, char **row, char **col)
+{
     const char *p = operandStr;
     const char *start;
     unsigned int len;
@@ -1226,7 +1226,8 @@ char* delColonFromLabel(const char *label)
     return newLabel;
 }
 
-ErrCode isMacroNameValid(MacroTable* table , const char* macroName) {
+ErrCode isMacroNameValid(MacroTable* table , const char* macroName)
+{
     int i; /* index for iterating through the macro name */
     int len = strlen(macroName); /* length of the macro name */
 

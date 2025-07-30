@@ -47,23 +47,9 @@ ErrCode executeSecondPass(FILE* amFile, CodeWord* instructionImage, MacroTable* 
     return SECOND_PASS_SUCCESS_S; /* return success if no errors occurred */
 }
 
-void secPassInstructionLine(parsedLine *pLine, unsigned int *ic, CodeWord* instructionImage, ErrorList* errorList) {
+void secPassInstructionLine(parsedLine *pLine, unsigned int *ic, CodeWord* instructionImage, ErrorList* errorList)
+{
     /* This function is not implemented yet, so we return immediately */
     
-    return;
-}
-
-
-void writeEntryFile(FILE* entFile, SymbolTable* symbolTable) {
-
-    /* this function is not implemented yet, so we return immediately */
-    
-    return;
-}
-
-void writeExternFile(FILE* extFile, SymbolTable* symbolTable) {
-
-    /* this function is not implemented yet, so we return immediately */
-
     return;
 }

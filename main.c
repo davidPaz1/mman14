@@ -2,13 +2,12 @@
 #include "preprocessor.h"
 #include "firstPass.h"
 #include "secondPass.h"
+#include "writeFiles.h"
 #include "error.h"
 #include "lexer.h"
 #include "tables.h"
 #include "util.h"
 
-void freeFiles(FILE* file1, FILE* file2, FILE* file3);
-void freeTableAndLists(MacroTable* macroTable, SymbolTable* symbolTable, ErrorList* errorList); /* free the macro table and error list */
 void executeAssembler(char* fileName); /* main function to execute the file */
 
 int main(int argc, char const *argv[])
@@ -99,7 +98,7 @@ void executeAssembler(char* fileName)
         return; /* exit if the file cannot be opened */
     }
 
-    errCode = executePreprocessor(macroTable, errorList, asFile, amFile, fileName); /* test with a sample file name */
+    errCode = executePreprocessor(asFile, amFile, macroTable, errorList); /* test with a sample file name */
     if (errCode == PREPROCESSOR_FAILURE_S) {
         freeFiles(asFile, amFile, NULL); /* close the files if they were opened */
         errCode = delFile(errorList->filename, ".am"); 
@@ -167,6 +166,9 @@ void executeAssembler(char* fileName)
         return; /* exit after the second pass */
     }
 
+    errorList->stage = "write files";
+
+
     obFile = openFile(fileName, ".ob", "w", &errCode); /* open the .ob file for writing */
     if (errCode != UTIL_SUCCESS_S) {
         printf("Error opening file %s.ob: %s\n", fileName, getErrorMessage(errCode));
@@ -200,19 +202,4 @@ void executeAssembler(char* fileName)
     freeFiles(entFile, NULL, NULL); /* close the files if they were opened */
     freeTableAndLists(macroTable, symbolTable , errorList); /* free the macro table and error list */
     printf("successfully executed file %s\n", fileName); 
-}
-
-void freeTableAndLists(MacroTable* macroTable, SymbolTable* symbolTable, ErrorList* errorList) {
-    freeMacroTable(macroTable); /* free the macro table */
-    freeSymbolTable(symbolTable); /* free the symbol table */
-    freeErrorsList(errorList); /* free the error list */
-}
-
-void freeFiles(FILE* file1, FILE* file2, FILE* file3) {
-    if (file1 != NULL) 
-        fclose(file1); /* close the file if it was opened */
-    if (file2 != NULL) 
-        fclose(file2); /* close the file if it was opened */
-    if (file3 != NULL) 
-        fclose(file3); /* close the file if it was opened */    
 }

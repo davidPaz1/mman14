@@ -5,7 +5,8 @@
 #include "util.h" /* for strDup */
 
 /* MacroTable functions that operate on the MacroTable struct (linked list)*/
-MacroTable* createMacroTable() {
+MacroTable* createMacroTable()
+{
     
     MacroTable* newTable = malloc(sizeof(MacroTable)); /* allocate memory for the table */
     if (newTable == NULL) {
@@ -16,30 +17,83 @@ MacroTable* createMacroTable() {
     return newTable; /* return the new table */
 }
 
-MacroNode* createMacroNode(const char* macroName, ErrCode* errorCode) {
-    MacroNode* newMacro; /* returned macro */
-    *errorCode = NULL_INITIAL; /* initialize error code to NULL_INITIAL */
+/* add a new macro to the table */
+ErrCode addMacro(MacroTable* macroTable, const char* name)
+{
+    MacroNode* newMacro; /* new macro to be added */
+    ErrCode errorCode = NULL_INITIAL; /* initialize error code to NULL_INITIAL */
 
-    newMacro = malloc(sizeof(MacroNode));
-    if (newMacro == NULL) {
-        *errorCode = MALLOC_ERROR_F; /* set error code to MALLOC_ERROR */
-        return NULL; /* exit if memory allocation fails */
-    }
+    errorCode = isMacroNameValid(macroTable, name); /* check if the macro name is valid */
+    if (errorCode != TABLES_SUCCESS_S) /* if the macro name is not valid */
+        return errorCode; /* exit if the macro name is not valid */
+    
 
-    newMacro->macroName = strDup(macroName);
-    if (newMacro->macroName == NULL) {
-        *errorCode = MALLOC_ERROR_F; /* set error code to MALLOC_ERROR */
-        free(newMacro);
-        return NULL; /* exit if memory allocation fails */
-    }
+    newMacro = createMacroNode(name, &errorCode);
+    if (errorCode != TABLES_SUCCESS_S) 
+        return errorCode; /* exit if the macro node creation failed */
+    
 
-    *errorCode = TABLES_SUCCESS_S; /* set error code to MACROTABLE_SUCCESS */
-    newMacro->bodyHead = NULL; /* set the body head to the first line in the body */
-    newMacro->bodyTail = NULL; /* set the body tail to the last line in the body */
-    newMacro->nextMacro = NULL; /* initialize the next macro pointer to NULL */
-    return newMacro;
+    newMacro->nextMacro = macroTable->macroHead; /* insert at the beginning of the list */
+    macroTable->macroHead = newMacro; /* update the head of the list */
+    return TABLES_SUCCESS_S; /* return success */
 }
 
+ErrCode addMacroLine(MacroTable* macroTable, const char* line)
+{
+    MacroBody* newLine; /* new line to be added */
+    MacroNode* headNode; /* the macro to which the line will be added */
+    ErrCode errorCode = NULL_INITIAL; /* initialize error code to NULL_INITIAL */
+
+    headNode = macroTable->macroHead; /* get the head of the macro list */
+    
+    newLine = createMacroBody(line, &errorCode); /* create a new body for the line */
+    if (errorCode != TABLES_SUCCESS_S) 
+        return errorCode; /* exit if memory allocation fails */
+    
+
+    if (headNode->bodyHead == NULL) { /* if this is the first line in the macro */
+        headNode->bodyHead = newLine; /* set the head of the body */
+        headNode->bodyTail = newLine; /* set the tail of the body */
+    } else {
+        headNode->bodyTail->nextLine = newLine; /* link the new line to the end of the body */
+        headNode->bodyTail = newLine; /* update the tail of the body */
+    }
+
+    return TABLES_SUCCESS_S; /* return success */
+}
+
+MacroBody* findMacro(MacroTable* macroTable, const char* macroName)
+{
+    MacroNode* current; /* used to iterate through the macro list */
+
+    current = macroTable->macroHead;
+    while (current != NULL) {
+        if (strcmp(current->macroName, macroName) == 0) 
+            return current->bodyHead; /* return the body of the found macro */
+        current = current->nextMacro;
+    }
+
+    return NULL; /* Macro not found */
+}
+
+/** isMacroExists - checks if a macro with the given name exists in the table.
+ * Returns TRUE if the macro exists, otherwise returns FALSE.
+ */
+Bool isMacroExists(MacroTable* macroTable, const char* macroName)
+{
+    return findMacro(macroTable, macroName) != NULL; /* check if the macro exists by trying to find it */
+}
+
+void freeMacroTable(MacroTable* macroTable)
+{
+    if (macroTable == NULL) /* check if the table is NULL */
+        return; /* exit if the table is NULL */
+    freeMacroNode(macroTable->macroHead); /* free the first macro node */
+    free(macroTable);
+}
+
+
+/* "private" macro functions */
 void printMacroTable(MacroTable *macroTable)
 {
     MacroNode* current;
@@ -69,7 +123,33 @@ void printMacroTable(MacroTable *macroTable)
     printf("\n");
 }
 
-MacroBody* createMacroBody(const char* line, ErrCode* errorCode) {
+MacroNode* createMacroNode(const char* macroName, ErrCode* errorCode)
+{
+    MacroNode* newMacro; /* returned macro */
+    *errorCode = NULL_INITIAL; /* initialize error code to NULL_INITIAL */
+
+    newMacro = malloc(sizeof(MacroNode));
+    if (newMacro == NULL) {
+        *errorCode = MALLOC_ERROR_F; /* set error code to MALLOC_ERROR */
+        return NULL; /* exit if memory allocation fails */
+    }
+
+    newMacro->macroName = strDup(macroName);
+    if (newMacro->macroName == NULL) {
+        *errorCode = MALLOC_ERROR_F; /* set error code to MALLOC_ERROR */
+        free(newMacro);
+        return NULL; /* exit if memory allocation fails */
+    }
+
+    *errorCode = TABLES_SUCCESS_S; /* set error code to MACROTABLE_SUCCESS */
+    newMacro->bodyHead = NULL; /* set the body head to the first line in the body */
+    newMacro->bodyTail = NULL; /* set the body tail to the last line in the body */
+    newMacro->nextMacro = NULL; /* initialize the next macro pointer to NULL */
+    return newMacro;
+}
+
+MacroBody* createMacroBody(const char* line, ErrCode* errorCode)
+{
     MacroBody* newBody = malloc(sizeof(MacroBody));  /* returned body */
     *errorCode = NULL_INITIAL; /* initialize error code to NULL_INITIAL */
 
@@ -89,79 +169,8 @@ MacroBody* createMacroBody(const char* line, ErrCode* errorCode) {
     return newBody;
 }
 
-/* add a new macro to the table */
-ErrCode addMacro(MacroTable* macroTable, const char* name) {
-    MacroNode* newMacro; /* new macro to be added */
-    ErrCode errorCode = NULL_INITIAL; /* initialize error code to NULL_INITIAL */
-
-    errorCode = isMacroNameValid(macroTable, name); /* check if the macro name is valid */
-    if (errorCode != TABLES_SUCCESS_S) /* if the macro name is not valid */
-        return errorCode; /* exit if the macro name is not valid */
-    
-
-    newMacro = createMacroNode(name, &errorCode);
-    if (errorCode != TABLES_SUCCESS_S) 
-        return errorCode; /* exit if the macro node creation failed */
-    
-
-    newMacro->nextMacro = macroTable->macroHead; /* insert at the beginning of the list */
-    macroTable->macroHead = newMacro; /* update the head of the list */
-    return TABLES_SUCCESS_S; /* return success */
-}
-
-ErrCode addMacroLine(MacroTable* macroTable, const char* line) {
-    MacroBody* newLine; /* new line to be added */
-    MacroNode* headNode; /* the macro to which the line will be added */
-    ErrCode errorCode = NULL_INITIAL; /* initialize error code to NULL_INITIAL */
-
-    headNode = macroTable->macroHead; /* get the head of the macro list */
-    
-    newLine = createMacroBody(line, &errorCode); /* create a new body for the line */
-    if (errorCode != TABLES_SUCCESS_S) 
-        return errorCode; /* exit if memory allocation fails */
-    
-
-    if (headNode->bodyHead == NULL) { /* if this is the first line in the macro */
-        headNode->bodyHead = newLine; /* set the head of the body */
-        headNode->bodyTail = newLine; /* set the tail of the body */
-    } else {
-        headNode->bodyTail->nextLine = newLine; /* link the new line to the end of the body */
-        headNode->bodyTail = newLine; /* update the tail of the body */
-    }
-
-    return TABLES_SUCCESS_S; /* return success */
-}
-
-MacroBody* findMacro(MacroTable* macroTable, const char* macroName) {
-    MacroNode* current; /* used to iterate through the macro list */
-
-    current = macroTable->macroHead;
-    while (current != NULL) {
-        if (strcmp(current->macroName, macroName) == 0) 
-            return current->bodyHead; /* return the body of the found macro */
-        current = current->nextMacro;
-    }
-
-    return NULL; /* Macro not found */
-}
-
-/** isMacroExists - checks if a macro with the given name exists in the table.
- * Returns TRUE if the macro exists, otherwise returns FALSE.
- */
-Bool isMacroExists(MacroTable* macroTable, const char* macroName) {
-    return findMacro(macroTable, macroName) != NULL; /* check if the macro exists by trying to find it */
-}
-
-
-void freeMacroTable(MacroTable* macroTable) {
-    if (macroTable == NULL) /* check if the table is NULL */
-        return; /* exit if the table is NULL */
-    freeMacroNode(macroTable->macroHead); /* free the first macro node */
-    free(macroTable);
-}
-
-void freeMacroNode(MacroNode* node) {    
-    
+void freeMacroNode(MacroNode* node)
+{
     MacroNode* current = node; /* used to iterate through the macro nodes */
     if (node == NULL)
         return; /* exit if the node is NULL */
@@ -176,7 +185,8 @@ void freeMacroNode(MacroNode* node) {
     
 }
 
-void freeMacroBody(MacroBody* body) {
+void freeMacroBody(MacroBody* body)
+{
     MacroBody* current = body; /* used to iterate through the body lines */
     if (body == NULL)
         return;
@@ -188,6 +198,7 @@ void freeMacroBody(MacroBody* body) {
         current = next;
     }
 }
+
 
 /* SymbolTable public functions */
 
@@ -262,10 +273,11 @@ void addToAddress(SymbolTable *table, unsigned int addAddress, const char *typeT
     }
 }
 
-void freeSymbolTable(SymbolTable* table){
+void freeSymbolTable(SymbolTable* table)
+{
     SymbolNode* current;
     if (table == NULL) /* check if the table is NULL */
-    return;
+        return;
 
     current = table->head; /* used to iterate through the symbol nodes */
     while (current != NULL) { /* iterate through the symbol nodes and free them */
@@ -275,6 +287,9 @@ void freeSymbolTable(SymbolTable* table){
     }
     free(table); /* free the table itself */
 }
+
+
+/* SymbolTable "private" functions */
 
 void printSymbolTable(SymbolTable* table) 
 {
@@ -346,9 +361,8 @@ void printSymbolTableSorted(SymbolTable* symbolTable)
     printf("\n");
 }
 
-/* SymbolTable private functions */
-
-SymbolNode* createSymbolNode(const char* name, unsigned int address, const char* firstToken){
+SymbolNode* createSymbolNode(const char* name, unsigned int address, const char* firstToken)
+{
     SymbolNode* newNode = (SymbolNode*)malloc(sizeof(SymbolNode));
     if (newNode == NULL) 
         return NULL; /* exit if memory allocation fails */
