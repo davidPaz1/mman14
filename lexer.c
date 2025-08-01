@@ -755,18 +755,18 @@ ErrCode areOperandsTypesCompatible(parsedLine *pLine, ErrorList *errorList)
     operandType op2 = pLine->lineContentUnion.instruction.operand2Type;
     Bool errorOccurred = FALSE; /* flag to check if an error occurred while checking the operand types */
 
-    if (op1 == NUMBER_OPERAND && strcmp(operationName, "cmp") != 0) { /* if the instruction is not cmp and the destination operand is a number */
+    if (strcmp(operationName, "lea") == 0 && (op1 == NUMBER_OPERAND || op1 == REGISTER_OPERAND) ) { /* if the instruction is lea and the src operand is a number */
+        ErrCode errorCode = op1 == NUMBER_OPERAND ? INSTRUCTION_SRC_OP_CANT_NUM_E : INSTRUCTION_SRC_OP_CANT_REGISTER_E; /* set the error code for the src operand */
         errorOccurred = TRUE;
-        addErrorToList(errorList, INSTRUCTION_DST_OP_CANT_NUM_E); /* destination operand cannot be a number */
+        addErrorToList(errorList, errorCode); /* src operand cannot be a number or a register */
     }
 
     /* all other instructions allow destination operand to be whatever */
     /* so we move on to the src operand */
 
-    if (strcmp(operationName, "lea") == 0 && (op2 == NUMBER_OPERAND || op2 == REGISTER_OPERAND) ) { /* if the instruction is lea and the src operand is a number */
-        ErrCode errorCode = op2 == NUMBER_OPERAND ? INSTRUCTION_SRC_OP_CANT_NUM_E : INSTRUCTION_SRC_OP_CANT_REGISTER_E; /* set the error code for the src operand */
+    if (op2 == NUMBER_OPERAND && strcmp(operationName, "cmp") != 0) { /* if the instruction is not cmp and the destination operand is a number */
         errorOccurred = TRUE;
-        addErrorToList(errorList, errorCode); /* src operand cannot be a number or a register */
+        addErrorToList(errorList, INSTRUCTION_DST_OP_CANT_NUM_E); /* destination operand cannot be a number */
     }
 
     if(errorOccurred)

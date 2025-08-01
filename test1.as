@@ -12,13 +12,12 @@ TEST: .data 1, 2
 LOOP: jmp END
     prn #-5
     
-    mov r4 , #5
+    mov #5, r4
     cmp #7 , #5
-;    mov #-1999  , 
+;    mov 4invlidLabel  , 
 ;    cmp #71.5 , #5! , as
 ;    inc #a , 
 ;    lea r1 , #2
-;    lea r1 , r2
     mcro a_mc
     mov M1[r3][r3] , r3
     bne LOOP
