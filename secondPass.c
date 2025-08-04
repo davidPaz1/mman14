@@ -34,6 +34,11 @@ ErrCode executeSecondPass(FILE* amFile, CodeWord* instructionImage, MacroTable* 
             }
         }
         else if (pLine->typesOfLine == INSTRUCTION_LINE) {
+            errorCode = parseLabelOperandsValid(pLine, symbolTable, errorList);
+            if (errorCode != LEXER_SUCCESS_S) {
+                freeParsedLine(pLine); /* free the parsed line structure */
+                continue; /* skip to the next line if there was an error */
+            }
             secPassInstructionLine(pLine, &ic, instructionImage, errorList); /* process the instruction line */
         }
         

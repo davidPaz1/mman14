@@ -806,7 +806,7 @@ ErrCode parseLabelOperandsValid(parsedLine *pLine, SymbolTable *symbolTable, Err
             addErrorToList(errorList, OPERAND2_LABEL_DOES_NOT_EXIST_E); /* add an error to the error list */
             errorOccurred = TRUE; /* set the error flag to true */
         }
-        else if (op1 == LABEL_SYNTAX_OPERAND) /* if the first operand is a label */
+        else if (op2 == LABEL_SYNTAX_OPERAND) /* if the first operand is a label */
             pLine->lineContentUnion.instruction.operand2Type = LABEL_TABLE_OPERAND; /* change the operand type to LABEL_TABLE_OPERAND */   
         else if (!refSymbol2->isMat) { /* if the first operand is not a matrix element */
             addErrorToList(errorList, OPERAND2_NON_MAT_SYMBOL_E); /* add an error to the error list */
@@ -982,11 +982,13 @@ char* printOpType(operandType opType)
         case NUMBER_OPERAND:
             return "Number";
         case MATRIX_SYNTAX_OPERAND:
-            return "Matrix";
+            return "Matrix Syntax";
+        case MATRIX_TABLE_OPERAND:
+            return "Matrix Table";
         case LABEL_SYNTAX_OPERAND:
-            return "Syntax Label";
+            return "Label Syntax";
         case LABEL_TABLE_OPERAND:
-            return "Table Label";
+            return "Label Table";
         default:
             return "Unknown Operand Type";
     }

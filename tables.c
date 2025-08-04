@@ -336,7 +336,7 @@ void printSymbolTableSorted(SymbolTable* symbolTable)
         totalSymbols++; /* count the number of symbols */
     }
     printf("Total symbols: %u\n", totalSymbols);
-    printf("Name\tAddress\tType\n");
+    printf("Name\tAddress\tType\tisEntry\tisMat\n");
 
     current = symbolTable->head;
     count = 0;
@@ -364,10 +364,11 @@ void printSymbolTableSorted(SymbolTable* symbolTable)
             current = current->next;
         }
         if (currentSmallest != NULL) {
-            printf("%s\t%u\t%s\n", currentSmallest->symbolName, currentSmallest->address,
+            printf("%s\t%u\t%s\t%d\t%d\n", currentSmallest->symbolName, currentSmallest->address,
                         (currentSmallest->type == CODE_SYMBOL) ? "Code" :
                         (currentSmallest->type == DATA_SYMBOL) ? "Data" :
-                        (currentSmallest->type == EXTERN_SYMBOL) ? "Extern" : "Undefined");
+                        (currentSmallest->type == EXTERN_SYMBOL) ? "Extern" : "Undefined",
+                        currentSmallest->isEntry, currentSmallest->isMat);
             lastSmallest = currentSmallest->address; /* update the last smallest address */
         }
         count++;

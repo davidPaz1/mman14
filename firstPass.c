@@ -65,19 +65,25 @@ void firstPassDirectiveLine(parsedLine *pLine, unsigned int *DC, DataWord dataIm
         strcmp(directiveName, ".mat") == 0) {
         int i;
 
-        if (*DC + pLine->lineContentUnion.directive.dataCount >= MAX_MEMORY_SIZE) /* check if there is enough space in the data image */
-                return;
-
         if (pLine->label != NULL) { /* if the line has a label */
-            errorCode = addSymbol(symbolTable, pLine->label, *DC, directiveName); /* add the label to the symbol table */
-            if (errorCode != TABLES_SUCCESS_S) {
-                addErrorToList(errorList, errorCode); /* add the error to the error list */
+            char* labelNoColon = delColonFromLabel(pLine->label); /* remove the colon from the label */
+            if (labelNoColon == NULL) { /* if the label is empty after removing the colon */
+                addErrorToList(errorList, MALLOC_ERROR_F);
                 return;
             }
+            errorCode = addSymbol(symbolTable, labelNoColon, *DC, pLine->lineContentUnion.instruction.operationName); /* add the label to the symbol table */
+            if (errorCode != TABLES_SUCCESS_S) 
+                addErrorToList(errorList, errorCode);
         }
 
-        for (i = 0; i < pLine->lineContentUnion.directive.dataCount; i++) 
+        for (i = 0; i < pLine->lineContentUnion.directive.dataCount; i++){
+            if (*DC + i >= MAX_MEMORY_SIZE){ /* check if there is enough space in the data image */
+                *DC += i;
+                return;
+            }
             dataImage[*DC + i].value = pLine->lineContentUnion.directive.dataItems[i]; /* set the data items in the directive image */
+        }
+        
         
         *DC += pLine->lineContentUnion.directive.dataCount; /* increase the data counter by the number of data items */
         return; /* return after handling the directive */
@@ -98,9 +104,14 @@ void firstPassInstructionLine(parsedLine *pLine, unsigned int *IC, MacroTable *m
     ErrCode errorCode = NULL_INITIAL;
 
     if (pLine->label != NULL) { /* if the line has a label */
-        errorCode = addSymbol(symbolTable, pLine->label, *IC, pLine->lineContentUnion.instruction.operationName); /* add the label to the symbol table */
+        char* labelNoColon = delColonFromLabel(pLine->label); /* remove the colon from the label */
+        if (labelNoColon == NULL) { /* if malloc failed during deleting the labels colon */
+            addErrorToList(errorList, MALLOC_ERROR_F);
+            return;
+        }
+        errorCode = addSymbol(symbolTable, labelNoColon, *IC, pLine->lineContentUnion.instruction.operationName); /* add the label to the symbol table */
         if (errorCode != TABLES_SUCCESS_S) 
-            addErrorToList(errorList, errorCode); /* add the error to the error list */
+            addErrorToList(errorList, errorCode);
     }
 
     /* increase the instruction counter by the number of words in the instruction */

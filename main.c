@@ -145,10 +145,12 @@ void executeAssembler(char* fileName)
     }
     printf("starting second pass...\n");
     errorList->stage = "second pass";
+    rewind(amFile); /* rewind the .am file to the beginning for the second pass */
 
     errCode = executeSecondPass(amFile, codeImage, macroTable, symbolTable, errorList); /* execute the second pass */
     if (errCode == SECOND_PASS_FAILURE_S) {
         freeFiles(amFile, NULL, NULL);
+        printSymbolTableSorted(symbolTable);
         printErrors(errorList); /* print the errors found */
         freeTableAndLists(macroTable, symbolTable , errorList); /* free the macro table and error list */
         return; /* exit if the second pass failed */
