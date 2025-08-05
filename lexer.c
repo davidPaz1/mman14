@@ -235,13 +235,20 @@ ErrCode parseDataDirectiveLine(parsedLine *pLine, char *line, ErrorList *errorLi
         return LEXER_FAILURE_S;
     }
 
-    token = strtok(line, ",");
+    token = line; /* start parsing from the beginning of the line */
 
     while (token != NULL) {
         double value;
+        char *nextComma = strchr(token, ','); /* find the next comma */
 
         while (isspace(*token)) /* skip leading whitespace */
             token++;
+
+        if (nextComma != NULL && nextComma == token) { /* if there is a comma but no number before it */
+            addErrorToList(errorList, DATA_MISSING_NUMBERS_E);
+            token = nextComma + 1; /* +1 to move past the comma */
+            continue;
+        }
 
         endPtr = token; /* set endPtr to the start of the token */
         value = strtod(token, &endPtr);
@@ -251,8 +258,12 @@ ErrCode parseDataDirectiveLine(parsedLine *pLine, char *line, ErrorList *errorLi
 
         if (endPtr == token) /* if no number was found */
             addErrorToList(errorList, DATA_INVALID_VALUE_E);
-        else if (!isEndOfLine(endPtr)) /* if there are non-numeric and non-whitespace characters after the number */
-            addErrorToList(errorList, MISSING_COMMA_E);
+        else if (endPtr[0] != ',' && endPtr[0] != '\0'){ /* if there are non-numeric and non-whitespace characters after the number */
+            if (isdigit(endPtr[0])) /* if the character is a digit */
+                addErrorToList(errorList, DATA_COMMA_BETWEEN_NUMS_E);
+            else if (isalpha(endPtr[0])) /* if the character is a letter */
+                addErrorToList(errorList, DATA_EXTRANEOUS_TEXT_E);
+        }
         else if (value != (int)value) /* if the value is not an integer */
             addErrorToList(errorList, DATA_ITEM_NOT_INTEGER_E);
         else if (!isValidInteger10bits((int)value)) /* check if the integer value is valid for the assembler */
@@ -271,7 +282,7 @@ ErrCode parseDataDirectiveLine(parsedLine *pLine, char *line, ErrorList *errorLi
         }
 
         dataItems[dataCount++] = (int)value;
-        token = strtok(NULL, ","); /* get next token */
+        token = nextComma != NULL ? nextComma + 1 : NULL; /* +1 to move past the comma */
     } /* end of while */
 
     if (startErrCount < errorList->count) { /* if new errors were added */
@@ -295,12 +306,6 @@ ErrCode parseStrDirectiveLine(parsedLine *pLine, char *line, ErrorList *errorLis
         addErrorToList(errorList, MALLOC_ERROR_F);
         return LEXER_FAILURE_S;
     }
-
-    if (isEndOfLine(line)) { /* if the directive has no data */
-        addErrorToList(errorList, DIRECTIVE_DATA_MISSING_E);
-        return LEXER_FAILURE_S;
-    }
-
 
     startQuote = strchr(line, '"'); /* find the first quote */
     endQuote = strrchr(line, '"'); /* find the last quote */
@@ -411,13 +416,20 @@ ErrCode parseMatDirectiveLine(parsedLine *pLine, char *line, ErrorList *errorLis
     }
 
     i = 0;
-    token = strtok(line, ",");
+    token = line;
 
     while (token != NULL) {
         double value;
+        char *nextComma = strchr(token, ','); /* find the next comma */
 
         while (isspace(*token)) /* skip leading whitespace */
             token++;
+
+        if (nextComma != NULL && nextComma == token) { /* if there is a comma but no number before it */
+            addErrorToList(errorList, DATA_MISSING_NUMBERS_E);
+            token = nextComma + 1; /* +1 to move past the comma */
+            continue;
+        }
 
         if (dataCount <= i) { /* if we have more items than the matrix size */
             addErrorToList(errorList, MAT_SIZE_TOO_LARGE_E); /* if there are more items than matrix size */
@@ -433,15 +445,18 @@ ErrCode parseMatDirectiveLine(parsedLine *pLine, char *line, ErrorList *errorLis
 
         if (endPtr == token) /* if no number was found */
             addErrorToList(errorList, DATA_INVALID_VALUE_E);
-        else if (*endPtr != '\0') /* if there are non-numeric and non-whitespace characters after the number */
-            addErrorToList(errorList, MISSING_COMMA_E);
+        else if (endPtr[0] != ',' && endPtr[0] != '\0') /* if there are non-numeric and non-whitespace characters after the number */
+            if (isdigit(endPtr[0])) /* if the character is a digit */
+                addErrorToList(errorList, DATA_COMMA_BETWEEN_NUMS_E);
+            else if (isalpha(endPtr[0])) /* if the character is a letter */
+                addErrorToList(errorList, DATA_EXTRANEOUS_TEXT_E);
         else if (value != (int)value) /* if the value is not an integer */
             addErrorToList(errorList, DATA_ITEM_NOT_INTEGER_E);
         else if (!isValidInteger10bits((int)value)) /* check if the integer value is valid for the assembler */
             addErrorToList(errorList, INTEGER_OUT_OF_RANGE10_BITS_E);        
 
         dataItems[i++] = (int)value;
-        token = strtok(NULL, ","); /* get next token */
+        token = nextComma != NULL ? nextComma + 1 : NULL; /* +1 to move past the comma */
     }
 
     free(token);
@@ -665,7 +680,7 @@ ErrCode determineOperandType(const char *operand, operandType *opType, char **ma
         *opType = REGISTER_OPERAND; /* set the operand type to REGISTER_OPERAND */
         return LEXER_SUCCESS_S; /* return success */
     }
-    else if (errorCode == EXTRANEOUS_TEXT_E) { /* if op is an register with an error */
+    else if (errorCode == OPERAND_EXTRANEOUS_TEXT_E) { /* if op is an register with an error */
         addErrorToList(errorList, errorCode); /* add the error to the error list */
         return LEXER_FAILURE_S; /* return failure if the operand is not a valid register */
     }
@@ -1103,14 +1118,14 @@ ErrCode isRegisterOperand(const char* operand)
     if (isdigit(operand[2]) || operand[1] == '8' || operand[1] == '9')
         return REGISTER_OUT_OF_RANGE_E;
 
-    if(!isEndOfLine(operand + REGISTER_LENGTH)) /* check if the operand is a valid register */
-        return EXTRANEOUS_TEXT_E;
+    if (!isEndOfLine(operand + REGISTER_LENGTH)) /* check if the operand is a valid register */
+        return OPERAND_EXTRANEOUS_TEXT_E;
 
     return LEXER_SUCCESS_S;
 }
 
 /* Check if the operand is a number
- * returns: LEXER_SUCCESS_S, MISSING_NUM_OPERAND_E, NUMBER_OPERAND_IS_NOT_INTEGER_E, EXTRANEOUS_TEXT_E, INTEGER_OPERAND_OUT_OF_RANGE8_BITS_E, LEXER_FAILURE_S
+ * returns: LEXER_SUCCESS_S, MISSING_NUM_OPERAND_E, NUMBER_OPERAND_IS_NOT_INTEGER_E, OPERAND_EXTRANEOUS_TEXT_E, INTEGER_OPERAND_OUT_OF_RANGE8_BITS_E, LEXER_FAILURE_S
  */
 ErrCode isNumberOperand(const char *operand)
 {
@@ -1132,7 +1147,7 @@ ErrCode isNumberOperand(const char *operand)
         return NUMBER_OPERAND_IS_NOT_INTEGER_E;
 
     if (!isEndOfLine(endPtr))  /* extraneous characters */
-        return EXTRANEOUS_TEXT_E;
+        return OPERAND_EXTRANEOUS_TEXT_E;
 
     if (!isValidInteger8bits((int)value))  /* check if the value is within 8-bit range */
         return INTEGER_OPERAND_OUT_OF_RANGE8_BITS_E;
@@ -1210,7 +1225,7 @@ ErrCode parseMatrixOperand(const char *operandStr, char **name, char **row, char
     while (isspace(*p)) p++;
     if (*p != '\0') {
         freeStrings(*name, *row, *col);
-        return EXTRANEOUS_TEXT_E;
+        return OPERAND_EXTRANEOUS_TEXT_E;
     }
 
     return LEXER_SUCCESS_S;

@@ -43,6 +43,12 @@ char* getErrorMessage(ErrCode code)
             return "invalid directive, should be one of the valid directives (.data, .string, .mat, .entry, .extern).";
         case MACRO_AFTER_LABEL_E: 
             return "can not have a macro after a label, please remove the macro from the line.";
+        case MACRO_DEF_AFTER_LABEL_E:
+            return "macro definition found after label, please move it before the label.";
+        case MACRO_END_AFTER_LABEL_E:
+            return "macro end found after label, please move it before the label.";
+        case UNKNOWN_LINE_TYPE_E:
+            return "unknown line type found, pls correct the line to be a valid line type.";
         case LABEL_INVALID_START_CHAR_E: 
             return "label starts with an invalid character, should start with a letter.";
         case LABEL_INVALID_CHAR_E: 
@@ -77,10 +83,14 @@ char* getErrorMessage(ErrCode code)
             return "macro name is a register, pls use a different name.";
         case DIRECTIVE_DATA_MISSING_E:
             return "directive is missing data items, should have at least one data item.";
-        case MISSING_COMMA_E:
-            return "missing comma between the directive arguments, should have a comma between two data items.";
+        case DATA_MISSING_NUMBERS_E:
+            return "directive is missing a number, cannot have two commas without a number between them.";
         case DATA_INVALID_VALUE_E:
             return "data item can only contain numbers.";
+        case DATA_COMMA_BETWEEN_NUMS_E:
+            return "missing comma between the directive arguments, should have a comma between two data items.";
+        case DATA_EXTRANEOUS_TEXT_E:
+            return "extraneous text found after the data item, should only contain numbers.";
         case DATA_ITEM_NOT_INTEGER_E:
             return "doubles are not allowed, please use integers instead.";
         case INTEGER_OUT_OF_RANGE10_BITS_E:
@@ -101,6 +111,8 @@ char* getErrorMessage(ErrCode code)
             return "matrix input is larger than the size entered, please increase the matrix size or reduce the input.";
         case MISSING_FIRST_OPERAND_E:
             return "missing first operand in the instruction, pls enter the operand.";
+        case ONE_OPERAND_COMMA_E:
+            return "instruction has one operand but a comma was found, should not have a comma if there is only one operand.";
         case MISSING_SECOND_OPERAND_E:
             return "missing second operand in the instruction, pls enter the second operand for this instruction.";
         case THIRD_OPERAND_DETECTED_E:
@@ -111,14 +123,14 @@ char* getErrorMessage(ErrCode code)
             return "number is not an integer, should be an integer.";
         case INTEGER_OPERAND_OUT_OF_RANGE8_BITS_E:
             return "integer value is out of range of a byte (8 bits) should be between -128 and 127.";
-        case ONE_OPERAND_COMMA_E:
-            return "instruction has one operand there was a comma found, should not have a comma if there is only one operand.";
         case REGISTER_NO_R_E:
             return "register does not start with 'r', should start with 'r' followed by a digit.";
         case REGISTER_NO_DIGIT_E:
             return "register does not have a digit after 'r', should be in the format r0, r1, r2, ..., r7.";
         case REGISTER_OUT_OF_RANGE_E:
             return "register number is out of range (0-7), should be between 0 and 7.";
+        case OPERAND_EXTRANEOUS_TEXT_E:
+            return "operand has extraneous text, should not have any text after the operand name.";
         case MAT_EMPTY_ROW_INDEX_E:
             return "matrix row index is empty, should have a row index after the [ character.";
         case MAT_MISSING_FIRST_CLOSING_BRACKET_E:

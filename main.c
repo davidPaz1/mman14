@@ -162,6 +162,11 @@ void executeAssembler(char* fileName)
 
     if (TRUE) { /* we want to test up to the end of the second pass */
         printf("Skipping writing files for debugging.\n");
+        printf("ICF: %d, DCF: %d\n", ICF, DCF);
+        int i;
+        for ( i = 0; i < DCF; i++) {
+            printf("DATAWORD[%d]: %u\n", i, dataImage[i]); /* print the data image */
+        }
         printSymbolTableSorted(symbolTable);
         freeFiles(amFile, NULL, NULL); /* close the files if they were opened */
         freeTableAndLists(macroTable, symbolTable , errorList); /* free the macro table and error list */

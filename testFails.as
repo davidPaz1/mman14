@@ -12,7 +12,7 @@ ignoreLabel: .entry LOOP
 .extern OutLabel
 ;  mov M1[ arr][r7 ], M2[ r2][r7 ]
 ; M: .entry invalidLabel
-
+; MFail: .mat [2][2] a, 5 a, 1 1
 
 LOOP: jmp END
     prn #-5
