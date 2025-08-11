@@ -1,15 +1,17 @@
-#ifndef SECONDPASS_H
-#define SECONDPASS_H
-#include "global.h"
-#include "error.h"
-#include "lexer.h"
-#include "tables.h"
+#ifndef SECOND_PASS_H
+#define SECOND_PASS_H
 
-/* Preprocessor functions prototypes */
-ErrCode executeSecondPass(FILE* amFile, CodeWord* instructionImage, MacroTable* macroNames, SymbolTable* symbolTable, ErrorList* errorList); /* main function for the second pass */
-void secPassInstructionLine(parsedLine *pLine, unsigned int *ic, CodeWord* instructionImage, ErrorList* errorList);
+#include <stdio.h>
+#include "global.h"   
+#include "lexer.h"      
 
-void writeEntryFile(FILE* entFile, SymbolTable* symbolTable);
-void writeExternFile(FILE* extFile, SymbolTable* symbolTable);
+#define SECOND_PASS_SUCCESS_S 0
+#define SECOND_PASS_FAILURE_S 1
 
-#endif
+
+ErrCode executeSecondPass(FILE* amFile, MacroTable* macroTable,
+                          SymbolTable* symbolTable, CodeWord codeImage[],
+                          DataWord dataImage[], unsigned int *IC,
+                          unsigned int *DC, ErrorList* errorList);
+
+#endif /* SECOND_PASS_H */

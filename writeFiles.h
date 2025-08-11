@@ -1,23 +1,22 @@
 #ifndef WRITE_FILES_H
 #define WRITE_FILES_H
+
 #include "global.h"
-#include "error.h"
 #include "tables.h"
+#include "error.h"
 
-typedef enum Base4 {
-    a = 0, /* 00 in base 2 */
-    b = 1, /* 01 in base 2 */
-    c = 2, /* 10 in base 2 */
-    d = 3 /* 11 in base 2 */
-} Base4;
+/* record extern reference for .ext file */
+void recordExternReference(const char *symName, unsigned int address);
+void clearExternRecords(void);
 
-char* base4(const int *word); /* convert a word from base 2 to base 4 */
-void printBinCodeWord(CodeWord word);
-void printBinDataWord(DataWord word);
+/* write output files */
+ErrCode writeObjectFile(FILE *fp, CodeWord codeImage[], unsigned int codeSize,
+                        DataWord dataImage[], unsigned int dataSize);
 
+ErrCode writeEntryFile(const char *filename, SymbolTable *symbolTable,
+                       ErrorList *errorList);
 
-void writeObjectFile(FILE* obFile, DataWord dataImage[], unsigned int DC, CodeWord codeImage[], unsigned int IC, SymbolTable* symbolTable);
-void writeEntryFile(FILE* entFile, SymbolTable* symbolTable);
-void writeExternFile(FILE* extFile, SymbolTable* symbolTable);
+ErrCode writeExternFile(const char *filename, SymbolTable *symbolTable,
+                        ErrorList *errorList);
 
 #endif

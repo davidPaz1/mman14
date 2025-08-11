@@ -4,6 +4,9 @@
 #include "error.h"
 #include "tables.h" /* for freeing tables */
 
+#define UTIL_SUCCESS_S 0
+#define UTIL_FAILURE_S 1
+
 /* utility functions prototypes */
 #define OVER_LENGTH  1 /* overlength should store \n or \r if line is under MAX_LINE_FILE_LENGTH */
 #define INCLUDE_LAST_CHAR 1
